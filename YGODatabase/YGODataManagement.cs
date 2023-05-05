@@ -2,12 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+using static YGODatabase.dataModel;
 
 namespace YGODatabase
 {
@@ -21,6 +24,10 @@ namespace YGODatabase
         public static string GetDatabaseFilePath()
         {
             return Path.Combine(GetAppDataPath(), "Database.json");
+        }
+        public static string GetImageDirectoryPath()
+        {
+            return Path.Combine(GetAppDataPath(), "Images");
         }
         public static dataModel.YGOData DownloadData()
         {
@@ -80,6 +87,25 @@ namespace YGODatabase
 
             return JsonConvert.DeserializeObject<dataModel.YGOData>(File.ReadAllText(GetDatabaseFilePath()));
 
+        }
+
+        public static Bitmap GetImage(YGOCardOBJ card, int ImageInd)
+        {
+            string ImageName = Path.GetFileName(card.card_images[ImageInd].image_url);
+
+            if (!Directory.Exists(GetImageDirectoryPath())) { Directory.CreateDirectory(GetImageDirectoryPath()); }
+
+            var LocalImages = Directory.GetFiles(GetImageDirectoryPath()).Select(x => Path.GetFileName(x));
+            if (LocalImages.Contains(ImageName))
+            {
+                return new Bitmap(Path.Combine(GetImageDirectoryPath(), ImageName));
+            }
+            Debug.WriteLine($"Local Image {ImageName} not found, Downloading...");
+            using WebClient wc = new WebClient();
+            using Stream s = wc.OpenRead(card.card_images[ImageInd].image_url);
+            var newImage = new Bitmap(s);
+            newImage.Save(Path.Combine(GetImageDirectoryPath(), ImageName));
+            return newImage;
         }
     }
 }

@@ -33,6 +33,8 @@ namespace YGODatabase
                 "Confirm Update", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
             if (Result == DialogResult.OK)
             {
+                DirectoryInfo dir = new DirectoryInfo(YGODataManagement.GetImageDirectoryPath());
+                foreach (FileInfo file in dir.GetFiles()) { try { file.Delete(); } catch { Debug.WriteLine($"Could Not Delete {file.Name}"); } }
                 YGODataManagement.UpdateLocalData();
                 YGODataManagement.MasterDataBase = YGODataManagement.GetDataBase();
                 UpdateListBox();
@@ -61,7 +63,7 @@ namespace YGODatabase
             if (lbCardList.SelectedIndex < 0 || lbCardList.SelectedItem is not YGOCardOBJ) { return; }
             CurrentCard = lbCardList.SelectedItem as YGOCardOBJ;
 
-            pictureBox1.Load(CurrentCard.card_images.First().image_url);
+            pictureBox1.Image = YGODataManagement.GetImage(CurrentCard, 0);
 
             rtxtCardtext.Text = CurrentCard.desc;
 
