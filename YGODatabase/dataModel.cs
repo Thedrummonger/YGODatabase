@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -43,6 +44,26 @@ namespace YGODatabase
             public string set_rarity_code { get; set; }
             public string set_price { get; set; }
         }
+        public class InventoryDatabaseEntry
+        {
+            public int cardID { get; set; }
+            public string set_code { get; set; }
+            public string set_rarity { get; set; }
+            public string Condition { get; set; } = "Moderately Played";
+            public string Language { get; set; } = "En";
+            public DateTime DateAdded { get; set; }
+            public DateTime LastUpdated { get; set; }
+        };
+        public class InventoryListEntry
+        {
+            public string DisplayName { get; set; }
+            public int Amount { get; set; }
+            public int CardID { get; set; }
+            public override string ToString()
+            {
+                return $"{Amount}x {DisplayName}";
+            }
+        }
         public class YGOCardImages
         {
             public int id { get; set; }
@@ -57,6 +78,16 @@ namespace YGODatabase
             public string ebay_price { get; set; }
             public string amazon_price { get; set; }
             public string coolstuffinc_price { get; set; }
+        }
+        public class CardSearchResult
+        {
+            public string DisplayName { get; set; }
+            public string SetCode { get; set; }
+            public int CardID { get; set; }
+            public override string ToString()
+            {
+                return DisplayName;
+            }
         }
     }
 }

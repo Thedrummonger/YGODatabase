@@ -31,7 +31,8 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainInterface));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.updateYGODatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.inventoryManagerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.updateDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.lbCardList = new System.Windows.Forms.ListBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
@@ -46,8 +47,7 @@
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem,
-            this.updateYGODatabaseToolStripMenuItem});
+            this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(660, 24);
@@ -56,16 +56,26 @@
             // 
             // fileToolStripMenuItem
             // 
+            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.inventoryManagerToolStripMenuItem,
+            this.updateDatabaseToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
-            // updateYGODatabaseToolStripMenuItem
+            // inventoryManagerToolStripMenuItem
             // 
-            this.updateYGODatabaseToolStripMenuItem.Name = "updateYGODatabaseToolStripMenuItem";
-            this.updateYGODatabaseToolStripMenuItem.Size = new System.Drawing.Size(135, 20);
-            this.updateYGODatabaseToolStripMenuItem.Text = "Update YGO Database";
-            this.updateYGODatabaseToolStripMenuItem.Click += new System.EventHandler(this.updateYGODatabaseToolStripMenuItem_Click);
+            this.inventoryManagerToolStripMenuItem.Name = "inventoryManagerToolStripMenuItem";
+            this.inventoryManagerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.inventoryManagerToolStripMenuItem.Text = "Inventory Manager";
+            this.inventoryManagerToolStripMenuItem.Click += new System.EventHandler(this.inventoryManagerToolStripMenuItem_Click);
+            // 
+            // updateDatabaseToolStripMenuItem
+            // 
+            this.updateDatabaseToolStripMenuItem.Name = "updateDatabaseToolStripMenuItem";
+            this.updateDatabaseToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.updateDatabaseToolStripMenuItem.Text = "Update Database";
+            this.updateDatabaseToolStripMenuItem.Click += new System.EventHandler(this.updateDatabaseToolStripMenuItem_Click);
             // 
             // textBox1
             // 
@@ -159,7 +169,6 @@
 
         private MenuStrip menuStrip1;
         private ToolStripMenuItem fileToolStripMenuItem;
-        private ToolStripMenuItem updateYGODatabaseToolStripMenuItem;
         private TextBox textBox1;
         private ListBox lbCardList;
         private PictureBox pictureBox1;
@@ -167,5 +176,7 @@
         private Label lblCardText;
         private Label lbldata;
         private ListBox lbCardData;
+        private ToolStripMenuItem inventoryManagerToolStripMenuItem;
+        private ToolStripMenuItem updateDatabaseToolStripMenuItem;
     }
 }

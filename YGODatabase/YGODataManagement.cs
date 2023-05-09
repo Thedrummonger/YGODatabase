@@ -16,7 +16,11 @@ namespace YGODatabase
 {
     public class YGODataManagement
     {
-        public static dataModel.YGOData MasterDataBase = null;
+        public static YGOData MasterDataBase = null;
+        public static Dictionary<string, int> SetCodeDict = new Dictionary<string, int>();
+        public static Dictionary<int, int> IDLookup = new Dictionary<int, int>();
+
+        public static Dictionary<string, InventoryDatabaseEntry> Inventory = new Dictionary<string, InventoryDatabaseEntry>();
 
         public int GlobalCardWidth = 421;
         public int GlobalCardHeight = 614;
@@ -106,6 +110,22 @@ namespace YGODatabase
             var newImage = new Bitmap(s);
             newImage.Save(Path.Combine(GetImageDirectoryPath(), ImageName));
             return newImage;
+        }
+
+        public static void ApplyDataBase(YGOData data)
+        {
+            MasterDataBase = data;
+            int ind = 0;
+            foreach(var item in MasterDataBase.data)
+            {
+                IDLookup[item.id] = ind;
+                ind++;
+                if (item.card_sets == null || !item.card_sets.Any()) { continue; }
+                foreach(var set in item.card_sets)
+                {
+                    SetCodeDict[set.set_code] = item.id;
+                }
+            }
         }
     }
 }

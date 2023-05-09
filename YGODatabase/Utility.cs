@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static YGODatabase.dataModel;
 
@@ -67,6 +68,15 @@ namespace YGODatabase
         {
             return card.level > 0 || (card.type.Contains("Monster"));
         }
+        public static string GetRarityCode(this YGOSetData setData)
+        {
+            return string.IsNullOrWhiteSpace(setData.set_rarity_code) ? setData.set_rarity : setData.set_rarity_code;
+        }
+        public static int GetRarityIndex(this YGOSetData setData)
+        {
+            int Index = BulkData.Rarities.IndexOf(setData.set_rarity);
+            return Index < 0 ? 99999 : Index;
+        }
         public static string GetLowestAveragePrice(this YGOCardOBJ card)
         {
             List<decimal> prices = new List<decimal>();
@@ -89,35 +99,47 @@ namespace YGODatabase
             return Math.Round(Queryable.Average(prices.AsQueryable()), 2).ToString();
         }
 
-        public static List<string> CardTypes = new List<string> {
-          "Spell Card",
-          "Effect Monster",
-          "Normal Monster",
-          "Flip Effect Monster",
-          "Trap Card",
-          "Union Effect Monster",
-          "Fusion Monster",
-          "Pendulum Effect Monster",
-          "Link Monster",
-          "XYZ Monster",
-          "Synchro Monster",
-          "Synchro Tuner Monster",
-          "Tuner Monster",
-          "Gemini Monster",
-          "Normal Tuner Monster",
-          "Spirit Monster",
-          "Ritual Effect Monster",
-          "Skill Card",
-          "Token",
-          "Pendulum Effect Fusion Monster",
-          "Ritual Monster",
-          "Toon Monster",
-          "Pendulum Normal Monster",
-          "Synchro Pendulum Effect Monster",
-          "Pendulum Tuner Effect Monster",
-          "XYZ Pendulum Effect Monster",
-          "Pendulum Effect Ritual Monster",
-          "Pendulum Flip Effect Monster"
-        };
+        public static string GetLowestRarity(this YGOCardOBJ card, string SetName)
+        {
+            string LowestRarity = null;
+            foreach(var i in card.card_sets.Where(x => x.set_name == SetName))
+            {
+
+            }
+            return LowestRarity;
+        }
+
+        public static YGOCardOBJ GetCardByID(int ID)
+        {
+            return YGODataManagement.MasterDataBase.data[YGODataManagement.IDLookup[ID]];
+        }
+
+        public static List<string> GetAllSetsContainingCard(this YGOCardOBJ card)
+        {
+            List<string> sets = new List<string>();
+            foreach(var i in card.card_sets??Array.Empty<YGOSetData>())
+            {
+                if (!sets.Contains(i.set_name)) { sets.Add(i.set_name);}
+            }
+            return sets;
+        }
+        public static List<string> GetAllRaritiesInSet(this YGOCardOBJ card, string Setname)
+        {
+            List<string> Rarities = new List<string>();
+            foreach (var i in card.card_sets??Array.Empty<YGOSetData>())
+            {
+                if (i.set_name != Setname) { continue; }
+                if (!Rarities.Contains(i.set_rarity)) { Rarities.Add(i.set_rarity); }
+            }
+            return Rarities;
+        }
+
+        public static string CleanCardName(this string input)
+        {
+            string s1 = Regex.Replace(input, "[^A-Za-z0-9  ]", "");
+            s1 = Regex.Replace(s1, @"\s+", " ");
+            s1 = s1.ToLower();
+            return s1;
+        }
      }
 }
