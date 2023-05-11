@@ -201,12 +201,53 @@ namespace YGODatabase
             Debug.WriteLine($"Card Edited {JsonConvert.SerializeObject(YGODataManagement.Inventory[selectedCard], Formatting.Indented)}");
         }
 
+        private void btnRemoveSelected_Click(object sender, EventArgs e)
+        {
+            List<string> SelectedCards = Utility.GetIdenticalInventory(selectedCard).ToList();
+            if (numericUpDown1.Value > SelectedCards.Count)
+            {
+                SelectedCards.Add(selectedCard);
+                selectedCard = null;
+            }
+            for (var i = 0; i < numericUpDown1.Value; i++)
+            {
+                YGODataManagement.Inventory.Remove(SelectedCards[i]);
+            }
+
+            PrintSelectedCard(gbSelectedCard.Text);
+            PrintInventory();
+        }
+
+        private void btnAddOneSelected_Click(object sender, EventArgs e)
+        {
+            string UUID = Guid.NewGuid().ToString();
+
+            var CurrentCard = YGODataManagement.Inventory[selectedCard];
+
+            YGODataManagement.Inventory.Add(UUID, new dataModel.InventoryDatabaseEntry
+            {
+                cardID = CurrentCard.cardID,
+                set_code = CurrentCard.set_code,
+                set_rarity = CurrentCard.set_rarity,
+                DateAdded = DateAndTime.Now,
+                LastUpdated= DateAndTime.Now
+            });
+
+            selectedCard = UUID;
+            PrintSelectedCard("Last Added Card");
+
+            Debug.WriteLine($"Adding Card {JsonConvert.SerializeObject(YGODataManagement.Inventory.Last(), Formatting.Indented)}");
+
+            PrintInventory();
+        }
+
         #endregion Selected Item
 
         #region FormFunctions
         private void InventoryManager_Load(object sender, EventArgs e)
         {
             cmbFilterBy.SelectedIndex = 0;
+            cmbOrderBy.SelectedIndex = 0;
             PrintSelectedCard("N/A");
             PrintInventory();
         }
@@ -268,7 +309,37 @@ namespace YGODatabase
 
             listView1.BeginUpdate();
             listView1.Items.Clear();
-            foreach (var i in UniqueEntries.Values)
+
+            IEnumerable<dataModel.InventoryEntryData> PrintList = UniqueEntries.Values.OrderByDescending(x => YGODataManagement.Inventory[x.InventoryID].DateAdded).ToArray();
+            bool OrderByName = cmbOrderBy.SelectedIndex == 0;
+            bool OrderBySet = cmbOrderBy.SelectedIndex == 1; ;
+            bool OrderByRarity = cmbOrderBy.SelectedIndex == 2; ;
+            bool OrderByCondition = cmbOrderBy.SelectedIndex == 3; ;
+            bool OrderByModified = cmbOrderBy.SelectedIndex == 5; ;
+
+            if (OrderByName)
+            {
+                PrintList = PrintList.OrderBy(x => x.Card.name).ThenBy(x => x.Set.set_name).ThenBy(x => x.Set.GetRarityIndex()).ThenBy(x => BulkData.Conditions[YGODataManagement.Inventory[x.InventoryID].Condition]);
+            }
+            else if (OrderBySet) 
+            {
+                PrintList = PrintList.OrderBy(x => x.Set.set_name).ThenBy(x => x.Card.name).ThenBy(x => x.Set.GetRarityIndex()).ThenBy(x => BulkData.Conditions[YGODataManagement.Inventory[x.InventoryID].Condition]);
+            }
+            else if (OrderByRarity)
+            {
+                PrintList = PrintList.OrderBy(x => x.Set.GetRarityIndex()).ThenBy(x => x.Card.name).ThenBy(x => x.Set.set_name).ThenBy(x => BulkData.Conditions[YGODataManagement.Inventory[x.InventoryID].Condition]);
+            }
+            else if (OrderByModified)
+            {
+                PrintList = PrintList.OrderByDescending(x => YGODataManagement.Inventory[x.InventoryID].LastUpdated);
+            }
+            else if (OrderByCondition)
+            {
+                PrintList = PrintList.OrderBy(x => BulkData.Conditions[YGODataManagement.Inventory[x.InventoryID].Condition]).ThenBy(x => x.Card.name).ThenBy(x => x.Set.set_name).ThenBy(x => x.Set.GetRarityIndex());
+
+            }
+
+            foreach (var i in PrintList)
             {
                 string[] DisplayData = new string[] { i.Amount.ToString(), i.Card.name, i.Set.set_name, i.Set.GetRarityCode(), BulkData.Conditions[YGODataManagement.Inventory[i.InventoryID].Condition] };
                 listView1.Items.Add(Utility.CreateListViewItem(i, DisplayData));
@@ -290,43 +361,28 @@ namespace YGODatabase
 
         #endregion Inventory Display
 
-        private void btnRemoveSelected_Click(object sender, EventArgs e)
+        int GetDropDownWidth(ComboBox myCombo)
         {
-            List<string> SelectedCards = Utility.GetIdenticalInventory(selectedCard).ToList();
-            if (numericUpDown1.Value > SelectedCards.Count)
+            int maxWidth = 0, temp = 0;
+            foreach (var obj in myCombo.Items)
             {
-                SelectedCards.Add(selectedCard);
-                selectedCard = null;
+                temp = TextRenderer.MeasureText(obj.ToString(), myCombo.Font).Width;
+                if (temp > maxWidth)
+                {
+                    maxWidth = temp;
+                }
             }
-            for (var i = 0; i < numericUpDown1.Value; i++)
-            {
-                YGODataManagement.Inventory.Remove(SelectedCards[i]);
-            }
-
-            PrintSelectedCard(gbSelectedCard.Text);
-            PrintInventory();
+            return maxWidth + SystemInformation.VerticalScrollBarWidth;
         }
 
-        private void btnAddOneSelected_Click(object sender, EventArgs e)
+        private void ComboBox_DropDown(object sender, EventArgs e)
         {
-            string UUID = Guid.NewGuid().ToString();
+            if (sender is not ComboBox cmb) { return; }
+            cmb.DropDownWidth = GetDropDownWidth(cmb);
+        }
 
-            var CurrentCard = YGODataManagement.Inventory[selectedCard];
-
-            YGODataManagement.Inventory.Add(UUID, new dataModel.InventoryDatabaseEntry
-            {
-                cardID = CurrentCard.cardID,
-                set_code = CurrentCard.set_code,
-                set_rarity = CurrentCard.set_rarity,
-                DateAdded = DateAndTime.Now,
-                LastUpdated= DateAndTime.Now
-            });
-
-            selectedCard = UUID;
-            PrintSelectedCard("Last Added Card");
-
-            Debug.WriteLine($"Adding Card {JsonConvert.SerializeObject(YGODataManagement.Inventory.Last(), Formatting.Indented)}");
-
+        private void cmbOrderBy_SelectedIndexChanged(object sender, EventArgs e)
+        {
             PrintInventory();
         }
     }

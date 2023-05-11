@@ -49,6 +49,8 @@
             this.Set = new System.Windows.Forms.ColumnHeader();
             this.Rarity = new System.Windows.Forms.ColumnHeader();
             this.Condition = new System.Windows.Forms.ColumnHeader();
+            this.cmbOrderBy = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.gbSelectedCard.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.SuspendLayout();
@@ -154,6 +156,7 @@
             this.cmbSelectedCardCondition.Name = "cmbSelectedCardCondition";
             this.cmbSelectedCardCondition.Size = new System.Drawing.Size(58, 23);
             this.cmbSelectedCardCondition.TabIndex = 3;
+            this.cmbSelectedCardCondition.DropDown += new System.EventHandler(this.ComboBox_DropDown);
             this.cmbSelectedCardCondition.SelectedIndexChanged += new System.EventHandler(this.SelectedCardValueEdited);
             // 
             // lblSelectedCard
@@ -173,6 +176,7 @@
             this.cmbSelctedCardRarity.Name = "cmbSelctedCardRarity";
             this.cmbSelctedCardRarity.Size = new System.Drawing.Size(58, 23);
             this.cmbSelctedCardRarity.TabIndex = 1;
+            this.cmbSelctedCardRarity.DropDown += new System.EventHandler(this.ComboBox_DropDown);
             this.cmbSelctedCardRarity.SelectedIndexChanged += new System.EventHandler(this.SelectedCardValueEdited);
             // 
             // cmbSelectedCardSet
@@ -182,6 +186,7 @@
             this.cmbSelectedCardSet.Name = "cmbSelectedCardSet";
             this.cmbSelectedCardSet.Size = new System.Drawing.Size(125, 23);
             this.cmbSelectedCardSet.TabIndex = 2;
+            this.cmbSelectedCardSet.DropDown += new System.EventHandler(this.ComboBox_DropDown);
             this.cmbSelectedCardSet.SelectedIndexChanged += new System.EventHandler(this.SelectedCardValueEdited);
             // 
             // chkShowSet
@@ -226,33 +231,60 @@
             // Count
             // 
             this.Count.Text = "#";
-            this.Count.Width = 25;
+            this.Count.Width = 23;
             // 
             // CardName
             // 
             this.CardName.Text = "Card";
-            this.CardName.Width = 250;
+            this.CardName.Width = 300;
             // 
             // Set
             // 
             this.Set.Text = "Set";
-            this.Set.Width = 100;
+            this.Set.Width = 150;
             // 
             // Rarity
             // 
             this.Rarity.Text = "Rarity";
-            this.Rarity.Width = 50;
+            this.Rarity.Width = 48;
             // 
             // Condition
             // 
             this.Condition.Text = "Cond";
-            this.Condition.Width = 50;
+            this.Condition.Width = 45;
+            // 
+            // cmbOrderBy
+            // 
+            this.cmbOrderBy.FormattingEnabled = true;
+            this.cmbOrderBy.Items.AddRange(new object[] {
+            "Card Name",
+            "Set Name",
+            "Rarity",
+            "Condition",
+            "Date Added",
+            "Date Modified"});
+            this.cmbOrderBy.Location = new System.Drawing.Point(294, 244);
+            this.cmbOrderBy.Name = "cmbOrderBy";
+            this.cmbOrderBy.Size = new System.Drawing.Size(102, 23);
+            this.cmbOrderBy.TabIndex = 10;
+            this.cmbOrderBy.SelectedIndexChanged += new System.EventHandler(this.cmbOrderBy_SelectedIndexChanged);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(235, 251);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(53, 15);
+            this.label3.TabIndex = 11;
+            this.label3.Text = "Order By";
             // 
             // InventoryManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(598, 554);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.cmbOrderBy);
             this.Controls.Add(this.listView1);
             this.Controls.Add(this.chkShowRarity);
             this.Controls.Add(this.chkShowSet);
@@ -299,5 +331,7 @@
         private ColumnHeader Condition;
         private Button BtnAddOneSelected;
         private Button btnRemoveSelected;
+        private ComboBox cmbOrderBy;
+        private Label label3;
     }
 }
