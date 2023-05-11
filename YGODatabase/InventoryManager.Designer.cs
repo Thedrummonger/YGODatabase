@@ -32,23 +32,30 @@
             this.lbSearchResults = new System.Windows.Forms.ListBox();
             this.label1 = new System.Windows.Forms.Label();
             this.cmbFilterBy = new System.Windows.Forms.ComboBox();
-            this.lbInventory = new System.Windows.Forms.ListBox();
             this.label2 = new System.Windows.Forms.Label();
             this.gbSelectedCard = new System.Windows.Forms.GroupBox();
-            this.lblSelectedCardModified = new System.Windows.Forms.Label();
-            this.lblSelectedCardAdded = new System.Windows.Forms.Label();
+            this.BtnAddOneSelected = new System.Windows.Forms.Button();
+            this.btnRemoveSelected = new System.Windows.Forms.Button();
+            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.cmbSelectedCardCondition = new System.Windows.Forms.ComboBox();
-            this.cmbSelectedCardSet = new System.Windows.Forms.ComboBox();
-            this.cmbSelctedCardRarity = new System.Windows.Forms.ComboBox();
             this.lblSelectedCard = new System.Windows.Forms.Label();
+            this.cmbSelctedCardRarity = new System.Windows.Forms.ComboBox();
+            this.cmbSelectedCardSet = new System.Windows.Forms.ComboBox();
             this.chkShowSet = new System.Windows.Forms.CheckBox();
             this.chkShowRarity = new System.Windows.Forms.CheckBox();
+            this.listView1 = new System.Windows.Forms.ListView();
+            this.Count = new System.Windows.Forms.ColumnHeader();
+            this.CardName = new System.Windows.Forms.ColumnHeader();
+            this.Set = new System.Windows.Forms.ColumnHeader();
+            this.Rarity = new System.Windows.Forms.ColumnHeader();
+            this.Condition = new System.Windows.Forms.ColumnHeader();
             this.gbSelectedCard.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.SuspendLayout();
             // 
             // txtSearch
             // 
-            this.txtSearch.Location = new System.Drawing.Point(12, 68);
+            this.txtSearch.Location = new System.Drawing.Point(12, 78);
             this.txtSearch.Name = "txtSearch";
             this.txtSearch.Size = new System.Drawing.Size(162, 23);
             this.txtSearch.TabIndex = 0;
@@ -59,9 +66,9 @@
             // 
             this.lbSearchResults.FormattingEnabled = true;
             this.lbSearchResults.ItemHeight = 15;
-            this.lbSearchResults.Location = new System.Drawing.Point(12, 103);
+            this.lbSearchResults.Location = new System.Drawing.Point(12, 114);
             this.lbSearchResults.Name = "lbSearchResults";
-            this.lbSearchResults.Size = new System.Drawing.Size(479, 124);
+            this.lbSearchResults.Size = new System.Drawing.Size(384, 124);
             this.lbSearchResults.TabIndex = 1;
             this.lbSearchResults.DoubleClick += new System.EventHandler(this.lbSearchResults_DoubleClick);
             this.lbSearchResults.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.CaptureTabPress);
@@ -88,19 +95,10 @@
             this.cmbFilterBy.TabIndex = 3;
             this.cmbFilterBy.SelectedIndexChanged += new System.EventHandler(this.UpdateSearchResults);
             // 
-            // lbInventory
-            // 
-            this.lbInventory.FormattingEnabled = true;
-            this.lbInventory.ItemHeight = 15;
-            this.lbInventory.Location = new System.Drawing.Point(12, 253);
-            this.lbInventory.Name = "lbInventory";
-            this.lbInventory.Size = new System.Drawing.Size(479, 274);
-            this.lbInventory.TabIndex = 4;
-            // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 236);
+            this.label2.Location = new System.Drawing.Point(12, 251);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(57, 15);
             this.label2.TabIndex = 5;
@@ -108,78 +106,88 @@
             // 
             // gbSelectedCard
             // 
-            this.gbSelectedCard.Controls.Add(this.lblSelectedCardModified);
-            this.gbSelectedCard.Controls.Add(this.lblSelectedCardAdded);
+            this.gbSelectedCard.Controls.Add(this.BtnAddOneSelected);
+            this.gbSelectedCard.Controls.Add(this.btnRemoveSelected);
+            this.gbSelectedCard.Controls.Add(this.numericUpDown1);
             this.gbSelectedCard.Controls.Add(this.cmbSelectedCardCondition);
-            this.gbSelectedCard.Controls.Add(this.cmbSelectedCardSet);
-            this.gbSelectedCard.Controls.Add(this.cmbSelctedCardRarity);
             this.gbSelectedCard.Controls.Add(this.lblSelectedCard);
+            this.gbSelectedCard.Controls.Add(this.cmbSelctedCardRarity);
+            this.gbSelectedCard.Controls.Add(this.cmbSelectedCardSet);
             this.gbSelectedCard.Location = new System.Drawing.Point(180, 6);
             this.gbSelectedCard.Name = "gbSelectedCard";
-            this.gbSelectedCard.Size = new System.Drawing.Size(311, 91);
+            this.gbSelectedCard.Size = new System.Drawing.Size(216, 102);
             this.gbSelectedCard.TabIndex = 6;
             this.gbSelectedCard.TabStop = false;
             this.gbSelectedCard.Text = "Last Card added";
             // 
-            // lblSelectedCardModified
+            // BtnAddOneSelected
             // 
-            this.lblSelectedCardModified.AutoSize = true;
-            this.lblSelectedCardModified.Location = new System.Drawing.Point(133, 29);
-            this.lblSelectedCardModified.Name = "lblSelectedCardModified";
-            this.lblSelectedCardModified.Size = new System.Drawing.Size(79, 15);
-            this.lblSelectedCardModified.TabIndex = 8;
-            this.lblSelectedCardModified.Text = "Last modified";
+            this.BtnAddOneSelected.Location = new System.Drawing.Point(6, 71);
+            this.BtnAddOneSelected.Name = "BtnAddOneSelected";
+            this.BtnAddOneSelected.Size = new System.Drawing.Size(64, 23);
+            this.BtnAddOneSelected.TabIndex = 11;
+            this.BtnAddOneSelected.Text = "Add One";
+            this.BtnAddOneSelected.UseVisualStyleBackColor = true;
+            this.BtnAddOneSelected.Click += new System.EventHandler(this.btnAddOneSelected_Click);
             // 
-            // lblSelectedCardAdded
+            // btnRemoveSelected
             // 
-            this.lblSelectedCardAdded.AutoSize = true;
-            this.lblSelectedCardAdded.Location = new System.Drawing.Point(7, 29);
-            this.lblSelectedCardAdded.Name = "lblSelectedCardAdded";
-            this.lblSelectedCardAdded.Size = new System.Drawing.Size(69, 15);
-            this.lblSelectedCardAdded.TabIndex = 7;
-            this.lblSelectedCardAdded.Text = "Date Added";
+            this.btnRemoveSelected.Location = new System.Drawing.Point(6, 44);
+            this.btnRemoveSelected.Name = "btnRemoveSelected";
+            this.btnRemoveSelected.Size = new System.Drawing.Size(64, 23);
+            this.btnRemoveSelected.TabIndex = 10;
+            this.btnRemoveSelected.Text = "Remove";
+            this.btnRemoveSelected.UseVisualStyleBackColor = true;
+            this.btnRemoveSelected.Click += new System.EventHandler(this.btnRemoveSelected_Click);
+            // 
+            // numericUpDown1
+            // 
+            this.numericUpDown1.Location = new System.Drawing.Point(6, 15);
+            this.numericUpDown1.Name = "numericUpDown1";
+            this.numericUpDown1.Size = new System.Drawing.Size(37, 23);
+            this.numericUpDown1.TabIndex = 9;
             // 
             // cmbSelectedCardCondition
             // 
             this.cmbSelectedCardCondition.FormattingEnabled = true;
-            this.cmbSelectedCardCondition.Location = new System.Drawing.Point(207, 62);
+            this.cmbSelectedCardCondition.Location = new System.Drawing.Point(76, 41);
             this.cmbSelectedCardCondition.Name = "cmbSelectedCardCondition";
-            this.cmbSelectedCardCondition.Size = new System.Drawing.Size(94, 23);
+            this.cmbSelectedCardCondition.Size = new System.Drawing.Size(58, 23);
             this.cmbSelectedCardCondition.TabIndex = 3;
             this.cmbSelectedCardCondition.SelectedIndexChanged += new System.EventHandler(this.SelectedCardValueEdited);
-            // 
-            // cmbSelectedCardSet
-            // 
-            this.cmbSelectedCardSet.FormattingEnabled = true;
-            this.cmbSelectedCardSet.Location = new System.Drawing.Point(7, 62);
-            this.cmbSelectedCardSet.Name = "cmbSelectedCardSet";
-            this.cmbSelectedCardSet.Size = new System.Drawing.Size(94, 23);
-            this.cmbSelectedCardSet.TabIndex = 2;
-            this.cmbSelectedCardSet.SelectedIndexChanged += new System.EventHandler(this.SelectedCardValueEdited);
-            // 
-            // cmbSelctedCardRarity
-            // 
-            this.cmbSelctedCardRarity.FormattingEnabled = true;
-            this.cmbSelctedCardRarity.Location = new System.Drawing.Point(107, 62);
-            this.cmbSelctedCardRarity.Name = "cmbSelctedCardRarity";
-            this.cmbSelctedCardRarity.Size = new System.Drawing.Size(94, 23);
-            this.cmbSelctedCardRarity.TabIndex = 1;
-            this.cmbSelctedCardRarity.SelectedIndexChanged += new System.EventHandler(this.SelectedCardValueEdited);
             // 
             // lblSelectedCard
             // 
             this.lblSelectedCard.AutoSize = true;
             this.lblSelectedCard.Font = new System.Drawing.Font("Segoe UI", 9F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point);
-            this.lblSelectedCard.Location = new System.Drawing.Point(7, 14);
+            this.lblSelectedCard.Location = new System.Drawing.Point(49, 19);
             this.lblSelectedCard.Name = "lblSelectedCard";
             this.lblSelectedCard.Size = new System.Drawing.Size(40, 15);
             this.lblSelectedCard.TabIndex = 0;
             this.lblSelectedCard.Text = "Name";
             // 
+            // cmbSelctedCardRarity
+            // 
+            this.cmbSelctedCardRarity.FormattingEnabled = true;
+            this.cmbSelctedCardRarity.Location = new System.Drawing.Point(143, 41);
+            this.cmbSelctedCardRarity.Name = "cmbSelctedCardRarity";
+            this.cmbSelctedCardRarity.Size = new System.Drawing.Size(58, 23);
+            this.cmbSelctedCardRarity.TabIndex = 1;
+            this.cmbSelctedCardRarity.SelectedIndexChanged += new System.EventHandler(this.SelectedCardValueEdited);
+            // 
+            // cmbSelectedCardSet
+            // 
+            this.cmbSelectedCardSet.FormattingEnabled = true;
+            this.cmbSelectedCardSet.Location = new System.Drawing.Point(76, 70);
+            this.cmbSelectedCardSet.Name = "cmbSelectedCardSet";
+            this.cmbSelectedCardSet.Size = new System.Drawing.Size(125, 23);
+            this.cmbSelectedCardSet.TabIndex = 2;
+            this.cmbSelectedCardSet.SelectedIndexChanged += new System.EventHandler(this.SelectedCardValueEdited);
+            // 
             // chkShowSet
             // 
             this.chkShowSet.AutoSize = true;
-            this.chkShowSet.Location = new System.Drawing.Point(12, 39);
+            this.chkShowSet.Location = new System.Drawing.Point(12, 49);
             this.chkShowSet.Name = "chkShowSet";
             this.chkShowSet.Size = new System.Drawing.Size(74, 19);
             this.chkShowSet.TabIndex = 7;
@@ -190,7 +198,7 @@
             // chkShowRarity
             // 
             this.chkShowRarity.AutoSize = true;
-            this.chkShowRarity.Location = new System.Drawing.Point(86, 39);
+            this.chkShowRarity.Location = new System.Drawing.Point(86, 49);
             this.chkShowRarity.Name = "chkShowRarity";
             this.chkShowRarity.Size = new System.Drawing.Size(88, 19);
             this.chkShowRarity.TabIndex = 8;
@@ -198,16 +206,58 @@
             this.chkShowRarity.UseVisualStyleBackColor = true;
             this.chkShowRarity.CheckedChanged += new System.EventHandler(this.UpdateSearchResults);
             // 
+            // listView1
+            // 
+            this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.Count,
+            this.CardName,
+            this.Set,
+            this.Rarity,
+            this.Condition});
+            this.listView1.FullRowSelect = true;
+            this.listView1.Location = new System.Drawing.Point(12, 269);
+            this.listView1.Name = "listView1";
+            this.listView1.Size = new System.Drawing.Size(574, 273);
+            this.listView1.TabIndex = 9;
+            this.listView1.UseCompatibleStateImageBehavior = false;
+            this.listView1.View = System.Windows.Forms.View.Details;
+            this.listView1.DoubleClick += new System.EventHandler(this.listView1_DoubleClick);
+            // 
+            // Count
+            // 
+            this.Count.Text = "#";
+            this.Count.Width = 25;
+            // 
+            // CardName
+            // 
+            this.CardName.Text = "Card";
+            this.CardName.Width = 250;
+            // 
+            // Set
+            // 
+            this.Set.Text = "Set";
+            this.Set.Width = 100;
+            // 
+            // Rarity
+            // 
+            this.Rarity.Text = "Rarity";
+            this.Rarity.Width = 50;
+            // 
+            // Condition
+            // 
+            this.Condition.Text = "Cond";
+            this.Condition.Width = 50;
+            // 
             // InventoryManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(503, 539);
+            this.ClientSize = new System.Drawing.Size(598, 554);
+            this.Controls.Add(this.listView1);
             this.Controls.Add(this.chkShowRarity);
             this.Controls.Add(this.chkShowSet);
             this.Controls.Add(this.gbSelectedCard);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.lbInventory);
             this.Controls.Add(this.cmbFilterBy);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.lbSearchResults);
@@ -220,6 +270,7 @@
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.CaptureKeyPress);
             this.gbSelectedCard.ResumeLayout(false);
             this.gbSelectedCard.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -231,7 +282,6 @@
         private ListBox lbSearchResults;
         private Label label1;
         private ComboBox cmbFilterBy;
-        private ListBox lbInventory;
         private Label label2;
         private GroupBox gbSelectedCard;
         private CheckBox chkShowSet;
@@ -240,7 +290,14 @@
         private ComboBox cmbSelectedCardSet;
         private ComboBox cmbSelctedCardRarity;
         private Label lblSelectedCard;
-        private Label lblSelectedCardModified;
-        private Label lblSelectedCardAdded;
+        private ListView listView1;
+        private ColumnHeader Count;
+        private ColumnHeader CardName;
+        private ColumnHeader Set;
+        private ColumnHeader Rarity;
+        private NumericUpDown numericUpDown1;
+        private ColumnHeader Condition;
+        private Button BtnAddOneSelected;
+        private Button btnRemoveSelected;
     }
 }

@@ -54,15 +54,12 @@ namespace YGODatabase
             public DateTime DateAdded { get; set; }
             public DateTime LastUpdated { get; set; }
         };
-        public class InventoryListEntry
+        public class InventoryEntryData
         {
-            public string DisplayName { get; set; }
             public int Amount { get; set; }
-            public int CardID { get; set; }
-            public override string ToString()
-            {
-                return $"{Amount}x {DisplayName}";
-            }
+            public YGOCardOBJ Card { get; set; }
+            public YGOSetData Set { get; set; }
+            public string InventoryID { get; set; }
         }
         public class YGOCardImages
         {

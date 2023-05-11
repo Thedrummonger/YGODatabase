@@ -12,49 +12,6 @@ namespace YGODatabase
 {
     public static class Utility
     {
-        public static class LevenshteinDistance
-        {
-            public static int Compute(string s, string t)
-            {
-                if (string.IsNullOrEmpty(s))
-                {
-                    if (string.IsNullOrEmpty(t))
-                        return 0;
-                    return t.Length;
-                }
-
-                if (string.IsNullOrEmpty(t))
-                {
-                    return s.Length;
-                }
-
-                int n = s.Length;
-                int m = t.Length;
-                int[,] d = new int[n + 1, m + 1];
-
-                for (int i = 0; i <= n; d[i, 0] = i++) ;
-                for (int j = 1; j <= m; d[0, j] = j++) ;
-
-                for (int i = 1; i <= n; i++)
-                {
-                    for (int j = 1; j <= m; j++)
-                    {
-                        int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
-                        int min1 = d[i - 1, j] + 1;
-                        int min2 = d[i, j - 1] + 1;
-                        int min3 = d[i - 1, j - 1] + cost;
-                        d[i, j] = Math.Min(Math.Min(min1, min2), min3);
-                    }
-                }
-                return d[n, m];
-            }
-        }
-
-        public static bool ValidSearchCard(YGOCardOBJ card, string Search, int Similarity = 10)
-        {
-            int LasDist = LevenshteinDistance.Compute(card.name, Search);
-            return LasDist >= Similarity;
-        }
 
         public static bool HasAttack(this YGOCardOBJ card)
         {
@@ -113,6 +70,22 @@ namespace YGODatabase
         {
             return YGODataManagement.MasterDataBase.data[YGODataManagement.IDLookup[ID]];
         }
+        public static YGOSetData GetExactCard(int CardID, string SetCode, string Rarity)
+        {
+            return GetExactCard(GetCardByID(CardID), SetCode, Rarity);
+        }
+        public static YGOSetData GetExactCard(YGOCardOBJ Card, string SetCode, string Rarity)
+        {
+            var Result = Card.card_sets.First(x => x.set_code == SetCode && x.set_rarity == Rarity);
+            if (Result is not null) { return Result; }
+            Result = Card.card_sets.First(x => x.set_name == SetCode && x.set_rarity == Rarity);
+            if (Result is not null) { return Result; }
+            Result = Card.card_sets.First(x => x.set_code == SetCode && x.set_rarity_code == Rarity);
+            if (Result is not null) { return Result; }
+            Result = Card.card_sets.First(x => x.set_name == SetCode && x.set_rarity_code == Rarity);
+            if (Result is not null) { return Result; }
+            return null;
+        }
 
         public static List<string> GetAllSetsContainingCard(this YGOCardOBJ card)
         {
@@ -141,5 +114,26 @@ namespace YGODatabase
             s1 = s1.ToLower();
             return s1;
         }
-     }
+
+        public static string[] GetIdenticalInventory(string InventoryUUID)
+        {
+            var Target = YGODataManagement.Inventory[InventoryUUID];
+            string[] IdenticalEntries = YGODataManagement.Inventory.Where(x => 
+                x.Key != InventoryUUID &&
+                x.Value.set_rarity == Target.set_rarity &&
+                x.Value.set_code == Target.set_code &&
+                x.Value.Condition == Target.Condition
+            ).ToDictionary(x =>x.Key, x=>x.Value).Keys.ToArray();
+            return IdenticalEntries??Array.Empty<string>();
+        }
+
+        public static ListViewItem CreateListViewItem(object Tag, string[] Columns)
+        {
+            ListViewItem item = new ListViewItem();
+            item.SubItems.AddRange(Columns);
+            item.SubItems.RemoveAt(0);
+            item.Tag = Tag;
+            return item;
+        }
+    }
 }

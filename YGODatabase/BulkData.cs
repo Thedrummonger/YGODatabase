@@ -8,13 +8,13 @@ namespace YGODatabase
 {
     internal class BulkData
     {
-        public static List<string> Conditions = new List<string>()
+        public static Dictionary<string, string> Conditions = new Dictionary<string, string>()
         {
-            "Near Mint to Mint",
-            "Lightly Played",
-            "Moderately Played",
-            "Heavy Played",
-            "Damaged"
+            { "Near Mint to Mint", "NM" },
+            { "Lightly Played", "LP" },
+            { "Moderately Played", "MP" },
+            { "Heavy Played", "HP" },
+            { "Damaged", "DMG" }
         };
         public static List<string> Rarities = new List<string>()
         {
