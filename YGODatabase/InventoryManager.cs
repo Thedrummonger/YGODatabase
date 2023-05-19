@@ -41,7 +41,7 @@ namespace YGODatabase
             }
 
             Dictionary<string, string> results = new Dictionary<string, string>();
-            List<dataModel.CardSearchResult> Formattedresults = new List<dataModel.CardSearchResult>();
+            List<DataModel.CardSearchResult> Formattedresults = new List<DataModel.CardSearchResult>();
 
             foreach (var i in YGODataManagement.MasterDataBase.data)
             {
@@ -51,14 +51,14 @@ namespace YGODatabase
                     string DisplayName = $"{i.name}";
                     if (chkShowRarity.Checked) { DisplayName += $" {j.GetRarityCode()}"; }
                     if (chkShowSet.Checked) { DisplayName += $" ({j.set_name})"; }
-                    bool NameFilterValid = i.name.CleanCardName().Contains(txtSearch.Text.CleanCardName());
-                    bool CodeFilterValid = j.set_code.ToUpper().Replace("-", "").Contains(txtSearch.Text.ToUpper().Replace("-", ""));
+
+                    bool SearchValid = SearchParser.CardMatchesFilter(DisplayName, i, j, txtSearch.Text, NameSearch, NameSearch, CodeSearch);
 
                     if (results.ContainsKey(DisplayName)) { continue; }
-                    if ((NameSearch && NameFilterValid) || (CodeSearch && CodeFilterValid))
+                    if (SearchValid)
                     {
                         results[DisplayName] = j.set_code;
-                        Formattedresults.Add(new dataModel.CardSearchResult { DisplayName = DisplayName, SetCode= j.set_code, CardID = i.id });
+                        Formattedresults.Add(new DataModel.CardSearchResult { DisplayName = DisplayName, Card = i, Set = j });
                     }
                 }
             }
@@ -75,18 +75,17 @@ namespace YGODatabase
         private void AddSelectedCard()
         {
             if (lbSearchResults.SelectedIndex < 0) { return; }
-            if (lbSearchResults.SelectedItem is not dataModel.CardSearchResult SelectedCard) { return; }
-            var Card = YGODataManagement.MasterDataBase.data.First(x => x.card_sets is not null && x.card_sets.Any(x => x.set_code == SelectedCard.SetCode));
-            var SetData = Card.card_sets.First(x => x.set_code == SelectedCard.SetCode);
-            txtSearch.Text = string.Empty;
+            if (lbSearchResults.SelectedItem is not DataModel.CardSearchResult SelectedCard) { return; }
+            txtSearch.SelectAll();
+            txtSearch.Focus();
 
             string UUID = Guid.NewGuid().ToString();
 
-            YGODataManagement.Inventory.Add(UUID, new dataModel.InventoryDatabaseEntry
+            YGODataManagement.Inventory.Add(UUID, new DataModel.InventoryDatabaseEntry
             {
-                cardID = SelectedCard.CardID,
-                set_code = SelectedCard.SetCode,
-                set_rarity = SetData.set_rarity,
+                cardID = SelectedCard.Card.id,
+                set_code = SelectedCard.Set.set_code,
+                set_rarity = SelectedCard.Set.set_rarity,
                 DateAdded = DateAndTime.Now,
                 LastUpdated= DateAndTime.Now
             });
@@ -224,7 +223,7 @@ namespace YGODatabase
 
             var CurrentCard = YGODataManagement.Inventory[selectedCard];
 
-            YGODataManagement.Inventory.Add(UUID, new dataModel.InventoryDatabaseEntry
+            YGODataManagement.Inventory.Add(UUID, new DataModel.InventoryDatabaseEntry
             {
                 cardID = CurrentCard.cardID,
                 set_code = CurrentCard.set_code,
@@ -290,7 +289,7 @@ namespace YGODatabase
         private void PrintInventory()
         {
 
-            Dictionary<string, dataModel.InventoryEntryData> UniqueEntries = new Dictionary<string, dataModel.InventoryEntryData>();
+            Dictionary<string, DataModel.InventoryObject> UniqueEntries = new Dictionary<string, DataModel.InventoryObject>();
 
             foreach (var i in YGODataManagement.Inventory)
             {
@@ -299,7 +298,7 @@ namespace YGODatabase
                 string UUID = $"{Card.name} {Set.set_name} {Set.set_rarity} {i.Value.Condition}";
                 if (!UniqueEntries.ContainsKey(UUID))
                 {
-                    UniqueEntries.Add(UUID, new dataModel.InventoryEntryData { Amount = 0 });
+                    UniqueEntries.Add(UUID, new DataModel.InventoryObject { Amount = 0 });
                 }
                 UniqueEntries[UUID].Amount++;
                 UniqueEntries[UUID].Card = Card;
@@ -310,7 +309,7 @@ namespace YGODatabase
             listView1.BeginUpdate();
             listView1.Items.Clear();
 
-            IEnumerable<dataModel.InventoryEntryData> PrintList = UniqueEntries.Values.OrderByDescending(x => YGODataManagement.Inventory[x.InventoryID].DateAdded).ToArray();
+            IEnumerable<DataModel.InventoryObject> PrintList = UniqueEntries.Values.OrderByDescending(x => YGODataManagement.Inventory[x.InventoryID].DateAdded).ToArray();
             bool OrderByName = cmbOrderBy.SelectedIndex == 0;
             bool OrderBySet = cmbOrderBy.SelectedIndex == 1; ;
             bool OrderByRarity = cmbOrderBy.SelectedIndex == 2; ;
@@ -352,7 +351,7 @@ namespace YGODatabase
             if (listView1.SelectedItems.Count < 1 || 
                 listView1.SelectedItems[0] is null || 
                 listView1.SelectedItems[0].Tag is null || 
-                listView1.SelectedItems[0].Tag is not dataModel.InventoryEntryData Data) 
+                listView1.SelectedItems[0].Tag is not DataModel.InventoryObject Data) 
             { return; }
 
             selectedCard = Data.InventoryID;
@@ -384,6 +383,30 @@ namespace YGODatabase
         private void cmbOrderBy_SelectedIndexChanged(object sender, EventArgs e)
         {
             PrintInventory();
+        }
+
+        private void HighlightCard(object sender, EventArgs e)
+        {
+            int ImageIndex = 0;
+            DataModel.YGOCardOBJ Card;
+            if (sender == lbSearchResults && lbSearchResults.SelectedItem is DataModel.CardSearchResult SearchSelectedCard) 
+            {
+                Card = SearchSelectedCard.Card;
+            }
+            else if (sender == listView1 && listView1.SelectedItems.Count > 0 && listView1.SelectedItems[0].Tag is DataModel.InventoryObject InventorySelectedCard)
+            {
+                Card = InventorySelectedCard.Card;
+            }
+            else
+            {
+                return;
+            }
+            UpdatepictureBox(Card, ImageIndex);
+        }
+
+        private async void UpdatepictureBox(DataModel.YGOCardOBJ card, int ImageIndex)
+        {
+            await Task.Run(() => pictureBox1.Image = YGODataManagement.GetImage(card, ImageIndex));
         }
     }
 }

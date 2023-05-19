@@ -40,8 +40,11 @@
             this.lblCardText = new System.Windows.Forms.Label();
             this.lbldata = new System.Windows.Forms.Label();
             this.lbCardData = new System.Windows.Forms.ListBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -66,14 +69,14 @@
             // inventoryManagerToolStripMenuItem
             // 
             this.inventoryManagerToolStripMenuItem.Name = "inventoryManagerToolStripMenuItem";
-            this.inventoryManagerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.inventoryManagerToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
             this.inventoryManagerToolStripMenuItem.Text = "Inventory Manager";
             this.inventoryManagerToolStripMenuItem.Click += new System.EventHandler(this.inventoryManagerToolStripMenuItem_Click);
             // 
             // updateDatabaseToolStripMenuItem
             // 
             this.updateDatabaseToolStripMenuItem.Name = "updateDatabaseToolStripMenuItem";
-            this.updateDatabaseToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.updateDatabaseToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
             this.updateDatabaseToolStripMenuItem.Text = "Update Database";
             this.updateDatabaseToolStripMenuItem.Click += new System.EventHandler(this.updateDatabaseToolStripMenuItem_Click);
             // 
@@ -115,20 +118,20 @@
             // lblCardText
             // 
             this.lblCardText.AutoSize = true;
-            this.lblCardText.Location = new System.Drawing.Point(517, 225);
+            this.lblCardText.Location = new System.Drawing.Point(517, 228);
             this.lblCardText.Name = "lblCardText";
-            this.lblCardText.Size = new System.Drawing.Size(53, 15);
+            this.lblCardText.Size = new System.Drawing.Size(56, 15);
             this.lblCardText.TabIndex = 5;
-            this.lblCardText.Text = "CardText";
+            this.lblCardText.Text = "Card Text";
             // 
             // lbldata
             // 
             this.lbldata.AutoSize = true;
             this.lbldata.Location = new System.Drawing.Point(517, 38);
             this.lbldata.Name = "lbldata";
-            this.lbldata.Size = new System.Drawing.Size(31, 15);
+            this.lbldata.Size = new System.Drawing.Size(56, 15);
             this.lbldata.TabIndex = 7;
-            this.lbldata.Text = "Data";
+            this.lbldata.Text = "Card Info";
             // 
             // lbCardData
             // 
@@ -136,14 +139,34 @@
             this.lbCardData.ItemHeight = 15;
             this.lbCardData.Location = new System.Drawing.Point(517, 56);
             this.lbCardData.Name = "lbCardData";
-            this.lbCardData.Size = new System.Drawing.Size(131, 154);
+            this.lbCardData.Size = new System.Drawing.Size(131, 169);
             this.lbCardData.TabIndex = 8;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Segoe UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label1.Location = new System.Drawing.Point(442, 33);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(28, 17);
+            this.label1.TabIndex = 9;
+            this.label1.Text = "Art:";
+            // 
+            // numericUpDown1
+            // 
+            this.numericUpDown1.Location = new System.Drawing.Point(476, 30);
+            this.numericUpDown1.Name = "numericUpDown1";
+            this.numericUpDown1.Size = new System.Drawing.Size(35, 23);
+            this.numericUpDown1.TabIndex = 10;
+            this.numericUpDown1.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
             // 
             // MainInterface
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(660, 450);
+            this.Controls.Add(this.numericUpDown1);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.lbCardData);
             this.Controls.Add(this.lbldata);
             this.Controls.Add(this.lblCardText);
@@ -160,6 +183,7 @@
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -178,5 +202,7 @@
         private ListBox lbCardData;
         private ToolStripMenuItem inventoryManagerToolStripMenuItem;
         private ToolStripMenuItem updateDatabaseToolStripMenuItem;
+        private Label label1;
+        private NumericUpDown numericUpDown1;
     }
 }

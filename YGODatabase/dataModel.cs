@@ -7,8 +7,17 @@ using System.Threading.Tasks;
 
 namespace YGODatabase
 {
-    public class dataModel
+    public class DataModel
     {
+
+        public class SearchMatchResults
+        {
+            public bool ExactMatch { get; set; }
+            public bool ModerateMatch { get; set; }
+            public bool LiberalMatch { get; set; }
+            public bool SetMatch { get; set; }
+            public bool HasSearchData { get; set; }
+        }
         public class YGOData
         {
             public YGOCardOBJ[] data { get; set; }
@@ -44,23 +53,6 @@ namespace YGODatabase
             public string set_rarity_code { get; set; }
             public string set_price { get; set; }
         }
-        public class InventoryDatabaseEntry
-        {
-            public int cardID { get; set; }
-            public string set_code { get; set; }
-            public string set_rarity { get; set; }
-            public string Condition { get; set; } = "Moderately Played";
-            public string Language { get; set; } = "En";
-            public DateTime DateAdded { get; set; }
-            public DateTime LastUpdated { get; set; }
-        };
-        public class InventoryEntryData
-        {
-            public int Amount { get; set; }
-            public YGOCardOBJ Card { get; set; }
-            public YGOSetData Set { get; set; }
-            public string InventoryID { get; set; }
-        }
         public class YGOCardImages
         {
             public int id { get; set; }
@@ -76,14 +68,41 @@ namespace YGODatabase
             public string amazon_price { get; set; }
             public string coolstuffinc_price { get; set; }
         }
+
+
+        public class InventoryDatabaseEntry
+        {
+            public int cardID { get; set; }
+            public string set_code { get; set; }
+            public string set_rarity { get; set; }
+            public string Condition { get; set; } = "Moderately Played";
+            public string Language { get; set; } = "En";
+            public DateTime DateAdded { get; set; }
+            public DateTime LastUpdated { get; set; }
+        };
+        public class InventoryObject
+        {
+            public int Amount { get; set; }
+            public YGOCardOBJ Card { get; set; }
+            public YGOSetData Set { get; set; }
+            public string InventoryID { get; set; }
+        }
         public class CardSearchResult
         {
             public string DisplayName { get; set; }
-            public string SetCode { get; set; }
-            public int CardID { get; set; }
+            public YGOCardOBJ Card { get; set; }
+            public YGOSetData Set { get; set; }
             public override string ToString()
             {
                 return DisplayName;
+            }
+        }
+        public class Divider
+        {
+            public string Display { get; set; }
+            public override string ToString()
+            {
+                return Display;
             }
         }
     }

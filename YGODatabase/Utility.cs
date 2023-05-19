@@ -6,20 +6,32 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using static YGODatabase.dataModel;
+using static YGODatabase.DataModel;
 
 namespace YGODatabase
 {
     public static class Utility
     {
+        public static string[] StringSplit(this string input, string Split, StringSplitOptions options = StringSplitOptions.None)
+        {
+            return input.Split(new string[] { Split }, options);
+        }
 
         public static bool HasAttack(this YGOCardOBJ card)
         {
-            return card.atk > 0 || card.type.Contains("Monster");
+            return card.atk > 0 || card.isMonster();
         }
         public static bool HasDefence(this YGOCardOBJ card)
         {
-            return card.def > 0 || (card.type.Contains("Monster") && !card.type.Contains("Link"));
+            return card.def > 0 || (card.isMonster() && !card.isLinkMonster());
+        }
+        public static bool isMonster(this YGOCardOBJ card)
+        {
+            return card.type.Contains("Monster");
+        }
+        public static bool isLinkMonster(this YGOCardOBJ card)
+        {
+            return card.type.Contains("Monster") && card.type.Contains("Link");
         }
         public static bool HasLevel(this YGOCardOBJ card)
         {
@@ -39,11 +51,9 @@ namespace YGODatabase
             List<decimal> prices = new List<decimal>();
             foreach(var i in card.card_prices)
             {
-                ParseAndAdd(i.amazon_price);
                 ParseAndAdd(i.coolstuffinc_price);
                 ParseAndAdd(i.cardmarket_price);
                 ParseAndAdd(i.tcgplayer_price);
-                ParseAndAdd(i.ebay_price);
             }
 
             void ParseAndAdd(string Price)
@@ -107,9 +117,9 @@ namespace YGODatabase
             return Rarities;
         }
 
-        public static string CleanCardName(this string input)
+        public static string CleanCardName(this string input, string SpecialCharReplace = "")
         {
-            string s1 = Regex.Replace(input, "[^A-Za-z0-9  ]", "");
+            string s1 = Regex.Replace(input, "[^A-Za-z0-9  ]", SpecialCharReplace);
             s1 = Regex.Replace(s1, @"\s+", " ");
             s1 = s1.ToLower();
             return s1;
@@ -134,6 +144,45 @@ namespace YGODatabase
             item.SubItems.RemoveAt(0);
             item.Tag = Tag;
             return item;
+        }
+        public static DataModel.Divider CreateDivider(object containerObject, string DividerText = "")
+        {
+            Font font;
+            Graphics g;
+            int width;
+            if (containerObject is ListView LVcontainer)
+            {
+                font = LVcontainer.Font;
+                width = LVcontainer.Width - (LVcontainer.CheckBoxes ? 45 : 0);
+                g = LVcontainer.CreateGraphics();
+            }
+            else if (containerObject is ListBox LBcontainer)
+            {
+                font = LBcontainer.Font;
+                width = LBcontainer.Width;
+                g = LBcontainer.CreateGraphics();
+            }
+            else if (containerObject is ComboBox cmb)
+            {
+                font = cmb.Font;
+                width = cmb.Width;
+                g = cmb.CreateGraphics();
+            }
+            else
+            {
+                return new DataModel.Divider { Display = DividerText };
+            }
+
+            string Divider = DividerText;
+            while (true)
+            {
+                string newDivider = Divider;
+                if (string.IsNullOrWhiteSpace(DividerText)) { newDivider += "="; }
+                else { newDivider = $"={newDivider}="; }
+                if ((int)g.MeasureString(newDivider, font).Width < width) { Divider = newDivider; }
+                else { break; }
+            }
+            return new DataModel.Divider { Display = Divider };
         }
     }
 }
