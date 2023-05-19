@@ -66,16 +66,6 @@ namespace YGODatabase
             return Math.Round(Queryable.Average(prices.AsQueryable()), 2).ToString();
         }
 
-        public static string GetLowestRarity(this YGOCardOBJ card, string SetName)
-        {
-            string LowestRarity = null;
-            foreach(var i in card.card_sets.Where(x => x.set_name == SetName))
-            {
-
-            }
-            return LowestRarity;
-        }
-
         public static YGOCardOBJ GetCardByID(int ID)
         {
             return YGODataManagement.MasterDataBase.data[YGODataManagement.IDLookup[ID]];
@@ -125,10 +115,10 @@ namespace YGODatabase
             return s1;
         }
 
-        public static string[] GetIdenticalInventory(string InventoryUUID)
+        public static string[] GetIdenticalInventory(string InventoryUUID, CardCollection CurrentCollction)
         {
-            var Target = YGODataManagement.Inventory[InventoryUUID];
-            string[] IdenticalEntries = YGODataManagement.Inventory.Where(x => 
+            var Target = CurrentCollction.data[InventoryUUID];
+            string[] IdenticalEntries = CurrentCollction.data.Where(x => 
                 x.Key != InventoryUUID &&
                 x.Value.set_rarity == Target.set_rarity &&
                 x.Value.set_code == Target.set_code &&

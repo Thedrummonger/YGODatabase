@@ -51,7 +51,7 @@ namespace YGODatabase
                 lbCardList.DataSource = DisplayData;
                 return;
             }
-            DisplayData = DisplayData.Where(x => SearchParser.CardMatchesFilter(x.ToString(), x, textBox1.Text.ToLower(),true, true, true)).ToArray();
+            DisplayData = DisplayData.Where(x => SearchParser.CardMatchesFilter(x.ToString(), x, textBox1.Text.ToLower(), true, true)).ToArray();
             lbCardList.DataSource = DisplayData;
         }
 

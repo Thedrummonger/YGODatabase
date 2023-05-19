@@ -122,7 +122,12 @@ namespace YGODatabase
                 foreach(var set in item.card_sets)
                 {
                     SetCodeDict[set.set_code] = item.id;
+                    set.SearchTags.Add(set.set_code.ToLower());
+                    set.SearchTags.Add(set.set_code.CleanCardName());
                 }
+                item.SearchTags.Add(item.name.ToLower());
+                item.SearchTags.Add(item.name.CleanCardName());
+                item.SearchTags.Add(item.name.CleanCardName(" "));
             }
         }
     }

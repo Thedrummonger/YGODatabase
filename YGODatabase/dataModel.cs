@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,19 +10,17 @@ namespace YGODatabase
 {
     public class DataModel
     {
-
-        public class SearchMatchResults
-        {
-            public bool ExactMatch { get; set; }
-            public bool ModerateMatch { get; set; }
-            public bool LiberalMatch { get; set; }
-            public bool SetMatch { get; set; }
-            public bool HasSearchData { get; set; }
-        }
         public class YGOData
         {
             public YGOCardOBJ[] data { get; set; }
             public DateTime LastDownload { get; set; }
+        }
+        public class CardCollection
+        {
+            public bool IsMainInventory { get; set; }
+            public string Name { get; set; }
+            public Dictionary<string, InventoryDatabaseEntry> data { get; set; }
+            public DateTime LastEdited { get; set; }
         }
         public class YGOCardOBJ
         {
@@ -38,6 +37,7 @@ namespace YGODatabase
             public YGOSetData[] card_sets { get; set; }
             public YGOCardImages[] card_images { get; set; }
             public YGOCardPrices[] card_prices { get; set; }
+            public List<string> SearchTags { get; set; } = new List<string>();
 
             public override string ToString()
             {
@@ -52,6 +52,7 @@ namespace YGODatabase
             public string set_rarity { get; set; }
             public string set_rarity_code { get; set; }
             public string set_price { get; set; }
+            public List<string> SearchTags { get; set; } = new List<string>();
         }
         public class YGOCardImages
         {
@@ -103,6 +104,16 @@ namespace YGODatabase
             public override string ToString()
             {
                 return Display;
+            }
+        }
+
+        public class ComboBoxItem
+        {
+            public string DisplayName { get; set; }
+            public object tag { get; set; }
+            public override string ToString()
+            {
+                return DisplayName;
             }
         }
     }

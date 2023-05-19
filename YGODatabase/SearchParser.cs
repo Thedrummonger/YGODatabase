@@ -9,15 +9,15 @@ using static YGODatabase.DataModel;
 namespace YGODatabase
 {
     internal class SearchParser {
-        public static bool CardMatchesFilter(string DisplayText, YGOCardOBJ Card, string SearchTerm, bool MatchDisplay, bool MatchCardName, bool MatchSetCode)
+        public static bool CardMatchesFilter(string DisplayText, YGOCardOBJ Card, string SearchTerm, bool MatchCardName, bool MatchSetCode)
         {
-            return CardMatchesFilter(DisplayText, Card, Card.card_sets, SearchTerm, MatchDisplay, MatchCardName, MatchSetCode);
+            return CardMatchesFilter(DisplayText, Card, Card.card_sets, SearchTerm, MatchCardName, MatchSetCode);
         }
-        public static bool CardMatchesFilter(string DisplayText, YGOCardOBJ Card, YGOSetData Set, string SearchTerm, bool MatchDisplay, bool MatchCardName, bool MatchSetCode)
+        public static bool CardMatchesFilter(string DisplayText, YGOCardOBJ Card, YGOSetData Set, string SearchTerm, bool MatchCardName, bool MatchSetCode)
         {
-            return CardMatchesFilter(DisplayText, Card, new YGOSetData[] { Set }, SearchTerm, MatchDisplay, MatchCardName, MatchSetCode);
+            return CardMatchesFilter(DisplayText, Card, new YGOSetData[] { Set }, SearchTerm, MatchCardName, MatchSetCode);
         }
-        public static bool CardMatchesFilter(string DisplayText, YGOCardOBJ Card, YGOSetData[] Sets, string SearchTerm, bool MatchDisplay, bool MatchCardName, bool MatchSetCode)
+        public static bool CardMatchesFilter(string DisplayText, YGOCardOBJ Card, YGOSetData[] Sets, string SearchTerm, bool MatchCardName, bool MatchSetCode)
         {
             string[] Conditionals = SearchTerm.StringSplit("||");
             foreach (string Conditional in Conditionals)
@@ -49,24 +49,15 @@ namespace YGODatabase
 
                 if (SubTerm.StartsWith("!")) { inverse = true; SubTerm = SubTerm[1..]; }
                 List<string> MatchNames = new List<string>();
-                if (MatchDisplay)
-                {
-                    MatchNames.Add(DisplayText.ToLower());
-                    MatchNames.Add(DisplayText.CleanCardName());
-                    MatchNames.Add(DisplayText.CleanCardName(" "));
-                }
                 if (MatchCardName)
                 {
-                    MatchNames.Add(Card.name.ToLower());
-                    MatchNames.Add(Card.name.CleanCardName());
-                    MatchNames.Add(Card.name.CleanCardName(" "));
+                    MatchNames.AddRange(Card.SearchTags);
                 }
                 if (MatchSetCode)
                 {
                     foreach (YGOSetData data in Sets??Array.Empty<YGOSetData>())
                     {
-                        MatchNames.Add(data.set_code.ToLower());
-                        MatchNames.Add(data.set_code.CleanCardName());
+                        MatchNames.AddRange(data.SearchTags);
                     }
                 }
                 if (Perfect) { return MatchNames.Any(x => x == SubTerm.ToLower()) != inverse; }
