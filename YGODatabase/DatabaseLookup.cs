@@ -11,10 +11,11 @@ namespace YGODatabase
     public partial class MainInterface : Form
     {
         public YGOCardOBJ CurrentCard = null;
-        public InventoryManager inventoryManager = null;
+        public InventoryManager inventoryManager;
         public MainInterface()
         {
             InitializeComponent();
+            inventoryManager = new InventoryManager(this);
         }
 
         private void Form1_Shown(object sender, EventArgs e)
@@ -24,7 +25,7 @@ namespace YGODatabase
             numericUpDown1.Value = 0;
             YGODataManagement.ApplyDataBase(YGODataManagement.GetDataBase());
 
-            System.Diagnostics.Debug.WriteLine($"DataBase Loaded\n{YGODataManagement.MasterDataBase.data.Length} Cards Found\nLast Updated {YGODataManagement.MasterDataBase.LastDownload}");
+            Debug.WriteLine($"DataBase Loaded\n{YGODataManagement.MasterDataBase.data.Length} Cards Found\nLast Updated {YGODataManagement.MasterDataBase.LastDownload}");
 
             UpdateListBox();
         }
@@ -91,9 +92,12 @@ namespace YGODatabase
 
         private void inventoryManagerToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            inventoryManager ??= new InventoryManager(this);
-            inventoryManager.Show();
-            inventoryManager.Focus();
+            try
+            {
+                inventoryManager.Show();
+                inventoryManager.Focus();
+            }
+            catch { }
         }
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)

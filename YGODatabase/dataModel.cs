@@ -17,9 +17,9 @@ namespace YGODatabase
         }
         public class CardCollection
         {
-            public bool IsMainInventory { get; set; }
             public string Name { get; set; }
-            public Dictionary<string, InventoryDatabaseEntry> data { get; set; }
+            public Guid UUID { get; set; }
+            public Dictionary<Guid, InventoryDatabaseEntry> data { get; set; }
             public DateTime LastEdited { get; set; }
         }
         public class YGOCardOBJ
@@ -86,13 +86,16 @@ namespace YGODatabase
             public int Amount { get; set; }
             public YGOCardOBJ Card { get; set; }
             public YGOSetData Set { get; set; }
-            public string InventoryID { get; set; }
+            public Guid InventoryID { get; set; }
         }
         public class CardSearchResult
         {
             public string DisplayName { get; set; }
             public YGOCardOBJ Card { get; set; }
             public YGOSetData Set { get; set; }
+            public bool FilteringSet { get; set; }
+            public bool FilteringRarity { get; set; }
+
             public override string ToString()
             {
                 return DisplayName;

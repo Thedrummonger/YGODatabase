@@ -1,16 +1,11 @@
 ﻿using Microsoft.VisualBasic;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Bson;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.DirectoryServices.ActiveDirectory;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static YGODatabase.DataModel;
 
 namespace YGODatabase
@@ -19,15 +14,47 @@ namespace YGODatabase
     {
         MainInterface _DatabaseForm;
 
-        private string selectedCard = null;
+        private Guid selectedCard = Guid.Empty;
 
-        public static List<CardCollection> Collections = new List<CardCollection>();
-        public static int CurrentCollectionInd;
+        public List<CardCollection> Collections = new List<CardCollection>();
+        public int CurrentCollectionInd;
+
+        public Dictionary<Guid, string> DeckPathDictionary = new Dictionary<Guid, string>();
 
         public InventoryManager(MainInterface DatabaseForm)
         {
             _DatabaseForm = DatabaseForm;
+            LoadInventoryAndDecks();
             InitializeComponent();
+        }
+
+        private void LoadInventoryAndDecks()
+        {
+            var InventoryFile = YGODataManagement.GetInventoryFilePath();
+            var DeckFolder = YGODataManagement.GetDeckDirectoryPath();
+            CardCollection Inventory = null;
+            if (File.Exists(InventoryFile))
+            {
+                try { Inventory = JsonConvert.DeserializeObject<CardCollection>(File.ReadAllText(InventoryFile)); } catch { Inventory = null; }
+            }
+            if (Inventory == null)
+            {
+                Inventory = new CardCollection() { data = new Dictionary<Guid, InventoryDatabaseEntry>(), LastEdited = DateTime.Now, Name = "Inventory" };
+                File.WriteAllText(InventoryFile, JsonConvert.SerializeObject(Inventory, Formatting.Indented));
+            }
+            Collections.Add(Inventory);
+
+            if (!Directory.Exists(DeckFolder)) { Directory.CreateDirectory(DeckFolder); }
+            foreach(var i in Directory.GetFiles(DeckFolder))
+            {
+                try
+                {
+                    CardCollection Deck = JsonConvert.DeserializeObject<CardCollection>(File.ReadAllText(i));
+                    Collections.Add(Deck);
+                    DeckPathDictionary.Add(Deck.UUID, i);
+                } 
+                catch { Debug.WriteLine($"{Path.GetFileName(i)} Was not a valid deck"); }
+            }
         }
 
         #region Search Functions
@@ -45,13 +72,13 @@ namespace YGODatabase
                 return;
             }
 
-            Dictionary<string, string> results = new Dictionary<string, string>();
+            HashSet<string> results = new HashSet<string>();
             List<DataModel.CardSearchResult> Formattedresults = new List<DataModel.CardSearchResult>();
 
             foreach (var i in YGODataManagement.MasterDataBase.data)
             {
                 if (i.card_sets == null || !i.card_sets.Any()) { continue; }
-                foreach (var j in i.card_sets.OrderBy(x => x.GetRarityIndex()))
+                foreach (var j in i.card_sets)
                 {
                     string DisplayName = $"{i.name}";
                     if (chkShowRarity.Checked) { DisplayName += $" {j.GetRarityCode()}"; }
@@ -59,11 +86,11 @@ namespace YGODatabase
 
                     bool SearchValid = SearchParser.CardMatchesFilter(DisplayName, i, j, txtSearch.Text, NameSearch, CodeSearch);
 
-                    if (results.ContainsKey(DisplayName)) { continue; }
+                    if (results.Contains(DisplayName)) { continue; }
                     if (SearchValid)
                     {
-                        results[DisplayName] = j.set_code;
-                        Formattedresults.Add(new DataModel.CardSearchResult { DisplayName = DisplayName, Card = i, Set = j });
+                        results.Add(DisplayName);
+                        Formattedresults.Add(new DataModel.CardSearchResult { DisplayName = DisplayName, Card = i, Set = j, FilteringRarity = chkShowRarity.Checked, FilteringSet = chkShowSet.Checked });
                     }
                 }
             }
@@ -77,6 +104,10 @@ namespace YGODatabase
             if (NewPos < 0 || NewPos >= lbSearchResults.Items.Count) { return; }
             lbSearchResults.SelectedIndex = NewPos;
         }
+        private void lbSearchResults_DoubleClick(object sender, EventArgs e)
+        {
+            AddSelectedCard();
+        }
         private void AddSelectedCard()
         {
             if (lbSearchResults.SelectedIndex < 0) { return; }
@@ -86,13 +117,23 @@ namespace YGODatabase
 
             Debug.WriteLine($"Adding to collection {Collections[CurrentCollectionInd].Name}");
 
-            string UUID = Guid.NewGuid().ToString();
+            Guid UUID = Guid.NewGuid();
+
+            string? ForceSet = SelectedCard.FilteringSet ? SelectedCard.Set.set_code : null;
+            string? ForceRarity = SelectedCard.FilteringRarity ? SelectedCard.Set.set_rarity : null;
+            var BestSetMatch = SmartCardSetSelector.GetBestSetPrinting(SelectedCard.Card, Collections, CurrentCollectionInd, ForceSet, ForceRarity);
+
+            if (BestSetMatch == null) 
+            {
+                MessageBox.Show($"ERROR: selected card was invalid. This is a bug.\n\n{SelectedCard.Card.name} | {ForceSet??"Any Set"} | {ForceSet??"Any Rarity"}" );
+                return;
+            }
 
             Collections[CurrentCollectionInd].data.Add(UUID, new DataModel.InventoryDatabaseEntry
             {
                 cardID = SelectedCard.Card.id,
-                set_code = SelectedCard.Set.set_code,
-                set_rarity = SelectedCard.Set.set_rarity,
+                set_code = BestSetMatch.set_code,
+                set_rarity = BestSetMatch.set_rarity,
                 DateAdded = DateAndTime.Now,
                 LastUpdated= DateAndTime.Now
             });
@@ -119,7 +160,7 @@ namespace YGODatabase
             btnRemoveSelected.Enabled = true;
             BtnAddOneSelected.Enabled = true;
             numericUpDown1.Enabled = false;
-            if (selectedCard is null || !Collections[CurrentCollectionInd].data.ContainsKey(selectedCard))
+            if (selectedCard == Guid.Empty || !Collections[CurrentCollectionInd].data.ContainsKey(selectedCard))
             {
                 gbSelectedCard.Text = "N/A";
                 lblSelectedCard.Text = "N/A";
@@ -169,7 +210,7 @@ namespace YGODatabase
             string Set = (string)cmbSelectedCardSet.SelectedItem;
             string Condition = (string)cmbSelectedCardCondition.SelectedItem;
 
-            List<string> SelectedCards = new List<string>() { selectedCard };
+            List<Guid> SelectedCards = new List<Guid>() { selectedCard };
             SelectedCards.AddRange(Utility.GetIdenticalInventory(selectedCard, Collections[CurrentCollectionInd]).Select(x => x));
             for(var i = 0; i < numericUpDown1.Value; i++)
             {
@@ -181,7 +222,7 @@ namespace YGODatabase
 
         }
 
-        private void EditCard(string UUID, string NewRarity, string NewSetName, string NewCondition, bool EditingSet)
+        private void EditCard(Guid UUID, string NewRarity, string NewSetName, string NewCondition, bool EditingSet)
         {
             var InventoryObject = Collections[CurrentCollectionInd].data[UUID];
             var Card = Utility.GetCardByID(InventoryObject.cardID);
@@ -205,11 +246,11 @@ namespace YGODatabase
 
         private void btnRemoveSelected_Click(object sender, EventArgs e)
         {
-            List<string> SelectedCards = Utility.GetIdenticalInventory(selectedCard, Collections[CurrentCollectionInd]).ToList();
+            List<Guid> SelectedCards = Utility.GetIdenticalInventory(selectedCard, Collections[CurrentCollectionInd]).ToList();
             if (numericUpDown1.Value > SelectedCards.Count)
             {
                 SelectedCards.Add(selectedCard);
-                selectedCard = null;
+                selectedCard = Guid.Empty;
             }
             for (var i = 0; i < numericUpDown1.Value; i++)
             {
@@ -222,7 +263,7 @@ namespace YGODatabase
 
         private void btnAddOneSelected_Click(object sender, EventArgs e)
         {
-            string UUID = Guid.NewGuid().ToString();
+            Guid UUID = Guid.NewGuid();
 
             var CurrentCard = Collections[CurrentCollectionInd].data[selectedCard];
 
@@ -243,31 +284,9 @@ namespace YGODatabase
 
         #endregion Selected Item
 
-        private void LoadCollection(int Index)
-        {
-            CurrentCollectionInd = Index;
-            btnDeleteCollection.Enabled = !Collections[Index].IsMainInventory;
-            selectedCard = null;
-            txtSearch.Text = string.Empty;
-            pictureBox1.Image= null;
-            PrintSelectedCard("N/A");
-            PrintInventory();
-        }
-
-        private void UpdateCollectionsList()
-        {
-            comboBox1.Items.Clear();
-            foreach (CardCollection c in Collections)
-            {
-                comboBox1.Items.Add(c.Name);
-            }
-        }
-
         #region FormFunctions
         private void InventoryManager_Load(object sender, EventArgs e)
         {
-            Collections.Add(new CardCollection { IsMainInventory = true, data = YGODataManagement.Inventory, Name = "Inventory" });
-            //Collections.Add(new CardCollection { IsMainInventory = false, data = new Dictionary<string, InventoryDatabaseEntry>(), Name = "Test Deck" });
             CurrentCollectionInd = 0;
             cmbFilterBy.SelectedIndex = 0;
             cmbOrderBy.SelectedIndex = 0;
@@ -275,13 +294,11 @@ namespace YGODatabase
             UpdateCollectionsList();
             comboBox1.SelectedIndex = 0;
         }
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            LoadCollection(comboBox1.SelectedIndex);
-        }
         private void InventoryManager_FormClosing(object sender, FormClosingEventArgs e)
         {
-            _DatabaseForm.inventoryManager = null;
+            e.Cancel = true;
+            this.Hide();
+            SaveData();
         }
         private void CaptureKeyPress(object sender, KeyEventArgs e)
         {
@@ -307,14 +324,36 @@ namespace YGODatabase
                 e.IsInputKey = true;
             }
         }
-        private void lbSearchResults_DoubleClick(object sender, EventArgs e)
+        private void HighlightCard(object sender, EventArgs e)
         {
-            AddSelectedCard();
+            int ImageIndex = 0;
+            DataModel.YGOCardOBJ Card;
+            if (sender == lbSearchResults && lbSearchResults.SelectedItem is DataModel.CardSearchResult SearchSelectedCard)
+            {
+                Card = SearchSelectedCard.Card;
+            }
+            else if (sender == listView1 && listView1.SelectedItems.Count > 0 && listView1.SelectedItems[0].Tag is DataModel.InventoryObject InventorySelectedCard)
+            {
+                Card = InventorySelectedCard.Card;
+            }
+            else
+            {
+                return;
+            }
+            UpdatepictureBox(Card, ImageIndex);
+        }
+        private async void UpdatepictureBox(DataModel.YGOCardOBJ card, int ImageIndex)
+        {
+            await Task.Run(() => pictureBox1.Image = YGODataManagement.GetImage(card, ImageIndex));
         }
 
         #endregion FormFunctions
 
         #region Inventory Display
+        private void cmbOrderBy_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            PrintInventory();
+        }
         private void PrintInventory()
         {
             Debug.WriteLine($"Printing {Collections[CurrentCollectionInd].Name}");
@@ -386,10 +425,128 @@ namespace YGODatabase
             selectedCard = Data.InventoryID;
             PrintSelectedCard("Selected Card");
         }
+        private void btnImportCards_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog1 = new OpenFileDialog
+            {
+                Title = "Select YDK File",
+                DefaultExt = "ydk",
+                Filter = "ydk files (*.ydk)|*.ydk"
+            };
+            if (openFileDialog1.ShowDialog() != DialogResult.OK) { return; }
+
+            AddYDKToCollection(Collections[CurrentCollectionInd], File.ReadAllLines(openFileDialog1.FileName));
+
+            LoadCollection(CurrentCollectionInd);
+        }
 
         #endregion Inventory Display
 
-        int GetDropDownWidth(ComboBox myCombo)
+        #region Collection Management
+
+        private void LoadCollection(int Index)
+        {
+            CurrentCollectionInd = Index;
+            btnDeleteCollection.Enabled = Index != 0;
+            selectedCard = Guid.Empty;
+            txtSearch.Text = string.Empty;
+            pictureBox1.Image= null;
+            PrintSelectedCard("N/A");
+            PrintInventory();
+        }
+        private void UpdateCollectionsList()
+        {
+            comboBox1.Items.Clear();
+            foreach (CardCollection c in Collections)
+            {
+                comboBox1.Items.Add(c.Name);
+            }
+        }
+        private void ComboBox_DropDown(object sender, EventArgs e)
+        {
+            if (sender is not System.Windows.Forms.ComboBox cmb) { return; }
+            cmb.DropDownWidth = GetDropDownWidth(cmb);
+        }
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            LoadCollection(comboBox1.SelectedIndex);
+        }
+        private void BTNImportCollection_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog1 = new OpenFileDialog
+            {
+                Title = "Select YDK File",
+                DefaultExt = "ydk",
+                Filter = "ydk files (*.ydk)|*.ydk"
+            };
+            if (openFileDialog1.ShowDialog() != DialogResult.OK) { return; }
+
+            string DeckName = Path.GetFileNameWithoutExtension(openFileDialog1.FileName);
+
+            var YDKCollection = new CardCollection { UUID = Guid.NewGuid(), data = new Dictionary<Guid, InventoryDatabaseEntry>(), Name = DeckName, LastEdited = DateTime.Now };
+
+            AddYDKToCollection(YDKCollection, File.ReadAllLines(openFileDialog1.FileName));
+
+            Collections.Add(YDKCollection);
+            UpdateCollectionsList();
+            comboBox1.SelectedIndex = comboBox1.Items.Count - 1;
+        }
+        private void btnAddCollection_Click(object sender, EventArgs e)
+        {
+            string input = Interaction.InputBox("Enter Deck Name", "Add New Deck", "", 0, 0);
+            if (string.IsNullOrWhiteSpace(input)) { return; }
+            Collections.Add(new CardCollection { UUID = Guid.NewGuid(), data = new Dictionary<Guid, InventoryDatabaseEntry>(), Name =  input, LastEdited = DateTime.Now });
+            UpdateCollectionsList();
+            comboBox1.SelectedIndex = comboBox1.Items.Count - 1;
+        }
+
+        private void btnDeleteCollection_Click(object sender, EventArgs e)
+        {
+            if (comboBox1.SelectedIndex < 1) { return; }
+            DialogResult Confirm = DialogResult.OK;
+            if (Control.ModifierKeys != Keys.Shift)
+            {
+                Confirm = MessageBox.Show($"Are you sure you want to delete deck [{Collections[comboBox1.SelectedIndex].Name}]?\n\nHold shift to skip this pormpt", "Confirm Delete", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+            }
+            if (Confirm != DialogResult.OK) { return; }
+
+            var UUID = Collections[comboBox1.SelectedIndex].UUID;
+
+            Collections.Remove(Collections[comboBox1.SelectedIndex]);
+            UpdateCollectionsList();
+            comboBox1.SelectedIndex = 0;
+
+            if (DeckPathDictionary.ContainsKey(UUID) && File.Exists(DeckPathDictionary[UUID]))
+            {
+                File.Delete(DeckPathDictionary[UUID]);
+            }
+        }
+        private void AddYDKToCollection(CardCollection Collection, string[] YDKContent)
+        {
+            foreach (var line in YDKContent)
+            {
+                if (!int.TryParse(line.Trim(), out int CardIndex)) { Debug.WriteLine($"Line Invalid {line}"); continue; }
+
+                var card = Utility.GetCardByID(CardIndex);
+                if (card == null) { Debug.WriteLine($"{CardIndex} not valid"); continue; }
+
+                var DefaultCard = SmartCardSetSelector.GetBestSetPrinting(card, Collections, CurrentCollectionInd);
+
+                Guid UUID = Guid.NewGuid();
+                Collection.data.Add(UUID, new DataModel.InventoryDatabaseEntry
+                {
+                    cardID = card.id,
+                    set_code = DefaultCard.set_code,
+                    set_rarity = DefaultCard.set_rarity,
+                    DateAdded = DateAndTime.Now,
+                    LastUpdated= DateAndTime.Now
+                });
+            }
+        }
+
+        #endregion Collection Management
+
+        int GetDropDownWidth(System.Windows.Forms.ComboBox myCombo)
         {
             int maxWidth = 0, temp = 0;
             foreach (var obj in myCombo.Items)
@@ -403,55 +560,33 @@ namespace YGODatabase
             return maxWidth + SystemInformation.VerticalScrollBarWidth;
         }
 
-        private void ComboBox_DropDown(object sender, EventArgs e)
+        public void SaveData()
         {
-            if (sender is not ComboBox cmb) { return; }
-            cmb.DropDownWidth = GetDropDownWidth(cmb);
-        }
-
-        private void cmbOrderBy_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            PrintInventory();
-        }
-
-        private void HighlightCard(object sender, EventArgs e)
-        {
-            int ImageIndex = 0;
-            DataModel.YGOCardOBJ Card;
-            if (sender == lbSearchResults && lbSearchResults.SelectedItem is DataModel.CardSearchResult SearchSelectedCard) 
+            File.WriteAllText(YGODataManagement.GetInventoryFilePath(), JsonConvert.SerializeObject(Collections[0]));
+            foreach (var i in Collections)
             {
-                Card = SearchSelectedCard.Card;
-            }
-            else if (sender == listView1 && listView1.SelectedItems.Count > 0 && listView1.SelectedItems[0].Tag is DataModel.InventoryObject InventorySelectedCard)
-            {
-                Card = InventorySelectedCard.Card;
-            }
-            else
-            {
-                return;
-            }
-            UpdatepictureBox(Card, ImageIndex);
-        }
+                if (i.UUID == null || i.UUID == Guid.Empty) { continue; }
+                if (!DeckPathDictionary.ContainsKey(i.UUID))
+                {
+                    string DeckDir = YGODataManagement.GetDeckDirectoryPath();
+                    string FileName = i.Name;
+                    int UniqueID = 0;
 
-        private async void UpdatepictureBox(DataModel.YGOCardOBJ card, int ImageIndex)
-        {
-            await Task.Run(() => pictureBox1.Image = YGODataManagement.GetImage(card, ImageIndex));
-        }
+                    while(Directory.GetFiles(DeckDir).Contains(BuildFileName(FileName, UniqueID, DeckDir)))
+                    {
+                        UniqueID++;
+                    }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            foreach(var i in Collections)
-            {
-                Debug.WriteLine(JsonConvert.SerializeObject(i, Formatting.Indented));
+                    DeckPathDictionary[i.UUID] = BuildFileName(FileName, UniqueID, DeckDir);
+                }
+                File.WriteAllText(DeckPathDictionary[i.UUID], JsonConvert.SerializeObject(i));
             }
-        }
 
-        private void btnAddCollection_Click(object sender, EventArgs e)
-        {
-            string input = Interaction.InputBox("Enter Deck Name", "Add New Deck", "", 0, 0);
-            Collections.Add(new CardCollection { IsMainInventory = false, data = new Dictionary<string, InventoryDatabaseEntry>(), Name =  input, LastEdited = DateTime.Now });
-            UpdateCollectionsList();
-            comboBox1.SelectedIndex = comboBox1.Items.Count - 1;
+            string BuildFileName(string File, int ID, string Dir)
+            {
+                string Name = File + (ID < 1 ? "" : ID.ToString());
+                return Path.Combine(Dir, Name);
+            }
         }
     }
 }

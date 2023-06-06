@@ -24,10 +24,18 @@ namespace YGODatabase
         {
             return Path.Combine(GetAppDataPath(), "Images");
         }
+        public static string GetInventoryFilePath()
+        {
+            return Path.Combine(GetAppDataPath(), "Inventory.json");
+        }
+        public static string GetDeckDirectoryPath()
+        {
+            return Path.Combine(GetAppDataPath(), "Decks");
+        }
         public static DataModel.YGOData DownloadData()
         {
-            System.Diagnostics.Debug.WriteLine("Downloading YGOPro Data....");
-            System.Net.WebClient wc = new System.Net.WebClient();
+            Debug.WriteLine("Downloading YGOPro Data....");
+            WebClient wc = new System.Net.WebClient();
             string webData = wc.DownloadString("https://db.ygoprodeck.com/api/v7/cardinfo.php");
             try
             {

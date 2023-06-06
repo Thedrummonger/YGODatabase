@@ -68,6 +68,7 @@ namespace YGODatabase
 
         public static YGOCardOBJ GetCardByID(int ID)
         {
+            if (!YGODataManagement.IDLookup.ContainsKey(ID)) { return null; }
             return YGODataManagement.MasterDataBase.data[YGODataManagement.IDLookup[ID]];
         }
         public static YGOSetData GetExactCard(int CardID, string SetCode, string Rarity)
@@ -115,16 +116,16 @@ namespace YGODatabase
             return s1;
         }
 
-        public static string[] GetIdenticalInventory(string InventoryUUID, CardCollection CurrentCollction)
+        public static Guid[] GetIdenticalInventory(Guid InventoryUUID, CardCollection CurrentCollction)
         {
             var Target = CurrentCollction.data[InventoryUUID];
-            string[] IdenticalEntries = CurrentCollction.data.Where(x => 
+            Guid[] IdenticalEntries = CurrentCollction.data.Where(x => 
                 x.Key != InventoryUUID &&
                 x.Value.set_rarity == Target.set_rarity &&
                 x.Value.set_code == Target.set_code &&
                 x.Value.Condition == Target.Condition
             ).ToDictionary(x =>x.Key, x=>x.Value).Keys.ToArray();
-            return IdenticalEntries??Array.Empty<string>();
+            return IdenticalEntries??Array.Empty<Guid>();
         }
 
         public static ListViewItem CreateListViewItem(object Tag, string[] Columns)
@@ -140,27 +141,25 @@ namespace YGODatabase
             Font font;
             Graphics g;
             int width;
-            if (containerObject is ListView LVcontainer)
+            switch (containerObject)
             {
-                font = LVcontainer.Font;
-                width = LVcontainer.Width - (LVcontainer.CheckBoxes ? 45 : 0);
-                g = LVcontainer.CreateGraphics();
-            }
-            else if (containerObject is ListBox LBcontainer)
-            {
-                font = LBcontainer.Font;
-                width = LBcontainer.Width;
-                g = LBcontainer.CreateGraphics();
-            }
-            else if (containerObject is ComboBox cmb)
-            {
-                font = cmb.Font;
-                width = cmb.Width;
-                g = cmb.CreateGraphics();
-            }
-            else
-            {
-                return new DataModel.Divider { Display = DividerText };
+                case ListView LVcontainer:
+                    font = LVcontainer.Font;
+                    width = LVcontainer.Width - (LVcontainer.CheckBoxes ? 45 : 0);
+                    g = LVcontainer.CreateGraphics();
+                    break;
+                case ListBox LBcontainer:
+                    font = LBcontainer.Font;
+                    width = LBcontainer.Width;
+                    g = LBcontainer.CreateGraphics();
+                    break;
+                case ComboBox cmb:
+                    font = cmb.Font;
+                    width = cmb.Width;
+                    g = cmb.CreateGraphics();
+                    break;
+                default:
+                    return new Divider { Display = DividerText };
             }
 
             string Divider = DividerText;

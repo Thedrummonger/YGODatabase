@@ -53,21 +53,25 @@
             this.label3 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btnRenameCollection = new System.Windows.Forms.Button();
+            this.BTNImportCollection = new System.Windows.Forms.Button();
             this.btnDeleteCollection = new System.Windows.Forms.Button();
             this.btnAddCollection = new System.Windows.Forms.Button();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.btnImportCards = new System.Windows.Forms.Button();
+            this.BGSearchAdd = new System.Windows.Forms.GroupBox();
             this.gbSelectedCard.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBox1.SuspendLayout();
+            this.BGSearchAdd.SuspendLayout();
             this.SuspendLayout();
             // 
             // txtSearch
             // 
-            this.txtSearch.Location = new System.Drawing.Point(12, 130);
+            this.txtSearch.Location = new System.Drawing.Point(6, 73);
             this.txtSearch.Name = "txtSearch";
-            this.txtSearch.Size = new System.Drawing.Size(162, 23);
+            this.txtSearch.Size = new System.Drawing.Size(152, 23);
             this.txtSearch.TabIndex = 0;
             this.txtSearch.TextChanged += new System.EventHandler(this.UpdateSearchResults);
             this.txtSearch.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.CaptureTabPress);
@@ -88,7 +92,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 67);
+            this.label1.Location = new System.Drawing.Point(6, 19);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(58, 15);
             this.label1.TabIndex = 2;
@@ -101,9 +105,9 @@
             "Card Name",
             "Set Code",
             "Both"});
-            this.cmbFilterBy.Location = new System.Drawing.Point(76, 64);
+            this.cmbFilterBy.Location = new System.Drawing.Point(63, 16);
             this.cmbFilterBy.Name = "cmbFilterBy";
-            this.cmbFilterBy.Size = new System.Drawing.Size(98, 23);
+            this.cmbFilterBy.Size = new System.Drawing.Size(93, 23);
             this.cmbFilterBy.TabIndex = 3;
             this.cmbFilterBy.SelectedIndexChanged += new System.EventHandler(this.UpdateSearchResults);
             // 
@@ -202,9 +206,10 @@
             // chkShowSet
             // 
             this.chkShowSet.AutoSize = true;
-            this.chkShowSet.Location = new System.Drawing.Point(12, 101);
+            this.chkShowSet.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.chkShowSet.Location = new System.Drawing.Point(6, 53);
             this.chkShowSet.Name = "chkShowSet";
-            this.chkShowSet.Size = new System.Drawing.Size(74, 19);
+            this.chkShowSet.Size = new System.Drawing.Size(74, 17);
             this.chkShowSet.TabIndex = 7;
             this.chkShowSet.Text = "Show Set";
             this.chkShowSet.UseVisualStyleBackColor = true;
@@ -213,9 +218,10 @@
             // chkShowRarity
             // 
             this.chkShowRarity.AutoSize = true;
-            this.chkShowRarity.Location = new System.Drawing.Point(86, 101);
+            this.chkShowRarity.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.chkShowRarity.Location = new System.Drawing.Point(6, 37);
             this.chkShowRarity.Name = "chkShowRarity";
-            this.chkShowRarity.Size = new System.Drawing.Size(88, 19);
+            this.chkShowRarity.Size = new System.Drawing.Size(87, 17);
             this.chkShowRarity.TabIndex = 8;
             this.chkShowRarity.Text = "Show Rarity";
             this.chkShowRarity.UseVisualStyleBackColor = true;
@@ -300,7 +306,8 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.button1);
+            this.groupBox1.Controls.Add(this.btnRenameCollection);
+            this.groupBox1.Controls.Add(this.BTNImportCollection);
             this.groupBox1.Controls.Add(this.btnDeleteCollection);
             this.groupBox1.Controls.Add(this.btnAddCollection);
             this.groupBox1.Controls.Add(this.comboBox1);
@@ -311,32 +318,42 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Current Deck:";
             // 
-            // button1
+            // btnRenameCollection
             // 
-            this.button1.Location = new System.Drawing.Point(479, 16);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 3;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.btnRenameCollection.Location = new System.Drawing.Point(353, 16);
+            this.btnRenameCollection.Name = "btnRenameCollection";
+            this.btnRenameCollection.Size = new System.Drawing.Size(75, 23);
+            this.btnRenameCollection.TabIndex = 4;
+            this.btnRenameCollection.Text = "Rename";
+            this.btnRenameCollection.UseVisualStyleBackColor = true;
+            // 
+            // BTNImportCollection
+            // 
+            this.BTNImportCollection.Location = new System.Drawing.Point(433, 16);
+            this.BTNImportCollection.Name = "BTNImportCollection";
+            this.BTNImportCollection.Size = new System.Drawing.Size(135, 23);
+            this.BTNImportCollection.TabIndex = 3;
+            this.BTNImportCollection.Text = "Import YDK Collection";
+            this.BTNImportCollection.UseVisualStyleBackColor = true;
+            this.BTNImportCollection.Click += new System.EventHandler(this.BTNImportCollection_Click);
             // 
             // btnDeleteCollection
             // 
-            this.btnDeleteCollection.Location = new System.Drawing.Point(308, 16);
+            this.btnDeleteCollection.Location = new System.Drawing.Point(282, 16);
             this.btnDeleteCollection.Name = "btnDeleteCollection";
-            this.btnDeleteCollection.Size = new System.Drawing.Size(106, 23);
+            this.btnDeleteCollection.Size = new System.Drawing.Size(65, 23);
             this.btnDeleteCollection.TabIndex = 2;
-            this.btnDeleteCollection.Text = "Delete Collection";
+            this.btnDeleteCollection.Text = "Delete";
             this.btnDeleteCollection.UseVisualStyleBackColor = true;
+            this.btnDeleteCollection.Click += new System.EventHandler(this.btnDeleteCollection_Click);
             // 
             // btnAddCollection
             // 
             this.btnAddCollection.Location = new System.Drawing.Point(168, 16);
             this.btnAddCollection.Name = "btnAddCollection";
-            this.btnAddCollection.Size = new System.Drawing.Size(134, 23);
+            this.btnAddCollection.Size = new System.Drawing.Size(108, 23);
             this.btnAddCollection.TabIndex = 1;
-            this.btnAddCollection.Text = "Add New Collection";
+            this.btnAddCollection.Text = "New Collection";
             this.btnAddCollection.UseVisualStyleBackColor = true;
             this.btnAddCollection.Click += new System.EventHandler(this.btnAddCollection_Click);
             // 
@@ -349,24 +366,45 @@
             this.comboBox1.TabIndex = 0;
             this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
+            // btnImportCards
+            // 
+            this.btnImportCards.Location = new System.Drawing.Point(75, 296);
+            this.btnImportCards.Name = "btnImportCards";
+            this.btnImportCards.Size = new System.Drawing.Size(148, 23);
+            this.btnImportCards.TabIndex = 14;
+            this.btnImportCards.Text = "Add Cards From YDK File";
+            this.btnImportCards.UseVisualStyleBackColor = true;
+            this.btnImportCards.Click += new System.EventHandler(this.btnImportCards_Click);
+            // 
+            // BGSearchAdd
+            // 
+            this.BGSearchAdd.Controls.Add(this.cmbFilterBy);
+            this.BGSearchAdd.Controls.Add(this.label1);
+            this.BGSearchAdd.Controls.Add(this.chkShowRarity);
+            this.BGSearchAdd.Controls.Add(this.chkShowSet);
+            this.BGSearchAdd.Controls.Add(this.txtSearch);
+            this.BGSearchAdd.Location = new System.Drawing.Point(12, 58);
+            this.BGSearchAdd.Name = "BGSearchAdd";
+            this.BGSearchAdd.Size = new System.Drawing.Size(162, 102);
+            this.BGSearchAdd.TabIndex = 15;
+            this.BGSearchAdd.TabStop = false;
+            this.BGSearchAdd.Text = "Card Search";
+            // 
             // InventoryManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(598, 606);
+            this.Controls.Add(this.BGSearchAdd);
+            this.Controls.Add(this.btnImportCards);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.cmbOrderBy);
             this.Controls.Add(this.listView1);
-            this.Controls.Add(this.chkShowRarity);
-            this.Controls.Add(this.chkShowSet);
             this.Controls.Add(this.gbSelectedCard);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.cmbFilterBy);
-            this.Controls.Add(this.label1);
             this.Controls.Add(this.lbSearchResults);
-            this.Controls.Add(this.txtSearch);
             this.KeyPreview = true;
             this.Name = "InventoryManager";
             this.Text = "InventoryManager";
@@ -378,6 +416,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.groupBox1.ResumeLayout(false);
+            this.BGSearchAdd.ResumeLayout(false);
+            this.BGSearchAdd.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -413,6 +453,9 @@
         private Button btnDeleteCollection;
         private Button btnAddCollection;
         private ComboBox comboBox1;
-        private Button button1;
+        private Button BTNImportCollection;
+        private Button btnRenameCollection;
+        private Button btnImportCards;
+        private GroupBox BGSearchAdd;
     }
 }
