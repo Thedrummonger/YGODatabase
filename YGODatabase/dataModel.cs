@@ -18,6 +18,7 @@ namespace YGODatabase
         public class CardCollection
         {
             public string Name { get; set; }
+            public bool PaperCollection { get; set; } = true;
             public Guid UUID { get; set; }
             public Dictionary<Guid, InventoryDatabaseEntry> data { get; set; }
             public DateTime LastEdited { get; set; }

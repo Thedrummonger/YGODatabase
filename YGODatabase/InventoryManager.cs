@@ -90,6 +90,7 @@ namespace YGODatabase
                     if (SearchValid)
                     {
                         results.Add(DisplayName);
+                        if (CodeSearch) { DisplayName = $"({j.set_code}) {DisplayName}"; }
                         Formattedresults.Add(new DataModel.CardSearchResult { DisplayName = DisplayName, Card = i, Set = j, FilteringRarity = chkShowRarity.Checked, FilteringSet = chkShowSet.Checked });
                     }
                 }
@@ -452,16 +453,21 @@ namespace YGODatabase
 
         #region Collection Management
 
+        bool Collectionloading = false;
         private void LoadCollection(int Index)
         {
+            Collectionloading = true;
             CurrentCollectionInd = Index;
             btnDeleteCollection.Enabled = Index != 0;
             btnRenameCollection.Enabled = Index != 0;
+            chkPaperCollection.Enabled = Index != 0;
+            chkPaperCollection.Checked = Collections[Index].PaperCollection;
             selectedCard = Guid.Empty;
             txtSearch.Text = string.Empty;
             pictureBox1.Image= null;
             PrintSelectedCard("N/A");
             PrintInventory();
+            Collectionloading = false;
         }
         private void UpdateCollectionsList()
         {
@@ -593,6 +599,12 @@ namespace YGODatabase
                 DeckPathDictionary[Collection.UUID] = Utility.CreateUniqueFilename(Collection.Name, YGODataManagement.GetDeckDirectoryPath());
             }
             File.WriteAllText(DeckPathDictionary[Collection.UUID], JsonConvert.SerializeObject(Collection));
+        }
+
+        private void chkPaperCollection_CheckedChanged(object sender, EventArgs e)
+        {
+            if (Collectionloading) { return; }
+            Collections[CurrentCollectionInd].PaperCollection = chkPaperCollection.Checked;
         }
     }
 }

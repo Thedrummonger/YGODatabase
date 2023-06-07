@@ -29,7 +29,7 @@ namespace YGODatabase
             {
                 foreach(var i in ValidPrintings)
                 {
-                    int AmountAvailable = GetAmountOfCardAvailable(Card, Collections, Array.Empty<int>(), i.set_code, i.set_rarity);
+                    int AmountAvailable = GetAmountOfCardAvailable(Card, Collections, Array.Empty<int>(), i.set_code, i.set_rarity, true);
                     if (AmountAvailable > 0) { AvailableValidPrintings.Add(i); }
                 }
             }
@@ -49,15 +49,15 @@ namespace YGODatabase
             ).Select(x => x.Key);
         }
 
-        public static int GetAmountOfCardInOtherDecks(YGOCardOBJ Card, List<CardCollection> Collections, int IgnoreCollection, string? FilerSet = null, string? FilerRarity = null)
+        public static int GetAmountOfCardInOtherDecks(YGOCardOBJ Card, List<CardCollection> Collections, int IgnoreCollection, string? FilerSet = null, string? FilerRarity = null, bool PaperOnly = false)
         {
-            return GetAmountOfCardInOtherDecks(Card, Collections, new int[] { IgnoreCollection }, FilerSet, FilerRarity);
+            return GetAmountOfCardInOtherDecks(Card, Collections, new int[] { IgnoreCollection }, FilerSet, FilerRarity, PaperOnly);
         }
-        public static int GetAmountOfCardInOtherDecks(YGOCardOBJ Card, List<CardCollection> Collections, int[] IgnoreCollection, string? FilerSet = null, string? FilerRarity = null)
+        public static int GetAmountOfCardInOtherDecks(YGOCardOBJ Card, List<CardCollection> Collections, int[] IgnoreCollection, string? FilerSet = null, string? FilerRarity = null, bool PaperOnly = false)
         {
             int CardsInOtherDecks = 0;
             int CollectionIndex = -1;
-            foreach (var collection in Collections)
+            foreach (var collection in Collections.Where(x => x.PaperCollection || !PaperOnly))
             {
                 CollectionIndex++;
                 if (CollectionIndex == 0 ||  IgnoreCollection.Contains(CollectionIndex)) { continue; }
@@ -67,14 +67,14 @@ namespace YGODatabase
             return CardsInOtherDecks;
         }
 
-        public static int GetAmountOfCardAvailable(YGOCardOBJ Card, List<CardCollection> Collections, int IgnoreCollection, string? FilerSet = null, string? FilerRarity = null)
+        public static int GetAmountOfCardAvailable(YGOCardOBJ Card, List<CardCollection> Collections, int IgnoreCollection, string? FilerSet = null, string? FilerRarity = null, bool IgnoreNonPape = true)
         {
-            return GetAmountOfCardAvailable(Card, Collections, new int[] { IgnoreCollection }, FilerSet, FilerRarity);
+            return GetAmountOfCardAvailable(Card, Collections, new int[] { IgnoreCollection }, FilerSet, FilerRarity, IgnoreNonPape);
         }
-        public static int GetAmountOfCardAvailable(YGOCardOBJ Card, List<CardCollection> Collections, int[] IgnoreCollection, string? FilerSet = null, string? FilerRarity = null)
+        public static int GetAmountOfCardAvailable(YGOCardOBJ Card, List<CardCollection> Collections, int[] IgnoreCollection, string? FilerSet = null, string? FilerRarity = null, bool IgnoreNonPape = true)
         {
             int InInventory = GetCardsFromInventory(Card, Collections[0], FilerSet, FilerRarity).Count();
-            int InOtherDecks = GetAmountOfCardInOtherDecks(Card, Collections, IgnoreCollection, FilerSet, FilerRarity);
+            int InOtherDecks = GetAmountOfCardInOtherDecks(Card, Collections, IgnoreCollection, FilerSet, FilerRarity, IgnoreNonPape);
             int AmountAvailable = InInventory - InOtherDecks;
             return AmountAvailable;
         }

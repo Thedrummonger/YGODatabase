@@ -60,6 +60,7 @@
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.btnImportCards = new System.Windows.Forms.Button();
             this.BGSearchAdd = new System.Windows.Forms.GroupBox();
+            this.chkPaperCollection = new System.Windows.Forms.CheckBox();
             this.gbSelectedCard.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -83,7 +84,7 @@
             this.lbSearchResults.ItemHeight = 15;
             this.lbSearchResults.Location = new System.Drawing.Point(12, 166);
             this.lbSearchResults.Name = "lbSearchResults";
-            this.lbSearchResults.Size = new System.Drawing.Size(384, 124);
+            this.lbSearchResults.Size = new System.Drawing.Size(384, 139);
             this.lbSearchResults.TabIndex = 1;
             this.lbSearchResults.SelectedIndexChanged += new System.EventHandler(this.HighlightCard);
             this.lbSearchResults.DoubleClick += new System.EventHandler(this.lbSearchResults_DoubleClick);
@@ -114,7 +115,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 303);
+            this.label2.Location = new System.Drawing.Point(12, 318);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(57, 15);
             this.label2.TabIndex = 5;
@@ -236,7 +237,7 @@
             this.Rarity,
             this.Condition});
             this.listView1.FullRowSelect = true;
-            this.listView1.Location = new System.Drawing.Point(12, 321);
+            this.listView1.Location = new System.Drawing.Point(12, 336);
             this.listView1.Name = "listView1";
             this.listView1.Size = new System.Drawing.Size(574, 273);
             this.listView1.TabIndex = 9;
@@ -280,7 +281,7 @@
             "Condition",
             "Date Added",
             "Date Modified"});
-            this.cmbOrderBy.Location = new System.Drawing.Point(294, 296);
+            this.cmbOrderBy.Location = new System.Drawing.Point(294, 311);
             this.cmbOrderBy.Name = "cmbOrderBy";
             this.cmbOrderBy.Size = new System.Drawing.Size(102, 23);
             this.cmbOrderBy.TabIndex = 10;
@@ -289,7 +290,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(235, 303);
+            this.label3.Location = new System.Drawing.Point(235, 318);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(53, 15);
             this.label3.TabIndex = 11;
@@ -368,7 +369,7 @@
             // 
             // btnImportCards
             // 
-            this.btnImportCards.Location = new System.Drawing.Point(75, 296);
+            this.btnImportCards.Location = new System.Drawing.Point(75, 311);
             this.btnImportCards.Name = "btnImportCards";
             this.btnImportCards.Size = new System.Drawing.Size(148, 23);
             this.btnImportCards.TabIndex = 14;
@@ -390,11 +391,23 @@
             this.BGSearchAdd.TabStop = false;
             this.BGSearchAdd.Text = "Card Search";
             // 
+            // chkPaperCollection
+            // 
+            this.chkPaperCollection.AutoSize = true;
+            this.chkPaperCollection.Location = new System.Drawing.Point(462, 317);
+            this.chkPaperCollection.Name = "chkPaperCollection";
+            this.chkPaperCollection.Size = new System.Drawing.Size(124, 19);
+            this.chkPaperCollection.TabIndex = 16;
+            this.chkPaperCollection.Text = "Is Paper Collection";
+            this.chkPaperCollection.UseVisualStyleBackColor = true;
+            this.chkPaperCollection.CheckedChanged += new System.EventHandler(this.chkPaperCollection_CheckedChanged);
+            // 
             // InventoryManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(598, 606);
+            this.ClientSize = new System.Drawing.Size(598, 672);
+            this.Controls.Add(this.chkPaperCollection);
             this.Controls.Add(this.BGSearchAdd);
             this.Controls.Add(this.btnImportCards);
             this.Controls.Add(this.groupBox1);
@@ -457,5 +470,6 @@
         private Button btnRenameCollection;
         private Button btnImportCards;
         private GroupBox BGSearchAdd;
+        private CheckBox chkPaperCollection;
     }
 }
