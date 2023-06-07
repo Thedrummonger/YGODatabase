@@ -138,6 +138,8 @@ namespace YGODatabase
                 LastUpdated= DateAndTime.Now
             });
 
+            SaveCollection(Collections[CurrentCollectionInd]);
+
             selectedCard = UUID;
             PrintSelectedCard("Last Added Card");
 
@@ -217,6 +219,8 @@ namespace YGODatabase
                 EditCard(SelectedCards[i], Rarity, Set, Condition, sender == cmbSelectedCardSet);
             }
 
+            SaveCollection(Collections[CurrentCollectionInd]);
+
             PrintSelectedCard(gbSelectedCard.Text, (int)numericUpDown1.Value);
             PrintInventory();
 
@@ -257,6 +261,8 @@ namespace YGODatabase
                 Collections[CurrentCollectionInd].data.Remove(SelectedCards[i]);
             }
 
+            SaveCollection(Collections[CurrentCollectionInd]);
+
             PrintSelectedCard(gbSelectedCard.Text);
             PrintInventory();
         }
@@ -275,6 +281,8 @@ namespace YGODatabase
                 DateAdded = DateAndTime.Now,
                 LastUpdated= DateAndTime.Now
             });
+
+            SaveCollection(Collections[CurrentCollectionInd]);
 
             selectedCard = UUID;
             PrintSelectedCard("Last Added Card");
@@ -448,6 +456,7 @@ namespace YGODatabase
         {
             CurrentCollectionInd = Index;
             btnDeleteCollection.Enabled = Index != 0;
+            btnRenameCollection.Enabled = Index != 0;
             selectedCard = Guid.Empty;
             txtSearch.Text = string.Empty;
             pictureBox1.Image= null;
@@ -542,6 +551,7 @@ namespace YGODatabase
                     LastUpdated= DateAndTime.Now
                 });
             }
+            SaveCollection(Collection);
         }
 
         #endregion Collection Management
@@ -562,31 +572,27 @@ namespace YGODatabase
 
         public void SaveData()
         {
-            File.WriteAllText(YGODataManagement.GetInventoryFilePath(), JsonConvert.SerializeObject(Collections[0]));
+            
             foreach (var i in Collections)
             {
                 if (i.UUID == null || i.UUID == Guid.Empty) { continue; }
-                if (!DeckPathDictionary.ContainsKey(i.UUID))
-                {
-                    string DeckDir = YGODataManagement.GetDeckDirectoryPath();
-                    string FileName = i.Name;
-                    int UniqueID = 0;
-
-                    while(Directory.GetFiles(DeckDir).Contains(BuildFileName(FileName, UniqueID, DeckDir)))
-                    {
-                        UniqueID++;
-                    }
-
-                    DeckPathDictionary[i.UUID] = BuildFileName(FileName, UniqueID, DeckDir);
-                }
-                File.WriteAllText(DeckPathDictionary[i.UUID], JsonConvert.SerializeObject(i));
+                SaveCollection(i);
             }
 
-            string BuildFileName(string File, int ID, string Dir)
+        }
+
+        public void SaveCollection(CardCollection Collection)
+        {
+            if (Collection.UUID == null || Collection.UUID == Guid.Empty) 
             {
-                string Name = File + (ID < 1 ? "" : ID.ToString());
-                return Path.Combine(Dir, Name);
+                File.WriteAllText(YGODataManagement.GetInventoryFilePath(), JsonConvert.SerializeObject(Collections[0]));
+                return;
             }
+            if (!DeckPathDictionary.ContainsKey(Collection.UUID))
+            {
+                DeckPathDictionary[Collection.UUID] = Utility.CreateUniqueFilename(Collection.Name, YGODataManagement.GetDeckDirectoryPath());
+            }
+            File.WriteAllText(DeckPathDictionary[Collection.UUID], JsonConvert.SerializeObject(Collection));
         }
     }
 }

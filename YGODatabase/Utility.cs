@@ -136,6 +136,20 @@ namespace YGODatabase
             item.Tag = Tag;
             return item;
         }
+        public static string BuildFileName(string File, int ID, string Dir)
+        {
+            string Name = File + (ID < 1 ? "" : ID.ToString()) + ".json";
+            return Path.Combine(Dir, Name);
+        }
+        public static string CreateUniqueFilename(string File, string Dir)
+        {
+            int UniqueID = 0;
+            while (Directory.GetFiles(Dir).Contains(BuildFileName(File, UniqueID, Dir)))
+            {
+                UniqueID++;
+            }
+            return BuildFileName(File, UniqueID, Dir);
+        }
         public static DataModel.Divider CreateDivider(object containerObject, string DividerText = "")
         {
             Font font;
