@@ -373,6 +373,7 @@ namespace YGODatabase
                 var Card = Utility.GetCardByID(i.Value.cardID);
                 var Set = Utility.GetExactCard(Card, i.Value.set_code, i.Value.set_rarity);
                 string UUID = $"{Card.name} {Set.set_name} {Set.set_rarity} {i.Value.Condition}";
+
                 if (!UniqueEntries.ContainsKey(UUID))
                 {
                     UniqueEntries.Add(UUID, new DataModel.InventoryObject { Amount = 0 });
@@ -417,6 +418,9 @@ namespace YGODatabase
 
             foreach (var i in PrintList)
             {
+                bool SearchValid = SearchParser.CardMatchesFilter($"{i.Card.name} {i.Set.set_name} {i.Set.set_rarity}", i.Card, i.Set, txtInventoryFilter.Text, true, true);
+                if (!SearchValid) { continue; }
+
                 string[] DisplayData = new string[] { i.Amount.ToString(), i.Card.name, i.Set.set_name, i.Set.GetRarityCode(), BulkData.Conditions[Collections[CurrentCollectionInd].data[i.InventoryID].Condition] };
                 listView1.Items.Add(Utility.CreateListViewItem(i, DisplayData));
             }
@@ -605,6 +609,11 @@ namespace YGODatabase
         {
             if (Collectionloading) { return; }
             Collections[CurrentCollectionInd].PaperCollection = chkPaperCollection.Checked;
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            PrintInventory();
         }
     }
 }
