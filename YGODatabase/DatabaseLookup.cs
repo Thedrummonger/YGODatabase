@@ -12,9 +12,16 @@ namespace YGODatabase
     {
         public YGOCardOBJ CurrentCard = null;
         public InventoryManager inventoryManager;
+        public AppSettingsSettings Settings;
         public MainInterface()
         {
             InitializeComponent();
+            Settings = new AppSettingsSettings();
+            if (File.Exists(YGODataManagement.GetSettingPath()))
+            {
+                try { Settings = JsonConvert.DeserializeObject<AppSettingsSettings>(File.ReadAllText(YGODataManagement.GetSettingPath())); }
+                catch { Settings = new AppSettingsSettings(); }
+            }
             inventoryManager = new InventoryManager(this);
         }
 
@@ -103,6 +110,11 @@ namespace YGODatabase
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
             pictureBox1.Image = YGODataManagement.GetImage(CurrentCard, (int)(numericUpDown1.Value - 1));
+        }
+
+        private void MainInterface_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            File.WriteAllText(YGODataManagement.GetSettingPath(), JsonConvert.SerializeObject(Settings, Formatting.Indented));
         }
     }
 }

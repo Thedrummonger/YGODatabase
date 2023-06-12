@@ -179,6 +179,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainInterface";
             this.Text = "YGO Database";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainInterface_FormClosing);
             this.Shown += new System.EventHandler(this.Form1_Shown);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();

@@ -297,17 +297,24 @@ namespace YGODatabase
         private void InventoryManager_Load(object sender, EventArgs e)
         {
             CurrentCollectionInd = 0;
-            cmbFilterBy.SelectedIndex = 0;
-            cmbOrderBy.SelectedIndex = 0;
+            cmbOrderBy.SelectedIndex = _DatabaseForm.Settings.InventoryShowCollectionOrderBy >= cmbOrderBy.Items.Count ? 0 : _DatabaseForm.Settings.InventoryShowCollectionOrderBy;
+            cmbFilterBy.SelectedIndex = _DatabaseForm.Settings.InventorySearchBy >= cmbFilterBy.Items.Count ? 0 : _DatabaseForm.Settings.InventorySearchBy;
+            chkShowRarity.Checked = _DatabaseForm.Settings.InventorySearchShowRarity;
+            chkShowSet.Checked = _DatabaseForm.Settings.InventorySearchShowSet;
 
             UpdateCollectionsList();
             comboBox1.SelectedIndex = 0;
+
         }
         private void InventoryManager_FormClosing(object sender, FormClosingEventArgs e)
         {
             e.Cancel = true;
             this.Hide();
             SaveData();
+            _DatabaseForm.Settings.InventorySearchShowRarity = chkShowRarity.Checked;
+            _DatabaseForm.Settings.InventorySearchShowSet = chkShowSet.Checked;
+            _DatabaseForm.Settings.InventoryShowCollectionOrderBy = cmbOrderBy.SelectedIndex;
+            _DatabaseForm.Settings.InventorySearchBy = cmbFilterBy.SelectedIndex;
         }
         private void CaptureKeyPress(object sender, KeyEventArgs e)
         {

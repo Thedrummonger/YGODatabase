@@ -120,5 +120,13 @@ namespace YGODatabase
                 return DisplayName;
             }
         }
+
+        public class AppSettingsSettings
+        {
+            public int InventorySearchBy = 0;
+            public bool InventorySearchShowSet = true;
+            public bool InventorySearchShowRarity = true;
+            public int InventoryShowCollectionOrderBy = 0;
+        }
     }
 }

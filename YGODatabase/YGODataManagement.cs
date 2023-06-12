@@ -32,6 +32,10 @@ namespace YGODatabase
         {
             return Path.Combine(GetAppDataPath(), "Decks");
         }
+        public static string GetSettingPath()
+        {
+            return Path.Combine(GetAppDataPath(), "Settings.json");
+        }
         public static DataModel.YGOData DownloadData()
         {
             Debug.WriteLine("Downloading YGOPro Data....");
