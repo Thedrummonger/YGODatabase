@@ -132,6 +132,12 @@ namespace YGODatabase
                     SetCodeDict[set.set_code] = item.id;
                     set.SearchTags.Add(set.set_code.ToLower());
                     set.SearchTags.Add(set.set_code.CleanCardName());
+                    var SetcodeData = set.set_code.StringSplit("-");
+                    if (SetcodeData.Length > 1)
+                    {
+                        set.SearchTags.Add(SetcodeData[0].ToLower() + SetcodeData[1].Replace("EN", "").TrimStart('0'));
+                        set.SearchTags.Add(SetcodeData[0].ToLower() + SetcodeData[1].Replace("EN", ""));
+                    }
                 }
                 item.SearchTags.Add(item.name.ToLower());
                 item.SearchTags.Add(item.name.CleanCardName());
