@@ -75,7 +75,7 @@ namespace YGODatabase
                 return;
             }
 
-            HashSet<string> results = new HashSet<string>();
+            HashSet<string> MatchedDisplayName = new HashSet<string>();
             List<DataModel.CardSearchResult> Formattedresults = new List<DataModel.CardSearchResult>();
 
             foreach (var i in YGODataManagement.MasterDataBase.data)
@@ -86,15 +86,14 @@ namespace YGODatabase
                     string DisplayName = $"{i.name}";
                     if (chkShowRarity.Checked) { DisplayName += $" {j.GetRarityCode()}"; }
                     if (chkShowSet.Checked) { DisplayName += $" ({j.set_name})"; }
+                    if (CodeSearch) { DisplayName = $"({j.set_code}) {DisplayName}"; }
 
-                    bool SearchValid = SearchParser.CardMatchesFilter(DisplayName, i, j, txtSearch.Text, NameSearch, CodeSearch);
+                    if (MatchedDisplayName.Contains(DisplayName)) { continue; }
 
-                    if (results.Contains(DisplayName)) { continue; }
-                    if (SearchValid)
+                    if (SearchParser.CardMatchesFilter(DisplayName, i, j, txtSearch.Text, NameSearch, CodeSearch))
                     {
-                        results.Add(DisplayName);
-                        if (CodeSearch) { DisplayName = $"({j.set_code}) {DisplayName}"; }
-                        Formattedresults.Add(new DataModel.CardSearchResult { DisplayName = DisplayName, Card = i, Set = j, FilteringRarity = chkShowRarity.Checked, FilteringSet = chkShowSet.Checked });
+                        MatchedDisplayName.Add(DisplayName);
+                        Formattedresults.Add(new DataModel.CardSearchResult { DisplayName = DisplayName, Card = i, Set = j, FilteringRarity = chkShowRarity.Checked || CodeSearch, FilteringSet = chkShowSet.Checked || CodeSearch });
                     }
                 }
             }
