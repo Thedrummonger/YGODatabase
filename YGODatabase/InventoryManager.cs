@@ -19,6 +19,9 @@ namespace YGODatabase
         public List<CardCollection> Collections = new List<CardCollection>();
         public int CurrentCollectionInd;
 
+        public Dictionary<Guid, List<Collection>> UndoLists = new Dictionary<Guid, List<Collection>>();
+        public Dictionary<Guid, List<Collection>> RedoLists = new Dictionary<Guid, List<Collection>>();
+
         public Dictionary<Guid, string> DeckPathDictionary = new Dictionary<Guid, string>();
 
         public InventoryManager(MainInterface DatabaseForm)
@@ -469,10 +472,11 @@ namespace YGODatabase
         {
             Collectionloading = true;
             CurrentCollectionInd = Index;
-            btnDeleteCollection.Enabled = Index != 0;
-            btnRenameCollection.Enabled = Index != 0;
-            chkPaperCollection.Enabled = Index != 0;
-            chkPaperCollection.Checked = Collections[Index].PaperCollection;
+            deleteToolStripMenuItem.Visible = Index != 0;
+            renameToolStripMenuItem.Visible = Index != 0;
+            isPaperCollectionToolStripMenuItem.Visible = Index != 0;
+            isPaperCollectionToolStripMenuItem.Checked = Collections[Index].PaperCollection;
+            addCollectionToInventoryToolStripMenuItem.Visible = Index != 0;
             selectedCard = Guid.Empty;
             txtSearch.Text = string.Empty;
             pictureBox1.Image= null;
@@ -615,12 +619,19 @@ namespace YGODatabase
         private void chkPaperCollection_CheckedChanged(object sender, EventArgs e)
         {
             if (Collectionloading) { return; }
-            Collections[CurrentCollectionInd].PaperCollection = chkPaperCollection.Checked;
+            Collections[CurrentCollectionInd].PaperCollection = !Collections[CurrentCollectionInd].PaperCollection;
+            isPaperCollectionToolStripMenuItem.Checked = Collections[CurrentCollectionInd].PaperCollection;
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
             PrintInventory();
+        }
+
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        {
+            string Gramar = numericUpDown1.Value > 1 ? "Copies" : "Copy";
+            btnRemoveSelected.Text = $"Remove {numericUpDown1.Value} {Gramar}";
         }
     }
 }
