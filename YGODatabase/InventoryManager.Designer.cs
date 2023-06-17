@@ -71,14 +71,14 @@
             this.importYDKContentToCurrentInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addCollectionToInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.isPaperCollectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.gbCurrentCollection = new System.Windows.Forms.GroupBox();
             this.gbSelectedCard.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.BGSearchAdd.SuspendLayout();
             this.menuStrip1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
+            this.gbCurrentCollection.SuspendLayout();
             this.SuspendLayout();
             // 
             // txtSearch
@@ -495,25 +495,25 @@
             this.isPaperCollectionToolStripMenuItem.Text = "Is Paper Collection";
             this.isPaperCollectionToolStripMenuItem.Click += new System.EventHandler(this.chkPaperCollection_CheckedChanged);
             // 
-            // groupBox2
+            // gbCurrentCollection
             // 
-            this.groupBox2.Controls.Add(this.label2);
-            this.groupBox2.Controls.Add(this.txtInventoryFilter);
-            this.groupBox2.Controls.Add(this.cmbOrderBy);
-            this.groupBox2.Controls.Add(this.label3);
-            this.groupBox2.Location = new System.Drawing.Point(403, 292);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(184, 92);
-            this.groupBox2.TabIndex = 19;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Current Collection";
+            this.gbCurrentCollection.Controls.Add(this.label2);
+            this.gbCurrentCollection.Controls.Add(this.txtInventoryFilter);
+            this.gbCurrentCollection.Controls.Add(this.cmbOrderBy);
+            this.gbCurrentCollection.Controls.Add(this.label3);
+            this.gbCurrentCollection.Location = new System.Drawing.Point(403, 292);
+            this.gbCurrentCollection.Name = "gbCurrentCollection";
+            this.gbCurrentCollection.Size = new System.Drawing.Size(184, 92);
+            this.gbCurrentCollection.TabIndex = 19;
+            this.gbCurrentCollection.TabStop = false;
+            this.gbCurrentCollection.Text = "Current Collection";
             // 
             // InventoryManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(598, 672);
-            this.Controls.Add(this.groupBox2);
+            this.Controls.Add(this.gbCurrentCollection);
             this.Controls.Add(this.BGSearchAdd);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.pictureBox1);
@@ -537,8 +537,8 @@
             this.BGSearchAdd.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
+            this.gbCurrentCollection.ResumeLayout(false);
+            this.gbCurrentCollection.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -584,7 +584,7 @@
         private ToolStripMenuItem importYDKContentToCurrentInventoryToolStripMenuItem;
         private ToolStripMenuItem addCollectionToInventoryToolStripMenuItem;
         private ToolStripMenuItem isPaperCollectionToolStripMenuItem;
-        private GroupBox groupBox2;
+        private GroupBox gbCurrentCollection;
         private Label label5;
         private Label label4;
         private ComboBox cmbCollectedCardCategory;

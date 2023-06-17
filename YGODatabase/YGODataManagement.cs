@@ -11,7 +11,7 @@ namespace YGODatabase
         public static Dictionary<string, int> SetCodeDict = new Dictionary<string, int>();
         public static Dictionary<int, int> IDLookup = new Dictionary<int, int>();
 
-        private static bool UseTestingPaths = true;
+        private static bool UseTestingPaths = false;
 
         public static Dictionary<string, InventoryDatabaseEntry> Inventory = new Dictionary<string, InventoryDatabaseEntry>();
 

@@ -45,7 +45,8 @@ namespace YGODatabase
             return Inventory.data.Where(x => 
                 x.Value.cardID == Card.id && 
                 (FilerSet == null || x.Value.set_code == FilerSet) && 
-                (FilerRarity == null || x.Value.set_rarity == FilerRarity)
+                (FilerRarity == null || x.Value.set_rarity == FilerRarity) &&
+                x.Value.Category != Categories.MaybeDeck
             ).Select(x => x.Key);
         }
 

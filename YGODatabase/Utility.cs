@@ -40,7 +40,7 @@ namespace YGODatabase
         }
         public static string GetRarityCode(this YGOSetData setData)
         {
-            return string.IsNullOrWhiteSpace(setData.set_rarity_code) ? setData.set_rarity : setData.set_rarity_code;
+            return string.IsNullOrWhiteSpace(setData.set_rarity_code) ? $"({setData.set_rarity})" : setData.set_rarity_code;
         }
         public static int GetRarityIndex(this YGOSetData setData)
         {

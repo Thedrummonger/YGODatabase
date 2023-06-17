@@ -453,6 +453,8 @@ namespace YGODatabase
                 }
             }
 
+            int CollectionCount = Collections[CurrentCollectionInd].data.Count;
+            int CollectionShownCount = 0;
 
             Categories CurrentCategory = Categories.None;
             foreach (var i in PrintList)
@@ -466,11 +468,13 @@ namespace YGODatabase
                     string[] CategoryHeader = new string[] { "#", CategoryNames[CurrentCategory], "", "", "" };
                     listView1.Items.Add(Utility.CreateListViewItem(null, CategoryHeader));
                 }
-
+                CollectionShownCount += i.Amount;
                 string[] DisplayData = new string[] { i.Amount.ToString(), i.Card.name, i.Set.set_name, i.Set.GetRarityCode(), BulkData.Conditions[Collections[CurrentCollectionInd].data[i.InventoryID].Condition] };
                 listView1.Items.Add(Utility.CreateListViewItem(i, DisplayData));
             }
             listView1.EndUpdate();
+
+            gbCurrentCollection.Text = $"Current Collection: {CollectionShownCount}\\{CollectionCount}";
 
         }
         private void listView1_DoubleClick(object sender, EventArgs e)
