@@ -123,7 +123,8 @@ namespace YGODatabase
                 x.Key != InventoryUUID &&
                 x.Value.set_rarity == Target.set_rarity &&
                 x.Value.set_code == Target.set_code &&
-                x.Value.Condition == Target.Condition
+                x.Value.Condition == Target.Condition &&
+                x.Value.Category == Target.Category
             ).ToDictionary(x =>x.Key, x=>x.Value).Keys.ToArray();
             return IdenticalEntries??Array.Empty<Guid>();
         }

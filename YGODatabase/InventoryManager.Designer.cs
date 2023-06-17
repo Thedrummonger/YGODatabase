@@ -34,6 +34,7 @@
             this.cmbFilterBy = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.gbSelectedCard = new System.Windows.Forms.GroupBox();
+            this.cmbCollectedCardCategory = new System.Windows.Forms.ComboBox();
             this.label5 = new System.Windows.Forms.Label();
             this.BtnAddOneSelected = new System.Windows.Forms.Button();
             this.btnRemoveSelected = new System.Windows.Forms.Button();
@@ -56,6 +57,8 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.BGSearchAdd = new System.Windows.Forms.GroupBox();
+            this.lblAddTo = new System.Windows.Forms.Label();
+            this.cmbAddTo = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
             this.txtInventoryFilter = new System.Windows.Forms.TextBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -133,6 +136,7 @@
             // 
             // gbSelectedCard
             // 
+            this.gbSelectedCard.Controls.Add(this.cmbCollectedCardCategory);
             this.gbSelectedCard.Controls.Add(this.label5);
             this.gbSelectedCard.Controls.Add(this.BtnAddOneSelected);
             this.gbSelectedCard.Controls.Add(this.btnRemoveSelected);
@@ -147,6 +151,15 @@
             this.gbSelectedCard.TabIndex = 6;
             this.gbSelectedCard.TabStop = false;
             this.gbSelectedCard.Text = "Last Card added";
+            // 
+            // cmbCollectedCardCategory
+            // 
+            this.cmbCollectedCardCategory.FormattingEnabled = true;
+            this.cmbCollectedCardCategory.Location = new System.Drawing.Point(99, 105);
+            this.cmbCollectedCardCategory.Name = "cmbCollectedCardCategory";
+            this.cmbCollectedCardCategory.Size = new System.Drawing.Size(59, 23);
+            this.cmbCollectedCardCategory.TabIndex = 13;
+            this.cmbCollectedCardCategory.SelectedIndexChanged += new System.EventHandler(this.SelectedCardValueEdited);
             // 
             // label5
             // 
@@ -221,7 +234,7 @@
             this.cmbSelectedCardSet.FormattingEnabled = true;
             this.cmbSelectedCardSet.Location = new System.Drawing.Point(6, 105);
             this.cmbSelectedCardSet.Name = "cmbSelectedCardSet";
-            this.cmbSelectedCardSet.Size = new System.Drawing.Size(152, 23);
+            this.cmbSelectedCardSet.Size = new System.Drawing.Size(87, 23);
             this.cmbSelectedCardSet.TabIndex = 2;
             this.cmbSelectedCardSet.DropDown += new System.EventHandler(this.ComboBox_DropDown);
             this.cmbSelectedCardSet.SelectedIndexChanged += new System.EventHandler(this.SelectedCardValueEdited);
@@ -232,7 +245,7 @@
             this.chkShowSet.Checked = true;
             this.chkShowSet.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkShowSet.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.chkShowSet.Location = new System.Drawing.Point(6, 45);
+            this.chkShowSet.Location = new System.Drawing.Point(6, 41);
             this.chkShowSet.Name = "chkShowSet";
             this.chkShowSet.Size = new System.Drawing.Size(75, 17);
             this.chkShowSet.TabIndex = 7;
@@ -246,7 +259,7 @@
             this.chkShowRarity.Checked = true;
             this.chkShowRarity.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkShowRarity.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.chkShowRarity.Location = new System.Drawing.Point(104, 45);
+            this.chkShowRarity.Location = new System.Drawing.Point(102, 41);
             this.chkShowRarity.Name = "chkShowRarity";
             this.chkShowRarity.Size = new System.Drawing.Size(88, 17);
             this.chkShowRarity.TabIndex = 8;
@@ -280,7 +293,7 @@
             // CardName
             // 
             this.CardName.Text = "Card";
-            this.CardName.Width = 300;
+            this.CardName.Width = 290;
             // 
             // Set
             // 
@@ -352,6 +365,8 @@
             // 
             // BGSearchAdd
             // 
+            this.BGSearchAdd.Controls.Add(this.lblAddTo);
+            this.BGSearchAdd.Controls.Add(this.cmbAddTo);
             this.BGSearchAdd.Controls.Add(this.label4);
             this.BGSearchAdd.Controls.Add(this.cmbFilterBy);
             this.BGSearchAdd.Controls.Add(this.label1);
@@ -364,6 +379,23 @@
             this.BGSearchAdd.TabIndex = 15;
             this.BGSearchAdd.TabStop = false;
             this.BGSearchAdd.Text = "Card Search";
+            // 
+            // lblAddTo
+            // 
+            this.lblAddTo.AutoSize = true;
+            this.lblAddTo.Location = new System.Drawing.Point(104, 65);
+            this.lblAddTo.Name = "lblAddTo";
+            this.lblAddTo.Size = new System.Drawing.Size(44, 15);
+            this.lblAddTo.TabIndex = 15;
+            this.lblAddTo.Text = "Add To";
+            // 
+            // cmbAddTo
+            // 
+            this.cmbAddTo.FormattingEnabled = true;
+            this.cmbAddTo.Location = new System.Drawing.Point(148, 60);
+            this.cmbAddTo.Name = "cmbAddTo";
+            this.cmbAddTo.Size = new System.Drawing.Size(59, 23);
+            this.cmbAddTo.TabIndex = 14;
             // 
             // label4
             // 
@@ -555,5 +587,8 @@
         private GroupBox groupBox2;
         private Label label5;
         private Label label4;
+        private ComboBox cmbCollectedCardCategory;
+        private Label lblAddTo;
+        private ComboBox cmbAddTo;
     }
 }

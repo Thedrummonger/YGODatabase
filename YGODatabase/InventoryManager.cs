@@ -29,6 +29,7 @@ namespace YGODatabase
             _DatabaseForm = DatabaseForm;
             LoadInventoryAndDecks();
             InitializeComponent();
+            cmbAddTo.DataSource = CategoryNames.Select(x => new ComboBoxItem { DisplayName = x.Value, tag = x.Key }).ToArray();
         }
 
         private void LoadInventoryAndDecks()
@@ -45,6 +46,7 @@ namespace YGODatabase
                 Inventory = new CardCollection() { data = new Dictionary<Guid, InventoryDatabaseEntry>(), LastEdited = DateTime.Now, Name = "Inventory" };
                 File.WriteAllText(InventoryFile, JsonConvert.SerializeObject(Inventory, Formatting.Indented));
             }
+            foreach (var i in Inventory.data) { i.Value.Category = Categories.MainDeck; }
             Collections.Add(Inventory);
 
             if (!Directory.Exists(DeckFolder)) { Directory.CreateDirectory(DeckFolder); }
@@ -118,6 +120,12 @@ namespace YGODatabase
             txtSearch.SelectAll();
             txtSearch.Focus();
 
+            Categories SelectedCategory = Categories.MainDeck;
+            if (cmbAddTo.SelectedItem is ComboBoxItem addToSelection)
+            {
+                SelectedCategory = (Categories)addToSelection.tag;
+            }
+
             Guid UUID = Guid.NewGuid();
 
             string? ForceSet = SelectedCard.FilteringSet ? SelectedCard.Set.set_code : null;
@@ -136,6 +144,7 @@ namespace YGODatabase
                 cardID = SelectedCard.Card.id,
                 set_code = BestSetMatch.set_code,
                 set_rarity = BestSetMatch.set_rarity,
+                Category = CurrentCollectionInd == 0 ? Categories.None : SelectedCategory,
                 DateAdded = DateAndTime.Now,
                 LastUpdated= DateAndTime.Now
             });
@@ -161,6 +170,7 @@ namespace YGODatabase
             cmbSelctedCardRarity.Enabled = true;
             cmbSelectedCardSet.Enabled = true;
             cmbSelectedCardCondition.Enabled = true;
+            cmbCollectedCardCategory.Enabled = true;
             btnRemoveSelected.Enabled = true;
             BtnAddOneSelected.Enabled = true;
             numericUpDown1.Enabled = false;
@@ -176,6 +186,7 @@ namespace YGODatabase
                 cmbSelctedCardRarity.Enabled = false;
                 cmbSelectedCardSet.Enabled = false;
                 cmbSelectedCardCondition.Enabled = false;
+                cmbCollectedCardCategory.Enabled = false;
                 SelectedCardUpdating = false;
                 btnRemoveSelected.Enabled = false;
                 BtnAddOneSelected.Enabled = false;
@@ -195,6 +206,8 @@ namespace YGODatabase
             foreach (var i in cmbSelctedCardRarity.Items) { if (i.ToString() == SetEntry.set_rarity) { cmbSelctedCardRarity.SelectedItem = i; break; } }
             cmbSelectedCardCondition.DataSource = BulkData.Conditions.Keys.ToArray();
             foreach (var i in cmbSelectedCardCondition.Items) { if (i.ToString() == InventoryObject.Condition) { cmbSelectedCardCondition.SelectedItem = i; break; } }
+            cmbCollectedCardCategory.DataSource = CategoryNames.Select(x => new ComboBoxItem { DisplayName = x.Value, tag = x.Key }).ToArray();
+            foreach (ComboBoxItem i in cmbCollectedCardCategory.Items) { if ((Categories)i.tag == InventoryObject.Category) { cmbCollectedCardCategory.SelectedItem = i; break; } }
 
             SelectedCardUpdating = false;
 
@@ -213,12 +226,13 @@ namespace YGODatabase
             string Rarity = (string)cmbSelctedCardRarity.SelectedItem;
             string Set = (string)cmbSelectedCardSet.SelectedItem;
             string Condition = (string)cmbSelectedCardCondition.SelectedItem;
+            Categories Category = (Categories)((ComboBoxItem)cmbCollectedCardCategory.SelectedItem).tag;
 
             List<Guid> SelectedCards = new List<Guid>() { selectedCard };
             SelectedCards.AddRange(Utility.GetIdenticalInventory(selectedCard, Collections[CurrentCollectionInd]).Select(x => x));
             for(var i = 0; i < numericUpDown1.Value; i++)
             {
-                EditCard(SelectedCards[i], Rarity, Set, Condition, sender == cmbSelectedCardSet);
+                EditCard(SelectedCards[i], Rarity, Set, Condition, sender == cmbSelectedCardSet, Category);
             }
 
             SaveCollection(Collections[CurrentCollectionInd]);
@@ -228,7 +242,7 @@ namespace YGODatabase
 
         }
 
-        private void EditCard(Guid UUID, string NewRarity, string NewSetName, string NewCondition, bool EditingSet)
+        private void EditCard(Guid UUID, string NewRarity, string NewSetName, string NewCondition, bool EditingSet, Categories NewCategory)
         {
             var InventoryObject = Collections[CurrentCollectionInd].data[UUID];
             var Card = Utility.GetCardByID(InventoryObject.cardID);
@@ -248,6 +262,7 @@ namespace YGODatabase
             InventoryObject.set_rarity = NewSetEntry.set_rarity;
             InventoryObject.set_code = NewSetEntry.set_code;
             InventoryObject.Condition = NewCondition;
+            InventoryObject.Category = NewCategory;
         }
 
         private void btnRemoveSelected_Click(object sender, EventArgs e)
@@ -280,6 +295,7 @@ namespace YGODatabase
                 cardID = CurrentCard.cardID,
                 set_code = CurrentCard.set_code,
                 set_rarity = CurrentCard.set_rarity,
+                Category = CurrentCard.Category,
                 DateAdded = DateAndTime.Now,
                 LastUpdated= DateAndTime.Now
             });
@@ -380,7 +396,7 @@ namespace YGODatabase
             {
                 var Card = Utility.GetCardByID(i.Value.cardID);
                 var Set = Utility.GetExactCard(Card, i.Value.set_code, i.Value.set_rarity);
-                string UUID = $"{Card.name} {Set.set_name} {Set.set_rarity} {i.Value.Condition}";
+                string UUID = $"{Card.name} {Set.set_name} {Set.set_rarity} {i.Value.Condition} {i.Value.Category}";
 
                 if (!UniqueEntries.ContainsKey(UUID))
                 {
@@ -395,39 +411,51 @@ namespace YGODatabase
             listView1.BeginUpdate();
             listView1.Items.Clear();
 
-            IEnumerable<DataModel.InventoryObject> PrintList = UniqueEntries.Values.OrderByDescending(x => Collections[CurrentCollectionInd].data[x.InventoryID].DateAdded).ToArray();
+            IOrderedEnumerable<DataModel.InventoryObject> PrintList = UniqueEntries.Values.OrderBy(x => Collections[CurrentCollectionInd].data[x.InventoryID].Category);
             bool OrderByName = cmbOrderBy.SelectedIndex == 0;
             bool OrderBySet = cmbOrderBy.SelectedIndex == 1; ;
             bool OrderByRarity = cmbOrderBy.SelectedIndex == 2; ;
             bool OrderByCondition = cmbOrderBy.SelectedIndex == 3; ;
+            bool OrderByAdded = cmbOrderBy.SelectedIndex == 5; ;
             bool OrderByModified = cmbOrderBy.SelectedIndex == 5; ;
 
             if (OrderByName)
             {
-                PrintList = PrintList.OrderBy(x => x.Card.name).ThenBy(x => x.Set.set_name).ThenBy(x => x.Set.GetRarityIndex()).ThenBy(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]);
+                PrintList = PrintList.ThenBy(x => x.Card.name).ThenBy(x => x.Set.set_name).ThenBy(x => x.Set.GetRarityIndex()).ThenBy(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]);
             }
             else if (OrderBySet) 
             {
-                PrintList = PrintList.OrderBy(x => x.Set.set_name).ThenBy(x => x.Card.name).ThenBy(x => x.Set.GetRarityIndex()).ThenBy(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]);
+                PrintList = PrintList.ThenBy(x => x.Set.set_name).ThenBy(x => x.Card.name).ThenBy(x => x.Set.GetRarityIndex()).ThenBy(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]);
             }
             else if (OrderByRarity)
             {
-                PrintList = PrintList.OrderBy(x => x.Set.GetRarityIndex()).ThenBy(x => x.Card.name).ThenBy(x => x.Set.set_name).ThenBy(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]);
+                PrintList = PrintList.ThenBy(x => x.Set.GetRarityIndex()).ThenBy(x => x.Card.name).ThenBy(x => x.Set.set_name).ThenBy(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]);
             }
             else if (OrderByModified)
             {
-                PrintList = PrintList.OrderByDescending(x => Collections[CurrentCollectionInd].data[x.InventoryID].LastUpdated);
+                PrintList = PrintList.ThenByDescending(x => Collections[CurrentCollectionInd].data[x.InventoryID].LastUpdated);
             }
             else if (OrderByCondition)
             {
-                PrintList = PrintList.OrderBy(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]).ThenBy(x => x.Card.name).ThenBy(x => x.Set.set_name).ThenBy(x => x.Set.GetRarityIndex());
-
+                PrintList = PrintList.ThenBy(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]).ThenBy(x => x.Card.name).ThenBy(x => x.Set.set_name).ThenBy(x => x.Set.GetRarityIndex());
+            }
+            else if (OrderByAdded)
+            {
+                PrintList = PrintList.ThenByDescending(x => Collections[CurrentCollectionInd].data[x.InventoryID].DateAdded);
             }
 
+            DataModel.Categories CurrentCategory = Categories.None;
             foreach (var i in PrintList)
             {
                 bool SearchValid = SearchParser.CardMatchesFilter($"{i.Card.name} {i.Set.set_name} {i.Set.set_rarity}", i.Card, i.Set, txtInventoryFilter.Text, true, true);
                 if (!SearchValid) { continue; }
+
+                if (Collections[CurrentCollectionInd].data[i.InventoryID].Category != CurrentCategory && CurrentCollectionInd != 0)
+                {
+                    CurrentCategory = Collections[CurrentCollectionInd].data[i.InventoryID].Category;
+                    string[] CategoryHeader = new string[] { "#", CategoryNames[CurrentCategory], "", "", "" };
+                    listView1.Items.Add(Utility.CreateListViewItem(null, CategoryHeader));
+                }
 
                 string[] DisplayData = new string[] { i.Amount.ToString(), i.Card.name, i.Set.set_name, i.Set.GetRarityCode(), BulkData.Conditions[Collections[CurrentCollectionInd].data[i.InventoryID].Condition] };
                 listView1.Items.Add(Utility.CreateListViewItem(i, DisplayData));
@@ -475,6 +503,9 @@ namespace YGODatabase
             isPaperCollectionToolStripMenuItem.Visible = Index != 0;
             isPaperCollectionToolStripMenuItem.Checked = Collections[Index].PaperCollection;
             addCollectionToInventoryToolStripMenuItem.Visible = Index != 0;
+            if (Index == 0) { cmbAddTo.SelectedIndex = 0; }
+            lblAddTo.Visible = Index != 0;
+            cmbAddTo.Visible = Index != 0;
             selectedCard = Guid.Empty;
             txtSearch.Text = string.Empty;
             pictureBox1.Image= null;
@@ -566,6 +597,7 @@ namespace YGODatabase
                     cardID = card.id,
                     set_code = DefaultCard.set_code,
                     set_rarity = DefaultCard.set_rarity,
+                    Category = Categories.MainDeck,
                     DateAdded = DateAndTime.Now,
                     LastUpdated= DateAndTime.Now
                 });
@@ -604,14 +636,15 @@ namespace YGODatabase
         {
             if (Collection.UUID == null || Collection.UUID == Guid.Empty) 
             {
-                File.WriteAllText(YGODataManagement.GetInventoryFilePath(), JsonConvert.SerializeObject(Collections[0]));
+                foreach(var i in Collection.data) { i.Value.Category = Categories.MainDeck; }
+                File.WriteAllText(YGODataManagement.GetInventoryFilePath(), JsonConvert.SerializeObject(Collections[0], Formatting.Indented));
                 return;
             }
             if (!DeckPathDictionary.ContainsKey(Collection.UUID))
             {
                 DeckPathDictionary[Collection.UUID] = Utility.CreateUniqueFilename(Collection.Name, YGODataManagement.GetDeckDirectoryPath());
             }
-            File.WriteAllText(DeckPathDictionary[Collection.UUID], JsonConvert.SerializeObject(Collection));
+            File.WriteAllText(DeckPathDictionary[Collection.UUID], JsonConvert.SerializeObject(Collection, Formatting.Indented));
         }
 
         private void chkPaperCollection_CheckedChanged(object sender, EventArgs e)
@@ -636,17 +669,24 @@ namespace YGODatabase
         {
             if (CurrentCollectionInd == 0 || Collections[CurrentCollectionInd].UUID == Guid.Empty) { return; }
 
-            var DialogResult = MessageBox.Show("This will add a copy of each card in this collection to your main inventory, would you like to continue?", "Import Collection to Inventory", MessageBoxButtons.YesNo);
+            string Instructions = "This will add a copy of each card in this collection to your main inventory, would you like to continue?";
+
+            var MaybeDeck = Collections[CurrentCollectionInd].data.Where(x => x.Value.Category == Categories.MaybeDeck);
+            if (MaybeDeck.Any()) { Instructions += $"\n\n WARNING: All Cards in the Maybe Deck ({MaybeDeck.Count()}) will be ignored"; }
+
+            var DialogResult = MessageBox.Show(Instructions, "Import Collection to Inventory", MessageBoxButtons.YesNo);
             if (DialogResult != DialogResult.Yes) { return; }
 
             foreach(var card in Collections[CurrentCollectionInd].data)
             {
+                if (card.Value.Category == Categories.MaybeDeck) { continue; }
                 Guid UUID = Guid.NewGuid();
                 Collections[0].data.Add(UUID, new DataModel.InventoryDatabaseEntry
                 {
                     cardID = card.Value.cardID,
                     set_code = card.Value.set_code,
                     set_rarity = card.Value.set_rarity,
+                    Category = Categories.MainDeck,
                     DateAdded = DateAndTime.Now,
                     LastUpdated= DateAndTime.Now
                 });

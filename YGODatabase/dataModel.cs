@@ -10,6 +10,21 @@ namespace YGODatabase
 {
     public class DataModel
     {
+        public enum Categories
+        {
+            MainDeck,
+            ExtraDeck,
+            SideDeck,
+            MaybeDeck,
+            None
+        }
+        public static Dictionary<Categories, string> CategoryNames = new Dictionary<Categories, string>()
+        {
+            { Categories.MainDeck, "Main" },
+            { Categories.ExtraDeck, "Extra" },
+            { Categories.SideDeck, "Side" },
+            { Categories.MaybeDeck, "Maybe" },
+        };
         public class YGOData
         {
             public YGOCardOBJ[] data { get; set; }
@@ -79,6 +94,7 @@ namespace YGODatabase
             public string set_rarity { get; set; }
             public string Condition { get; set; } = "Moderately Played";
             public string Language { get; set; } = "En";
+            public Categories Category { get; set; }
             public DateTime DateAdded { get; set; }
             public DateTime LastUpdated { get; set; }
         };
