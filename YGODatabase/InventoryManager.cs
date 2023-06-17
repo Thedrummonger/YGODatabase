@@ -118,8 +118,6 @@ namespace YGODatabase
             txtSearch.SelectAll();
             txtSearch.Focus();
 
-            Debug.WriteLine($"Adding to collection {Collections[CurrentCollectionInd].Name}");
-
             Guid UUID = Guid.NewGuid();
 
             string? ForceSet = SelectedCard.FilteringSet ? SelectedCard.Set.set_code : null;
@@ -131,6 +129,7 @@ namespace YGODatabase
                 MessageBox.Show($"ERROR: selected card was invalid. This is a bug.\n\n{SelectedCard.Card.name} | {ForceSet??"Any Set"} | {ForceSet??"Any Rarity"}" );
                 return;
             }
+            Debug.WriteLine($"Adding to collection {SelectedCard.Card.name} | {BestSetMatch.set_name} | {BestSetMatch.set_rarity}");
 
             Collections[CurrentCollectionInd].data.Add(UUID, new DataModel.InventoryDatabaseEntry
             {

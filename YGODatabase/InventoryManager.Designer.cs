@@ -232,11 +232,11 @@
             this.chkShowSet.Checked = true;
             this.chkShowSet.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkShowSet.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.chkShowSet.Location = new System.Drawing.Point(104, 44);
+            this.chkShowSet.Location = new System.Drawing.Point(6, 45);
             this.chkShowSet.Name = "chkShowSet";
-            this.chkShowSet.Size = new System.Drawing.Size(88, 17);
+            this.chkShowSet.Size = new System.Drawing.Size(75, 17);
             this.chkShowSet.TabIndex = 7;
-            this.chkShowSet.Text = "Select Rarity";
+            this.chkShowSet.Text = "Select Set";
             this.chkShowSet.UseVisualStyleBackColor = true;
             this.chkShowSet.CheckedChanged += new System.EventHandler(this.UpdateSearchResults);
             // 
@@ -246,11 +246,11 @@
             this.chkShowRarity.Checked = true;
             this.chkShowRarity.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkShowRarity.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.chkShowRarity.Location = new System.Drawing.Point(6, 44);
+            this.chkShowRarity.Location = new System.Drawing.Point(104, 45);
             this.chkShowRarity.Name = "chkShowRarity";
-            this.chkShowRarity.Size = new System.Drawing.Size(75, 17);
+            this.chkShowRarity.Size = new System.Drawing.Size(88, 17);
             this.chkShowRarity.TabIndex = 8;
-            this.chkShowRarity.Text = "Select Set";
+            this.chkShowRarity.Text = "Select Rarity";
             this.chkShowRarity.UseVisualStyleBackColor = true;
             this.chkShowRarity.CheckedChanged += new System.EventHandler(this.UpdateSearchResults);
             // 
