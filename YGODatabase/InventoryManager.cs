@@ -4,6 +4,7 @@ using System;
 using System.Data;
 using System.Diagnostics;
 using System.DirectoryServices.ActiveDirectory;
+using System.Globalization;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static YGODatabase.DataModel;
@@ -411,40 +412,49 @@ namespace YGODatabase
             listView1.BeginUpdate();
             listView1.Items.Clear();
 
-            IOrderedEnumerable<DataModel.InventoryObject> PrintList = UniqueEntries.Values.OrderBy(x => Collections[CurrentCollectionInd].data[x.InventoryID].Category);
-            bool OrderByName = cmbOrderBy.SelectedIndex == 0;
-            bool OrderBySet = cmbOrderBy.SelectedIndex == 1; ;
-            bool OrderByRarity = cmbOrderBy.SelectedIndex == 2; ;
-            bool OrderByCondition = cmbOrderBy.SelectedIndex == 3; ;
-            bool OrderByAdded = cmbOrderBy.SelectedIndex == 5; ;
-            bool OrderByModified = cmbOrderBy.SelectedIndex == 5; ;
+            List<int> SortPriority = new List<int>()
+            {
+                0, //Name
+                1, //Set
+                2, //Rarity
+                3, //Condition
+                4, //Added
+                5  //modified
+            };
 
-            if (OrderByName)
+            int MainPriority = cmbOrderBy.SelectedIndex;
+            if (MainPriority < 0 || MainPriority >= SortPriority.Count) { MainPriority = 0; }
+            SortPriority.MoveItemAtIndexToFront(SortPriority.IndexOf(cmbOrderBy.SelectedIndex));
+
+            IOrderedEnumerable<InventoryObject> PrintList = UniqueEntries.Values.OrderBy(x => Collections[CurrentCollectionInd].data[x.InventoryID].Category);
+
+            foreach (var i in SortPriority)
             {
-                PrintList = PrintList.ThenBy(x => x.Card.name).ThenBy(x => x.Set.set_name).ThenBy(x => x.Set.GetRarityIndex()).ThenBy(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]);
-            }
-            else if (OrderBySet) 
-            {
-                PrintList = PrintList.ThenBy(x => x.Set.set_name).ThenBy(x => x.Card.name).ThenBy(x => x.Set.GetRarityIndex()).ThenBy(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]);
-            }
-            else if (OrderByRarity)
-            {
-                PrintList = PrintList.ThenBy(x => x.Set.GetRarityIndex()).ThenBy(x => x.Card.name).ThenBy(x => x.Set.set_name).ThenBy(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]);
-            }
-            else if (OrderByModified)
-            {
-                PrintList = PrintList.ThenByDescending(x => Collections[CurrentCollectionInd].data[x.InventoryID].LastUpdated);
-            }
-            else if (OrderByCondition)
-            {
-                PrintList = PrintList.ThenBy(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]).ThenBy(x => x.Card.name).ThenBy(x => x.Set.set_name).ThenBy(x => x.Set.GetRarityIndex());
-            }
-            else if (OrderByAdded)
-            {
-                PrintList = PrintList.ThenByDescending(x => Collections[CurrentCollectionInd].data[x.InventoryID].DateAdded);
+                switch (i)
+                {
+                    case 0:
+                        PrintList = PrintList.ThenBy(x => x.Card.name);
+                        break;
+                    case 1:
+                        PrintList = PrintList.ThenBy(x => x.Set.set_name);
+                        break;
+                    case 2:
+                        PrintList = PrintList.ThenBy(x => x.Set.GetRarityIndex());
+                        break;
+                    case 3:
+                        PrintList = PrintList.ThenBy(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]);
+                        break;
+                    case 4:
+                        PrintList = PrintList.ThenByDescending(x => Collections[CurrentCollectionInd].data[x.InventoryID].DateAdded);
+                        break;
+                    case 5:
+                        PrintList = PrintList.ThenByDescending(x => Collections[CurrentCollectionInd].data[x.InventoryID].LastUpdated);
+                        break;
+                }
             }
 
-            DataModel.Categories CurrentCategory = Categories.None;
+
+            Categories CurrentCategory = Categories.None;
             foreach (var i in PrintList)
             {
                 bool SearchValid = SearchParser.CardMatchesFilter($"{i.Card.name} {i.Set.set_name} {i.Set.set_rarity}", i.Card, i.Set, txtInventoryFilter.Text, true, true);
@@ -503,6 +513,7 @@ namespace YGODatabase
             isPaperCollectionToolStripMenuItem.Visible = Index != 0;
             isPaperCollectionToolStripMenuItem.Checked = Collections[Index].PaperCollection;
             addCollectionToInventoryToolStripMenuItem.Visible = Index != 0;
+            cmbCollectedCardCategory.Visible = Index != 0;
             if (Index == 0) { cmbAddTo.SelectedIndex = 0; }
             lblAddTo.Visible = Index != 0;
             cmbAddTo.Visible = Index != 0;
@@ -582,22 +593,40 @@ namespace YGODatabase
         }
         private void AddYDKToCollection(CardCollection Collection, string[] YDKContent)
         {
+            List<Tuple<YGOCardOBJ, Categories>> Cards = new();
+            Categories CurrentCategory = Categories.MainDeck;
             foreach (var line in YDKContent)
             {
+                if (line.Trim() == "#main") { CurrentCategory = Categories.MainDeck; }
+                if (line.Trim() == "#extra") { CurrentCategory = Categories.ExtraDeck; }
+                if (line.Trim() == "!side") { CurrentCategory = Categories.SideDeck; }
                 if (!int.TryParse(line.Trim(), out int CardIndex)) { Debug.WriteLine($"Line Invalid {line}"); continue; }
-
                 var card = Utility.GetCardByID(CardIndex);
                 if (card == null) { Debug.WriteLine($"{CardIndex} not valid"); continue; }
+                Cards.Add(new(card, CurrentCategory));
+            }
 
-                var DefaultCard = SmartCardSetSelector.GetBestSetPrinting(card, Collections, CurrentCollectionInd);
+            var CommonSets = Utility.GetCommonSets(Cards.Select(x => x.Item1));
 
+            foreach (var card in Cards) 
+            {
+                string? setOverride = null;
+                string? RarityOverride = null;
+                if (CommonSets.Any())
+                {
+                    var CommonSet = CommonSets.First();
+                    var CommonSetData = card.Item1.card_sets.First(x => x.set_name == CommonSet);
+                    setOverride = CommonSetData.set_code;
+                    RarityOverride = CommonSetData.set_rarity;
+                }
+                var DefaultCard = SmartCardSetSelector.GetBestSetPrinting(card.Item1, Collections, CurrentCollectionInd, setOverride, RarityOverride);
                 Guid UUID = Guid.NewGuid();
                 Collection.data.Add(UUID, new DataModel.InventoryDatabaseEntry
                 {
-                    cardID = card.id,
+                    cardID = card.Item1.id,
                     set_code = DefaultCard.set_code,
                     set_rarity = DefaultCard.set_rarity,
-                    Category = Categories.MainDeck,
+                    Category = card.Item2,
                     DateAdded = DateAndTime.Now,
                     LastUpdated= DateAndTime.Now
                 });

@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualBasic.Devices;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -68,8 +69,8 @@ namespace YGODatabase
 
         public static YGOCardOBJ GetCardByID(int ID)
         {
-            if (!YGODataManagement.IDLookup.ContainsKey(ID)) { return null; }
-            return YGODataManagement.MasterDataBase.data[YGODataManagement.IDLookup[ID]];
+            if (YGODataManagement.IDLookup.ContainsKey(ID)) { return YGODataManagement.MasterDataBase.data[YGODataManagement.IDLookup[ID]]; }
+            return null;
         }
         public static YGOSetData GetExactCard(int CardID, string SetCode, string Rarity)
         {
@@ -187,6 +188,44 @@ namespace YGODatabase
                 else { break; }
             }
             return new DataModel.Divider { Display = Divider };
+        }
+
+        public static string[] GetCommonSets(IEnumerable<YGOCardOBJ> Cards)
+        {
+            List<string> AllSetNames = new List<string>();
+            foreach (var Card in Cards)
+            {
+                foreach (var set in Card.card_sets)
+                {
+                    if (!AllSetNames.Contains(set.set_name)) { AllSetNames.Add(set.set_name); }
+                }
+            }
+
+            List<string> CommonSets = new List<string>();
+            foreach (var SetName in AllSetNames)
+            { 
+                var CardsInThisSet = Cards.Where(x => x.card_sets.Any(y => SetName == y.set_name));
+                var CardsNotInThisSet = Cards.Where(x => !x.card_sets.Any(y => SetName == y.set_name));
+
+                if (!CardsNotInThisSet.Any())
+                {
+                    CommonSets.Add(SetName);
+                    Debug.WriteLine($"All cards were printed in set {SetName}");
+                }
+                else
+                {
+                    Debug.WriteLine($"Not all cards were printed in set {SetName}");
+                    Debug.WriteLine($"Missing: {JsonConvert.SerializeObject(CardsNotInThisSet.Select(x => x.name).Count())}");
+                }
+            }
+            return CommonSets.ToArray();
+        }
+
+        public static void MoveItemAtIndexToFront<T>(this List<T> list, int index)
+        {
+            T item = list[index];
+            list.RemoveAt(index);
+            list.Insert(0, item);
         }
     }
 }

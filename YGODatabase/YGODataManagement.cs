@@ -140,6 +140,7 @@ namespace YGODatabase
             foreach(var item in MasterDataBase.data)
             {
                 IDLookup[item.id] = ind;
+                foreach(var altID in item.card_images) { if (!IDLookup.ContainsKey(altID.id)) { IDLookup[altID.id] = ind; } }
                 ind++;
                 if (item.card_sets == null || !item.card_sets.Any()) { continue; }
                 foreach(var set in item.card_sets)
