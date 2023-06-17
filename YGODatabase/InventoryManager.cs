@@ -521,7 +521,7 @@ namespace YGODatabase
         }
         private void btnAddCollection_Click(object sender, EventArgs e)
         {
-            string input = Interaction.InputBox("Enter Deck Name", "Add New Deck", "", 0, 0);
+            string input = Interaction.InputBox("Enter Collection Name", "Add New Collection", "", 0, 0);
             if (string.IsNullOrWhiteSpace(input)) { return; }
             Collections.Add(new CardCollection { UUID = Guid.NewGuid(), data = new Dictionary<Guid, InventoryDatabaseEntry>(), Name =  input, LastEdited = DateTime.Now });
             UpdateCollectionsList();
@@ -534,7 +534,7 @@ namespace YGODatabase
             DialogResult Confirm = DialogResult.OK;
             if (Control.ModifierKeys != Keys.Shift)
             {
-                Confirm = MessageBox.Show($"Are you sure you want to delete deck [{Collections[comboBox1.SelectedIndex].Name}]?\n\nHold shift to skip this pormpt", "Confirm Delete", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                Confirm = MessageBox.Show($"Are you sure you want to delete Collection [{Collections[comboBox1.SelectedIndex].Name}]?\n\nHold shift to skip this pormpt", "Confirm Delete", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
             }
             if (Confirm != DialogResult.OK) { return; }
 
@@ -630,6 +630,41 @@ namespace YGODatabase
         {
             string Gramar = numericUpDown1.Value > 1 ? "Copies" : "Copy";
             btnRemoveSelected.Text = $"Remove {numericUpDown1.Value} {Gramar}";
+        }
+
+        private void addCollectionToInventoryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (CurrentCollectionInd == 0 || Collections[CurrentCollectionInd].UUID == Guid.Empty) { return; }
+
+            var DialogResult = MessageBox.Show("This will add a copy of each card in this collection to your main inventory, would you like to continue?", "Import Collection to Inventory", MessageBoxButtons.YesNo);
+            if (DialogResult != DialogResult.Yes) { return; }
+
+            foreach(var card in Collections[CurrentCollectionInd].data)
+            {
+                Guid UUID = Guid.NewGuid();
+                Collections[0].data.Add(UUID, new DataModel.InventoryDatabaseEntry
+                {
+                    cardID = card.Value.cardID,
+                    set_code = card.Value.set_code,
+                    set_rarity = card.Value.set_rarity,
+                    DateAdded = DateAndTime.Now,
+                    LastUpdated= DateAndTime.Now
+                });
+            }
+            SaveCollection(Collections[0]);
+        }
+
+        private void renameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (CurrentCollectionInd == 0 || Collections[CurrentCollectionInd].UUID == Guid.Empty) { return; }
+            var Collection = Collections[CurrentCollectionInd];
+            string CurrentName = Collection.Name;
+            string input = Interaction.InputBox("Enter New Collection Name", "Rename Collection", CurrentName, 0, 0);
+            if (!string.IsNullOrWhiteSpace(input)) 
+            { 
+                Collection.Name = input;
+                SaveCollection(Collections[CurrentCollectionInd]);
+            }
         }
     }
 }

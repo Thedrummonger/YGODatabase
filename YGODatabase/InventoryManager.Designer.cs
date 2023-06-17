@@ -423,6 +423,7 @@
             this.renameToolStripMenuItem.Name = "renameToolStripMenuItem";
             this.renameToolStripMenuItem.Size = new System.Drawing.Size(233, 22);
             this.renameToolStripMenuItem.Text = "Rename Current Collection";
+            this.renameToolStripMenuItem.Click += new System.EventHandler(this.renameToolStripMenuItem_Click);
             // 
             // importYDKAsCollectionToolStripMenuItem
             // 
@@ -453,6 +454,7 @@
             this.addCollectionToInventoryToolStripMenuItem.Name = "addCollectionToInventoryToolStripMenuItem";
             this.addCollectionToInventoryToolStripMenuItem.Size = new System.Drawing.Size(221, 22);
             this.addCollectionToInventoryToolStripMenuItem.Text = "Add Collection To Inventory";
+            this.addCollectionToInventoryToolStripMenuItem.Click += new System.EventHandler(this.addCollectionToInventoryToolStripMenuItem_Click);
             // 
             // isPaperCollectionToolStripMenuItem
             // 

@@ -11,6 +11,8 @@ namespace YGODatabase
         public static Dictionary<string, int> SetCodeDict = new Dictionary<string, int>();
         public static Dictionary<int, int> IDLookup = new Dictionary<int, int>();
 
+        private static bool UseTestingPaths = true;
+
         public static Dictionary<string, InventoryDatabaseEntry> Inventory = new Dictionary<string, InventoryDatabaseEntry>();
 
         public int GlobalCardWidth = 421;
@@ -26,10 +28,12 @@ namespace YGODatabase
         }
         public static string GetInventoryFilePath()
         {
+            if (UseTestingPaths) { return Path.Combine(GetTestFolderPath(), "Inventory.json"); }
             return Path.Combine(GetAppDataPath(), "Inventory.json");
         }
         public static string GetDeckDirectoryPath()
         {
+            if (UseTestingPaths) { return Path.Combine(GetTestFolderPath(), "Decks"); }
             return Path.Combine(GetAppDataPath(), "Decks");
         }
         public static string GetSettingPath()
@@ -56,6 +60,13 @@ namespace YGODatabase
         {
             string AppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             string YGOData = Path.Combine(AppDataPath, "YGODataBase");
+            if (!Directory.Exists(YGOData)) { System.Diagnostics.Debug.WriteLine("Creating appdata Directory"); Directory.CreateDirectory(YGOData); }
+            return YGOData;
+        }
+        public static string GetTestFolderPath()
+        {
+            string TestingFolder = "D:\\Testing";
+            string YGOData = Path.Combine(TestingFolder, "YGODataBase");
             if (!Directory.Exists(YGOData)) { System.Diagnostics.Debug.WriteLine("Creating appdata Directory"); Directory.CreateDirectory(YGOData); }
             return YGOData;
         }
