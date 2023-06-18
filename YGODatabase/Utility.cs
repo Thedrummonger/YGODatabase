@@ -130,12 +130,13 @@ namespace YGODatabase
             return IdenticalEntries??Array.Empty<Guid>();
         }
 
-        public static ListViewItem CreateListViewItem(object Tag, string[] Columns)
+        public static ListViewItem CreateListViewItem(object Tag, string[] Columns, Color? color = null)
         {
             ListViewItem item = new ListViewItem();
             item.SubItems.AddRange(Columns);
             item.SubItems.RemoveAt(0);
             item.Tag = Tag;
+            if (color is not null) { item.BackColor = (Color)color; }
             return item;
         }
         public static string BuildFileName(string File, int ID, string Dir)

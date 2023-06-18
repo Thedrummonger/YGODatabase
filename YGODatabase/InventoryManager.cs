@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -391,6 +392,12 @@ namespace YGODatabase
         }
         private void PrintInventory()
         {
+            int topItemIndex = 0;
+            try { topItemIndex = listView1.TopItem?.Index??0; }
+            catch (Exception ex) { }
+
+            bool MainInventory = CurrentCollectionInd < 1;
+
             Debug.WriteLine($"Printing {Collections[CurrentCollectionInd].Name}");
             Dictionary<string, DataModel.InventoryObject> UniqueEntries = new Dictionary<string, DataModel.InventoryObject>();
 
@@ -470,23 +477,55 @@ namespace YGODatabase
             int InvListPos = 0;
             Dictionary<Categories, Tuple<int, int>> CategoryHeaderEdits = new Dictionary<Categories, Tuple<int, int>>();
 
+            listView1.Columns.Clear();
+            if (MainInventory)
+            {
+                listView1.Columns.Add("#", 20);
+                listView1.Columns.Add("Card", 290);
+                listView1.Columns.Add("Set", 150);
+                listView1.Columns.Add("Rarity", 48);
+                listView1.Columns.Add("Condition", 45);
+            }
+            else
+            {
+                listView1.Columns.Add("#", 20);
+                listView1.Columns.Add("D", 20);
+                listView1.Columns.Add("I", 20);
+                listView1.Columns.Add("Card", 267);
+                listView1.Columns.Add("Set", 138);
+                listView1.Columns.Add("Rarity", 42);
+                listView1.Columns.Add("Condition", 45);
+            }
+
             Categories CurrentCategory = Categories.None;
             foreach (var i in PrintList)
             {
                 bool SearchValid = SearchParser.CardMatchesFilter($"{i.Card.name} {i.Set.set_name} {i.Set.set_rarity}", i.Card, i.Set, txtInventoryFilter.Text, true, true);
                 if (!SearchValid) { continue; }
 
-                if (Collections[CurrentCollectionInd].data[i.InventoryID].Category != CurrentCategory && CurrentCollectionInd != 0)
+                if (Collections[CurrentCollectionInd].data[i.InventoryID].Category != CurrentCategory && !MainInventory)
                 {
                     CurrentCategory = Collections[CurrentCollectionInd].data[i.InventoryID].Category;
-                    string[] CategoryHeader = new string[] { "#", CategoryNames[CurrentCategory].ToUpper() + " DECK:", "", "", "" };
-                    listView1.Items.Add(Utility.CreateListViewItem(null, CategoryHeader));
+                    List<string> CategoryHeader = new List<string> { "#", "", "", CategoryNames[CurrentCategory].ToUpper() + " DECK:", "", "", "" };
+                    listView1.Items.Add(Utility.CreateListViewItem(null, CategoryHeader.ToArray(), Color.DarkGray));
                     CategoryHeaderEdits[CurrentCategory] = new(InvListPos, 0);
                     InvListPos++;
                 }
                 CollectionShownCount += i.Amount;
-                string[] DisplayData = new string[] { i.Amount.ToString(), i.Card.name, i.Set.set_name, i.Set.GetRarityCode(), BulkData.Conditions[Collections[CurrentCollectionInd].data[i.InventoryID].Condition] };
-                listView1.Items.Add(Utility.CreateListViewItem(i, DisplayData));
+                List<string> DisplayData = new List<string> { i.Amount.ToString(), i.Card.name, i.Set.set_name, i.Set.GetRarityCode(), BulkData.Conditions[Collections[CurrentCollectionInd].data[i.InventoryID].Condition] };
+                Color? BackColor = null;
+                if (!MainInventory)
+                {
+                    var OtherDecks = SmartCardSetSelector.GetAmountOfCardInOtherDecks(i.Card, Collections, CurrentCollectionInd, i.Set.set_code, i.Set.set_rarity, true);
+                    var InInventory = SmartCardSetSelector.GetCardsFromInventory(i.Card, Collections[0], i.Set.set_code, i.Set.set_rarity);
+                    var InInventorySimilar = SmartCardSetSelector.GetCardsFromInventory(i.Card, Collections[0]);
+                    DisplayData.Insert(1, InInventory.Count().ToString());
+                    DisplayData.Insert(1, OtherDecks.ToString());
+                    if (i.Amount > InInventorySimilar.Count()) { BackColor = Color.LightCoral; }
+                    else if (i.Amount > InInventory.Count()) { BackColor = Color.LightPink; }
+                    else if ((i.Amount + OtherDecks) > InInventory.Count()) { BackColor = Color.LightYellow; }
+                }
+                listView1.Items.Add(Utility.CreateListViewItem(i, DisplayData.ToArray(), BackColor));
                 if (CategoryHeaderEdits.ContainsKey(CurrentCategory)) { CategoryHeaderEdits[CurrentCategory] = new(CategoryHeaderEdits[CurrentCategory].Item1, CategoryHeaderEdits[CurrentCategory].Item2+i.Amount); }
                 
                 InvListPos++;
@@ -496,12 +535,14 @@ namespace YGODatabase
             {
                 var OldHeader = listView1.Items[item.Item1];
                 OldHeader.SubItems[0] = new ListViewItem.ListViewSubItem { Text = item.Item2.ToString() };
+                OldHeader.BackColor = Color.LightGray;
                 listView1.Items[item.Item1] = OldHeader;
             }
 
             listView1.EndUpdate();
 
-            
+            try { listView1.TopItem = listView1.Items[topItemIndex]; }
+            catch (Exception ex) { }
 
             gbCurrentCollection.Text = $"Current Collection: {CollectionShownCount}\\{CollectionCount}";
 
