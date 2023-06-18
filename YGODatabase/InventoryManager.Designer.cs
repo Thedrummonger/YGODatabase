@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(InventoryManager));
             this.txtSearch = new System.Windows.Forms.TextBox();
             this.lbSearchResults = new System.Windows.Forms.ListBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -67,11 +68,12 @@
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importYDKAsCollectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.manageCurrentCollectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importYDKContentToCurrentInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addCollectionToInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.isPaperCollectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gbCurrentCollection = new System.Windows.Forms.GroupBox();
+            this.chkInvDescending = new System.Windows.Forms.CheckBox();
             this.gbSelectedCard.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -128,7 +130,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 28);
+            this.label2.Location = new System.Drawing.Point(6, 25);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(42, 15);
             this.label2.TabIndex = 5;
@@ -320,17 +322,18 @@
             "Condition",
             "Date Added",
             "Date Modified",
-            "CardType"});
-            this.cmbOrderBy.Location = new System.Drawing.Point(66, 56);
+            "Card Type",
+            "Count"});
+            this.cmbOrderBy.Location = new System.Drawing.Point(66, 46);
             this.cmbOrderBy.Name = "cmbOrderBy";
             this.cmbOrderBy.Size = new System.Drawing.Size(101, 23);
             this.cmbOrderBy.TabIndex = 10;
-            this.cmbOrderBy.SelectedIndexChanged += new System.EventHandler(this.cmbOrderBy_SelectedIndexChanged);
+            this.cmbOrderBy.SelectedIndexChanged += new System.EventHandler(this.InventorySearchUpdated);
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(6, 59);
+            this.label3.Location = new System.Drawing.Point(7, 49);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(53, 15);
             this.label3.TabIndex = 11;
@@ -338,6 +341,7 @@
             // 
             // pictureBox1
             // 
+            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
             this.pictureBox1.Location = new System.Drawing.Point(403, 35);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(184, 251);
@@ -409,16 +413,17 @@
             // 
             // txtInventoryFilter
             // 
-            this.txtInventoryFilter.Location = new System.Drawing.Point(66, 25);
+            this.txtInventoryFilter.Location = new System.Drawing.Point(66, 22);
             this.txtInventoryFilter.Name = "txtInventoryFilter";
             this.txtInventoryFilter.Size = new System.Drawing.Size(101, 23);
             this.txtInventoryFilter.TabIndex = 17;
-            this.txtInventoryFilter.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            this.txtInventoryFilter.TextChanged += new System.EventHandler(this.InventorySearchUpdated);
             // 
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem});
+            this.fileToolStripMenuItem,
+            this.editToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(598, 24);
@@ -431,11 +436,10 @@
             this.newToolStripMenuItem,
             this.deleteToolStripMenuItem,
             this.renameToolStripMenuItem,
-            this.importYDKAsCollectionToolStripMenuItem,
-            this.manageCurrentCollectionToolStripMenuItem});
+            this.importYDKAsCollectionToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(78, 20);
-            this.fileToolStripMenuItem.Text = "Collections";
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            this.fileToolStripMenuItem.Text = "File";
             // 
             // newToolStripMenuItem
             // 
@@ -465,15 +469,15 @@
             this.importYDKAsCollectionToolStripMenuItem.Text = "Import YDK as New Collection";
             this.importYDKAsCollectionToolStripMenuItem.Click += new System.EventHandler(this.BTNImportCollection_Click);
             // 
-            // manageCurrentCollectionToolStripMenuItem
+            // editToolStripMenuItem
             // 
-            this.manageCurrentCollectionToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.importYDKContentToCurrentInventoryToolStripMenuItem,
             this.addCollectionToInventoryToolStripMenuItem,
             this.isPaperCollectionToolStripMenuItem});
-            this.manageCurrentCollectionToolStripMenuItem.Name = "manageCurrentCollectionToolStripMenuItem";
-            this.manageCurrentCollectionToolStripMenuItem.Size = new System.Drawing.Size(233, 22);
-            this.manageCurrentCollectionToolStripMenuItem.Text = "Manage Current Collection";
+            this.editToolStripMenuItem.Name = "editToolStripMenuItem";
+            this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
+            this.editToolStripMenuItem.Text = "Edit";
             // 
             // importYDKContentToCurrentInventoryToolStripMenuItem
             // 
@@ -498,6 +502,7 @@
             // 
             // gbCurrentCollection
             // 
+            this.gbCurrentCollection.Controls.Add(this.chkInvDescending);
             this.gbCurrentCollection.Controls.Add(this.label2);
             this.gbCurrentCollection.Controls.Add(this.txtInventoryFilter);
             this.gbCurrentCollection.Controls.Add(this.cmbOrderBy);
@@ -508,6 +513,17 @@
             this.gbCurrentCollection.TabIndex = 19;
             this.gbCurrentCollection.TabStop = false;
             this.gbCurrentCollection.Text = "Current Collection";
+            // 
+            // chkInvDescending
+            // 
+            this.chkInvDescending.AutoSize = true;
+            this.chkInvDescending.Location = new System.Drawing.Point(66, 69);
+            this.chkInvDescending.Name = "chkInvDescending";
+            this.chkInvDescending.Size = new System.Drawing.Size(88, 19);
+            this.chkInvDescending.TabIndex = 18;
+            this.chkInvDescending.Text = "Descending";
+            this.chkInvDescending.UseVisualStyleBackColor = true;
+            this.chkInvDescending.CheckedChanged += new System.EventHandler(this.InventorySearchUpdated);
             // 
             // InventoryManager
             // 
@@ -522,6 +538,7 @@
             this.Controls.Add(this.gbSelectedCard);
             this.Controls.Add(this.lbSearchResults);
             this.Controls.Add(this.menuStrip1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "InventoryManager";
@@ -581,7 +598,6 @@
         private ToolStripMenuItem deleteToolStripMenuItem;
         private ToolStripMenuItem renameToolStripMenuItem;
         private ToolStripMenuItem importYDKAsCollectionToolStripMenuItem;
-        private ToolStripMenuItem manageCurrentCollectionToolStripMenuItem;
         private ToolStripMenuItem importYDKContentToCurrentInventoryToolStripMenuItem;
         private ToolStripMenuItem addCollectionToInventoryToolStripMenuItem;
         private ToolStripMenuItem isPaperCollectionToolStripMenuItem;
@@ -591,5 +607,7 @@
         private ComboBox cmbCollectedCardCategory;
         private Label lblAddTo;
         private ComboBox cmbAddTo;
+        private CheckBox chkInvDescending;
+        private ToolStripMenuItem editToolStripMenuItem;
     }
 }

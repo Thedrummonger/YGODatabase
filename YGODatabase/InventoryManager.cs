@@ -5,11 +5,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.Collections.Generic;
 using System.DirectoryServices.ActiveDirectory;
 using System.Globalization;
+using System.Linq;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static YGODatabase.DataModel;
+using Microsoft.VisualBasic.ApplicationServices;
+using System.Linq.Expressions;
+using YGODatabase.Properties;
 
 namespace YGODatabase
 {
@@ -386,7 +391,7 @@ namespace YGODatabase
         #endregion FormFunctions
 
         #region Inventory Display
-        private void cmbOrderBy_SelectedIndexChanged(object sender, EventArgs e)
+        private void InventorySearchUpdated(object sender, EventArgs e)
         {
             PrintInventory();
         }
@@ -429,6 +434,7 @@ namespace YGODatabase
                 4, //Added
                 5  //modified
                 //6 //Card Type
+                //7 //Card Count
             };
 
             int MainPriority = cmbOrderBy.SelectedIndex;
@@ -448,25 +454,28 @@ namespace YGODatabase
                 switch (i)
                 {
                     case 0:
-                        PrintList = PrintList.ThenBy(x => x.Card.name);
+                        PrintList = chkInvDescending.Checked ? PrintList.ThenByDescending(x => x.Card.name) : PrintList.ThenBy(x => x.Card.name);
                         break;
                     case 1:
-                        PrintList = PrintList.ThenBy(x => x.Set.set_name);
+                        PrintList = chkInvDescending.Checked ? PrintList.ThenByDescending(x => x.Set.set_name) : PrintList.ThenBy(x => x.Set.set_name);
                         break;
                     case 2:
-                        PrintList = PrintList.ThenBy(x => x.Set.GetRarityIndex());
+                        PrintList = chkInvDescending.Checked ? PrintList.ThenByDescending(x => x.Set.GetRarityIndex()) : PrintList.ThenBy(x => x.Set.GetRarityIndex());
                         break;
                     case 3:
-                        PrintList = PrintList.ThenBy(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]);
+                        PrintList = chkInvDescending.Checked ? PrintList.ThenByDescending(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]) : PrintList.ThenBy(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]);
                         break;
                     case 4:
-                        PrintList = PrintList.ThenByDescending(x => Collections[CurrentCollectionInd].data[x.InventoryID].DateAdded);
+                        PrintList = chkInvDescending.Checked ? PrintList.ThenByDescending(x => Collections[CurrentCollectionInd].data[x.InventoryID].DateAdded) : PrintList.ThenBy(x => Collections[CurrentCollectionInd].data[x.InventoryID].DateAdded);
                         break;
                     case 5:
-                        PrintList = PrintList.ThenByDescending(x => Collections[CurrentCollectionInd].data[x.InventoryID].LastUpdated);
+                        PrintList = chkInvDescending.Checked ? PrintList.ThenByDescending(x => Collections[CurrentCollectionInd].data[x.InventoryID].LastUpdated) : PrintList.ThenBy(x => Collections[CurrentCollectionInd].data[x.InventoryID].LastUpdated);
                         break;
                     case 6: 
-                        PrintList = PrintList.ThenBy(x => x.Card.type);
+                        PrintList = chkInvDescending.Checked ? PrintList.ThenByDescending(x => x.Card.type) : PrintList.ThenBy(x => x.Card.type);
+                        break;
+                    case 7:
+                        PrintList = chkInvDescending.Checked ? PrintList.ThenByDescending(x => x.Amount) : PrintList.ThenBy(x => x.Amount);
                         break;
                 }
             }
@@ -481,10 +490,10 @@ namespace YGODatabase
             if (MainInventory)
             {
                 listView1.Columns.Add("#", 20);
-                listView1.Columns.Add("Card", 290);
+                listView1.Columns.Add("Card", 296);
                 listView1.Columns.Add("Set", 150);
-                listView1.Columns.Add("Rarity", 48);
-                listView1.Columns.Add("Condition", 45);
+                listView1.Columns.Add("Rarity", 42);
+                listView1.Columns.Add("Con", 45);
             }
             else
             {
@@ -494,7 +503,7 @@ namespace YGODatabase
                 listView1.Columns.Add("Card", 267);
                 listView1.Columns.Add("Set", 138);
                 listView1.Columns.Add("Rarity", 42);
-                listView1.Columns.Add("Condition", 45);
+                listView1.Columns.Add("Con", 45);
             }
 
             Categories CurrentCategory = Categories.None;
@@ -593,7 +602,8 @@ namespace YGODatabase
             cmbAddTo.Visible = Index != 0;
             selectedCard = Guid.Empty;
             txtSearch.Text = string.Empty;
-            pictureBox1.Image= null;
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(InventoryManager));
+            pictureBox1.Image = ((Image)(resources.GetObject("pictureBox1.Image")));
             PrintSelectedCard("N/A");
             PrintInventory();
             Collectionloading = false;
@@ -755,11 +765,6 @@ namespace YGODatabase
             if (Collectionloading) { return; }
             Collections[CurrentCollectionInd].PaperCollection = !Collections[CurrentCollectionInd].PaperCollection;
             isPaperCollectionToolStripMenuItem.Checked = Collections[CurrentCollectionInd].PaperCollection;
-        }
-
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-            PrintInventory();
         }
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
