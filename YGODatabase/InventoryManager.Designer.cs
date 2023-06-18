@@ -319,7 +319,8 @@
             "Rarity",
             "Condition",
             "Date Added",
-            "Date Modified"});
+            "Date Modified",
+            "CardType"});
             this.cmbOrderBy.Location = new System.Drawing.Point(66, 56);
             this.cmbOrderBy.Name = "cmbOrderBy";
             this.cmbOrderBy.Size = new System.Drawing.Size(101, 23);

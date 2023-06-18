@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.DirectoryServices.ActiveDirectory;
@@ -420,11 +421,18 @@ namespace YGODatabase
                 3, //Condition
                 4, //Added
                 5  //modified
+                //6 //Card Type
             };
 
             int MainPriority = cmbOrderBy.SelectedIndex;
-            if (MainPriority < 0 || MainPriority >= SortPriority.Count) { MainPriority = 0; }
-            SortPriority.MoveItemAtIndexToFront(SortPriority.IndexOf(cmbOrderBy.SelectedIndex));
+            if (MainPriority >= 0 && MainPriority < SortPriority.Count) 
+            { 
+                SortPriority.MoveItemAtIndexToFront(SortPriority.IndexOf(cmbOrderBy.SelectedIndex)); 
+            }
+            else if (MainPriority >= 0)
+            {
+                SortPriority.Insert(0, cmbOrderBy.SelectedIndex);
+            }
 
             IOrderedEnumerable<InventoryObject> PrintList = UniqueEntries.Values.OrderBy(x => Collections[CurrentCollectionInd].data[x.InventoryID].Category);
 
@@ -450,11 +458,17 @@ namespace YGODatabase
                     case 5:
                         PrintList = PrintList.ThenByDescending(x => Collections[CurrentCollectionInd].data[x.InventoryID].LastUpdated);
                         break;
+                    case 6: 
+                        PrintList = PrintList.ThenBy(x => x.Card.type);
+                        break;
                 }
             }
 
             int CollectionCount = Collections[CurrentCollectionInd].data.Count;
             int CollectionShownCount = 0;
+
+            int InvListPos = 0;
+            Dictionary<Categories, Tuple<int, int>> CategoryHeaderEdits = new Dictionary<Categories, Tuple<int, int>>();
 
             Categories CurrentCategory = Categories.None;
             foreach (var i in PrintList)
@@ -465,14 +479,29 @@ namespace YGODatabase
                 if (Collections[CurrentCollectionInd].data[i.InventoryID].Category != CurrentCategory && CurrentCollectionInd != 0)
                 {
                     CurrentCategory = Collections[CurrentCollectionInd].data[i.InventoryID].Category;
-                    string[] CategoryHeader = new string[] { "#", CategoryNames[CurrentCategory], "", "", "" };
+                    string[] CategoryHeader = new string[] { "#", CategoryNames[CurrentCategory].ToUpper() + " DECK:", "", "", "" };
                     listView1.Items.Add(Utility.CreateListViewItem(null, CategoryHeader));
+                    CategoryHeaderEdits[CurrentCategory] = new(InvListPos, 0);
+                    InvListPos++;
                 }
                 CollectionShownCount += i.Amount;
                 string[] DisplayData = new string[] { i.Amount.ToString(), i.Card.name, i.Set.set_name, i.Set.GetRarityCode(), BulkData.Conditions[Collections[CurrentCollectionInd].data[i.InventoryID].Condition] };
                 listView1.Items.Add(Utility.CreateListViewItem(i, DisplayData));
+                if (CategoryHeaderEdits.ContainsKey(CurrentCategory)) { CategoryHeaderEdits[CurrentCategory] = new(CategoryHeaderEdits[CurrentCategory].Item1, CategoryHeaderEdits[CurrentCategory].Item2+i.Amount); }
+                
+                InvListPos++;
             }
+
+            foreach(var item in CategoryHeaderEdits.Values) 
+            {
+                var OldHeader = listView1.Items[item.Item1];
+                OldHeader.SubItems[0] = new ListViewItem.ListViewSubItem { Text = item.Item2.ToString() };
+                listView1.Items[item.Item1] = OldHeader;
+            }
+
             listView1.EndUpdate();
+
+            
 
             gbCurrentCollection.Text = $"Current Collection: {CollectionShownCount}\\{CollectionCount}";
 
