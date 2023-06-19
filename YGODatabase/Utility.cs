@@ -117,16 +117,17 @@ namespace YGODatabase
             return s1;
         }
 
-        public static Guid[] GetIdenticalInventory(Guid InventoryUUID, CardCollection CurrentCollction)
+        public static string CreateIDString(this InventoryDatabaseEntry Inventory)
         {
-            var Target = CurrentCollction.data[InventoryUUID];
-            Guid[] IdenticalEntries = CurrentCollction.data.Where(x => 
-                x.Key != InventoryUUID &&
-                x.Value.set_rarity == Target.set_rarity &&
-                x.Value.set_code == Target.set_code &&
-                x.Value.Condition == Target.Condition &&
-                x.Value.Category == Target.Category
-            ).ToDictionary(x =>x.Key, x=>x.Value).Keys.ToArray();
+            var Card = GetCardByID(Inventory.cardID);
+            var Set = GetExactCard(Inventory.cardID, Inventory.set_code, Inventory.set_rarity);
+            return $"{Card.name} {Set.set_name} {Set.set_rarity} {Inventory.Condition} {Inventory.Category} ART{Inventory.ImageIndex}";
+        }
+
+        public static Guid[] GetIdenticalCards(this CardCollection CurrentCollction, Guid TargetCardUUID, bool IncludeTarget)
+        {
+            var Target = CurrentCollction.data[TargetCardUUID];
+            Guid[] IdenticalEntries = CurrentCollction.data.Where(x => (x.Key != TargetCardUUID || IncludeTarget) && x.Value.CreateIDString() == Target.CreateIDString()).Select(x => x.Key).ToArray();
             return IdenticalEntries??Array.Empty<Guid>();
         }
 

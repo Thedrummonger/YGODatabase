@@ -94,6 +94,7 @@ namespace YGODatabase
             public string set_rarity { get; set; }
             public string Condition { get; set; } = "Moderately Played";
             public string Language { get; set; } = "En";
+            public int ImageIndex { get; set; } = 0;
             public Categories Category { get; set; }
             public DateTime DateAdded { get; set; }
             public DateTime LastUpdated { get; set; }

@@ -163,6 +163,7 @@ namespace YGODatabase
             PrintSelectedCard("Last Added Card");
 
             PrintInventory();
+            UpdatePopoutForms(false);
 
         }
 
@@ -219,11 +220,11 @@ namespace YGODatabase
 
             SelectedCardUpdating = false;
 
-            var IdenticalCards = Utility.GetIdenticalInventory(selectedCard, Collections[CurrentCollectionInd]);
-            if (AmountToEdit > IdenticalCards.Length + 1) { AmountToEdit = IdenticalCards.Length + 1; }
+            var IdenticalCards = Collections[CurrentCollectionInd].GetIdenticalCards(selectedCard, true);
+            if (AmountToEdit > IdenticalCards.Length) { AmountToEdit = IdenticalCards.Length; }
             numericUpDown1.Enabled = true;
             numericUpDown1.Minimum = 1;
-            numericUpDown1.Maximum = IdenticalCards.Length + 1;
+            numericUpDown1.Maximum = IdenticalCards.Length;
             numericUpDown1.Value = AmountToEdit;
 
         }
@@ -236,8 +237,7 @@ namespace YGODatabase
             string Condition = (string)cmbSelectedCardCondition.SelectedItem;
             Categories Category = (Categories)((ComboBoxItem)cmbCollectedCardCategory.SelectedItem).tag;
 
-            List<Guid> SelectedCards = new List<Guid>() { selectedCard };
-            SelectedCards.AddRange(Utility.GetIdenticalInventory(selectedCard, Collections[CurrentCollectionInd]).Select(x => x));
+            Guid[] SelectedCards = Collections[CurrentCollectionInd].GetIdenticalCards(selectedCard, true);
             for(var i = 0; i < numericUpDown1.Value; i++)
             {
                 EditCard(SelectedCards[i], Rarity, Set, Condition, sender == cmbSelectedCardSet, Category);
@@ -247,7 +247,7 @@ namespace YGODatabase
 
             PrintSelectedCard(gbSelectedCard.Text, (int)numericUpDown1.Value);
             PrintInventory();
-
+            UpdatePopoutForms(false);
         }
 
         private void EditCard(Guid UUID, string NewRarity, string NewSetName, string NewCondition, bool EditingSet, Categories NewCategory)
@@ -275,21 +275,22 @@ namespace YGODatabase
 
         private void btnRemoveSelected_Click(object sender, EventArgs e)
         {
-            List<Guid> SelectedCards = Utility.GetIdenticalInventory(selectedCard, Collections[CurrentCollectionInd]).ToList();
-            if (numericUpDown1.Value > SelectedCards.Count)
-            {
-                SelectedCards.Add(selectedCard);
-                selectedCard = Guid.Empty;
-            }
-            for (var i = 0; i < numericUpDown1.Value; i++)
+            List<Guid> SelectedCards = Collections[CurrentCollectionInd].GetIdenticalCards(selectedCard, true).ToList();
+            List<Guid> RemovedCards = new List<Guid>();
+
+            for (var i = (int)numericUpDown1.Value - 1; i >= 0; i--)
             {
                 Collections[CurrentCollectionInd].data.Remove(SelectedCards[i]);
+                RemovedCards.Add(SelectedCards[i]);
             }
+            var RemainingInventory = SelectedCards.Where(x => !RemovedCards.Contains(x)).ToList();
+            selectedCard = RemainingInventory.Any() ? RemainingInventory.Last() : Guid.Empty;
 
             SaveCollection(Collections[CurrentCollectionInd]);
 
             PrintSelectedCard(gbSelectedCard.Text);
             PrintInventory();
+            UpdatePopoutForms(false);
         }
 
         private void btnAddOneSelected_Click(object sender, EventArgs e)
@@ -314,6 +315,7 @@ namespace YGODatabase
             PrintSelectedCard("Last Added Card");
 
             PrintInventory();
+            UpdatePopoutForms(false);
         }
 
         #endregion Selected Item
@@ -376,6 +378,7 @@ namespace YGODatabase
             else if (sender == listView1 && listView1.SelectedItems.Count > 0 && listView1.SelectedItems[0].Tag is DataModel.InventoryObject InventorySelectedCard)
             {
                 Card = InventorySelectedCard.Card;
+                ImageIndex = Collections[CurrentCollectionInd].data[InventorySelectedCard.InventoryID].ImageIndex;
             }
             else
             {
@@ -387,6 +390,17 @@ namespace YGODatabase
         {
             await Task.Run(() => pictureBox1.Image = YGODataManagement.GetImage(card, ImageIndex));
         }
+        private void listView1_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                var focusedItem = listView1.FocusedItem;
+                if (focusedItem != null && focusedItem.Bounds.Contains(e.Location))
+                {
+                    ShowContextMenu(sender, focusedItem);
+                }
+            }
+        }
 
         #endregion FormFunctions
 
@@ -397,164 +411,7 @@ namespace YGODatabase
         }
         private void PrintInventory()
         {
-            int topItemIndex = 0;
-            try { topItemIndex = listView1.TopItem?.Index??0; }
-            catch (Exception ex) { }
-
-            bool MainInventory = CurrentCollectionInd < 1;
-
-            Debug.WriteLine($"Printing {Collections[CurrentCollectionInd].Name}");
-            Dictionary<string, DataModel.InventoryObject> UniqueEntries = new Dictionary<string, DataModel.InventoryObject>();
-
-            foreach (var i in Collections[CurrentCollectionInd].data)
-            {
-                var Card = Utility.GetCardByID(i.Value.cardID);
-                var Set = Utility.GetExactCard(Card, i.Value.set_code, i.Value.set_rarity);
-                string UUID = $"{Card.name} {Set.set_name} {Set.set_rarity} {i.Value.Condition} {i.Value.Category}";
-
-                if (!UniqueEntries.ContainsKey(UUID))
-                {
-                    UniqueEntries.Add(UUID, new DataModel.InventoryObject { Amount = 0 });
-                }
-                UniqueEntries[UUID].Amount++;
-                UniqueEntries[UUID].Card = Card;
-                UniqueEntries[UUID].Set = Set;
-                UniqueEntries[UUID].InventoryID = i.Key;
-            }
-
-            listView1.BeginUpdate();
-            listView1.Items.Clear();
-
-            List<int> SortPriority = new List<int>()
-            {
-                0, //Name
-                1, //Set
-                2, //Rarity
-                3, //Condition
-                4, //Added
-                5  //modified
-                //6 //Card Type
-                //7 //Card Count
-            };
-
-            int MainPriority = cmbOrderBy.SelectedIndex;
-            if (MainPriority >= 0 && MainPriority < SortPriority.Count) 
-            { 
-                SortPriority.MoveItemAtIndexToFront(SortPriority.IndexOf(cmbOrderBy.SelectedIndex)); 
-            }
-            else if (MainPriority >= 0)
-            {
-                SortPriority.Insert(0, cmbOrderBy.SelectedIndex);
-            }
-
-            IOrderedEnumerable<InventoryObject> PrintList = UniqueEntries.Values.OrderBy(x => Collections[CurrentCollectionInd].data[x.InventoryID].Category);
-
-            foreach (var i in SortPriority)
-            {
-                switch (i)
-                {
-                    case 0:
-                        PrintList = chkInvDescending.Checked ? PrintList.ThenByDescending(x => x.Card.name) : PrintList.ThenBy(x => x.Card.name);
-                        break;
-                    case 1:
-                        PrintList = chkInvDescending.Checked ? PrintList.ThenByDescending(x => x.Set.set_name) : PrintList.ThenBy(x => x.Set.set_name);
-                        break;
-                    case 2:
-                        PrintList = chkInvDescending.Checked ? PrintList.ThenByDescending(x => x.Set.GetRarityIndex()) : PrintList.ThenBy(x => x.Set.GetRarityIndex());
-                        break;
-                    case 3:
-                        PrintList = chkInvDescending.Checked ? PrintList.ThenByDescending(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]) : PrintList.ThenBy(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]);
-                        break;
-                    case 4:
-                        PrintList = chkInvDescending.Checked ? PrintList.ThenByDescending(x => Collections[CurrentCollectionInd].data[x.InventoryID].DateAdded) : PrintList.ThenBy(x => Collections[CurrentCollectionInd].data[x.InventoryID].DateAdded);
-                        break;
-                    case 5:
-                        PrintList = chkInvDescending.Checked ? PrintList.ThenByDescending(x => Collections[CurrentCollectionInd].data[x.InventoryID].LastUpdated) : PrintList.ThenBy(x => Collections[CurrentCollectionInd].data[x.InventoryID].LastUpdated);
-                        break;
-                    case 6: 
-                        PrintList = chkInvDescending.Checked ? PrintList.ThenByDescending(x => x.Card.type) : PrintList.ThenBy(x => x.Card.type);
-                        break;
-                    case 7:
-                        PrintList = chkInvDescending.Checked ? PrintList.ThenByDescending(x => x.Amount) : PrintList.ThenBy(x => x.Amount);
-                        break;
-                }
-            }
-
-            int CollectionCount = Collections[CurrentCollectionInd].data.Count;
-            int CollectionShownCount = 0;
-
-            int InvListPos = 0;
-            Dictionary<Categories, Tuple<int, int>> CategoryHeaderEdits = new Dictionary<Categories, Tuple<int, int>>();
-
-            listView1.Columns.Clear();
-            if (MainInventory)
-            {
-                listView1.Columns.Add("#", 20);
-                listView1.Columns.Add("Card", 296);
-                listView1.Columns.Add("Set", 150);
-                listView1.Columns.Add("Rarity", 42);
-                listView1.Columns.Add("Con", 45);
-            }
-            else
-            {
-                listView1.Columns.Add("#", 20);
-                listView1.Columns.Add("D", 20);
-                listView1.Columns.Add("I", 20);
-                listView1.Columns.Add("Card", 267);
-                listView1.Columns.Add("Set", 138);
-                listView1.Columns.Add("Rarity", 42);
-                listView1.Columns.Add("Con", 45);
-            }
-
-            Categories CurrentCategory = Categories.None;
-            foreach (var i in PrintList)
-            {
-                bool SearchValid = SearchParser.CardMatchesFilter($"{i.Card.name} {i.Set.set_name} {i.Set.set_rarity}", i.Card, i.Set, txtInventoryFilter.Text, true, true);
-                if (!SearchValid) { continue; }
-
-                if (Collections[CurrentCollectionInd].data[i.InventoryID].Category != CurrentCategory && !MainInventory)
-                {
-                    CurrentCategory = Collections[CurrentCollectionInd].data[i.InventoryID].Category;
-                    List<string> CategoryHeader = new List<string> { "#", "", "", CategoryNames[CurrentCategory].ToUpper() + " DECK:", "", "", "" };
-                    listView1.Items.Add(Utility.CreateListViewItem(null, CategoryHeader.ToArray(), Color.DarkGray));
-                    CategoryHeaderEdits[CurrentCategory] = new(InvListPos, 0);
-                    InvListPos++;
-                }
-                CollectionShownCount += i.Amount;
-                List<string> DisplayData = new List<string> { i.Amount.ToString(), i.Card.name, i.Set.set_name, i.Set.GetRarityCode(), BulkData.Conditions[Collections[CurrentCollectionInd].data[i.InventoryID].Condition] };
-                Color? BackColor = null;
-                if (!MainInventory)
-                {
-                    var OtherDecks = SmartCardSetSelector.GetAmountOfCardInOtherDecks(i.Card, Collections, CurrentCollectionInd, i.Set.set_code, i.Set.set_rarity, true);
-                    var InInventory = SmartCardSetSelector.GetCardsFromInventory(i.Card, Collections[0], i.Set.set_code, i.Set.set_rarity);
-                    var InInventorySimilar = SmartCardSetSelector.GetCardsFromInventory(i.Card, Collections[0]);
-                    DisplayData.Insert(1, InInventory.Count().ToString());
-                    DisplayData.Insert(1, OtherDecks.ToString());
-                    if (i.Amount > InInventorySimilar.Count()) { BackColor = Color.LightCoral; }
-                    else if (i.Amount > InInventory.Count()) { BackColor = Color.LightPink; }
-                    else if ((i.Amount + OtherDecks) > InInventory.Count()) { BackColor = Color.LightYellow; }
-                }
-                listView1.Items.Add(Utility.CreateListViewItem(i, DisplayData.ToArray(), BackColor));
-                if (CategoryHeaderEdits.ContainsKey(CurrentCategory)) { CategoryHeaderEdits[CurrentCategory] = new(CategoryHeaderEdits[CurrentCategory].Item1, CategoryHeaderEdits[CurrentCategory].Item2+i.Amount); }
-                
-                InvListPos++;
-            }
-
-            foreach(var item in CategoryHeaderEdits.Values) 
-            {
-                var OldHeader = listView1.Items[item.Item1];
-                OldHeader.SubItems[0] = new ListViewItem.ListViewSubItem { Text = item.Item2.ToString() };
-                OldHeader.BackColor = Color.LightGray;
-                listView1.Items[item.Item1] = OldHeader;
-            }
-
-            listView1.EndUpdate();
-
-            try { listView1.TopItem = listView1.Items[topItemIndex]; }
-            catch (Exception ex) { }
-
-            gbCurrentCollection.Text = $"Current Collection: {CollectionShownCount}\\{CollectionCount}";
-
+            InventoryDisplay.PrintInventoryData(listView1, gbCurrentCollection, Collections, CurrentCollectionInd, txtInventoryFilter.Text, cmbOrderBy.SelectedIndex, chkInvDescending.Checked);
         }
         private void listView1_DoubleClick(object sender, EventArgs e)
         {
@@ -580,6 +437,17 @@ namespace YGODatabase
             AddYDKToCollection(Collections[CurrentCollectionInd], File.ReadAllLines(openFileDialog1.FileName));
 
             LoadCollection(CurrentCollectionInd);
+        }
+        private void ShowContextMenu(object sender, ListViewItem SelectedEntry)
+        {
+            if (SelectedEntry.Tag is null) { return; }
+            if (SelectedEntry.Tag is InventoryObject inventoryObject)
+            {
+                var AllSelectedCards = Collections[CurrentCollectionInd].GetIdenticalCards(inventoryObject.InventoryID, true);
+                Debug.WriteLine(inventoryObject.Card.name);
+                Debug.WriteLine(AllSelectedCards.Count());
+                Debug.WriteLine(SelectedEntry.BackColor);
+            }
         }
 
         #endregion Inventory Display
@@ -615,6 +483,7 @@ namespace YGODatabase
             {
                 comboBox1.Items.Add(c.Name);
             }
+            UpdatePopoutForms(true);
         }
         private void ComboBox_DropDown(object sender, EventArgs e)
         {
@@ -812,6 +681,24 @@ namespace YGODatabase
             { 
                 Collection.Name = input;
                 SaveCollection(Collections[CurrentCollectionInd]);
+            }
+        }
+
+        public List<InventoryDisplay> ActiveDisplays = new List<InventoryDisplay>();
+
+        private void popoutDisplayToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            InventoryDisplay inventoryDisplay = new InventoryDisplay(this);
+            inventoryDisplay.Show();
+            inventoryDisplay.UpdateData(true);
+            ActiveDisplays.Add(inventoryDisplay);
+        }
+
+        private void UpdatePopoutForms(bool CollectionsChanged)
+        {
+            foreach(var i in ActiveDisplays)
+            {
+                i.UpdateData(CollectionsChanged);
             }
         }
     }

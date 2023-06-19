@@ -5,7 +5,7 @@ using static YGODatabase.DataModel;
 
 namespace YGODatabase
 {
-    public class YGODataManagement
+    public static class YGODataManagement
     {
         public static YGOData MasterDataBase = null;
         public static Dictionary<string, int> SetCodeDict = new Dictionary<string, int>();
@@ -15,16 +15,21 @@ namespace YGODatabase
 
         public static Dictionary<string, InventoryDatabaseEntry> Inventory = new Dictionary<string, InventoryDatabaseEntry>();
 
-        public int GlobalCardWidth = 421;
-        public int GlobalCardHeight = 614;
+        public static int GlobalCardWidth = 421;
+        public static int GlobalCardHeight = 614;
 
         public static string GetDatabaseFilePath()
         {
             return Path.Combine(GetAppDataPath(), "Database.json");
         }
-        public static string GetImageDirectoryPath()
+        public static string GetImageDirectoryPath(ImageType imageType)
         {
-            return Path.Combine(GetAppDataPath(), "Images");
+            return imageType switch
+            {
+                ImageType.small => Path.Combine(GetAppDataPath(), "Images", "small"),
+                ImageType.cropped => Path.Combine(GetAppDataPath(), "Images", "cropped"),
+                _ => Path.Combine(GetAppDataPath(), "Images")
+            };
         }
         public static string GetInventoryFilePath()
         {
@@ -107,28 +112,58 @@ namespace YGODatabase
 
         }
 
-        public static Bitmap GetImage(YGOCardOBJ card, int ImageInd)
+        public static List<string> GetAllSets(this YGOData Database)
         {
-            if (ImageInd >= card.card_images.Length) 
+            List<string> AllSets = new List<string>();
+            foreach (var i in Database.data)
             {
-                var ExctCard = card.card_sets[ImageInd];
-                ImageInd = 0; 
-                Debug.WriteLine($"{card.name} had no image for {ExctCard.set_name} {ExctCard.set_rarity}");
+                foreach (var j in i.card_sets??Array.Empty<YGOSetData>())
+                {
+                    if (!AllSets.Contains(j.set_name)) { AllSets.Add(j.set_name); }
+                }
             }
-            string ImageName = Path.GetFileName(card.card_images[ImageInd].image_url);
+            return AllSets;
+        }
 
-            if (!Directory.Exists(GetImageDirectoryPath())) { Directory.CreateDirectory(GetImageDirectoryPath()); }
+        public enum ImageType
+        {
+            standard,
+            small,
+            cropped
+        }
 
-            var LocalImages = Directory.GetFiles(GetImageDirectoryPath()).Select(x => Path.GetFileName(x));
+        public static Bitmap GetImage(YGOCardOBJ card, int ImageInd, ImageType ImageType = ImageType.standard)
+        {
+            if (ImageInd >= card.card_images.Length)
+            {
+                Debug.WriteLine($"{card.name} had no image at index {ImageInd}");
+                ImageInd = 0; 
+            }
+
+            string ImagePath = ImageType switch
+            {
+                ImageType.standard => card.card_images[ImageInd].image_url,
+                ImageType.small => card.card_images[ImageInd].image_url_small,
+                ImageType.cropped => card.card_images[ImageInd].image_url_cropped,
+                _ => card.card_images[ImageInd].image_url,
+            };
+
+            string ImageName = Path.GetFileName(ImagePath);
+
+            string ImageDirectory = GetImageDirectoryPath(ImageType);
+
+            if (!Directory.Exists(ImageDirectory)) { Directory.CreateDirectory(ImageDirectory); }
+
+            var LocalImages = Directory.GetFiles(ImageDirectory).Select(x => Path.GetFileName(x));
             if (LocalImages.Contains(ImageName))
             {
-                return new Bitmap(Path.Combine(GetImageDirectoryPath(), ImageName));
+                return new Bitmap(Path.Combine(ImageDirectory, ImageName));
             }
             Debug.WriteLine($"Local Image {ImageName} not found, Downloading...");
             using WebClient wc = new WebClient();
-            using Stream s = wc.OpenRead(card.card_images[ImageInd].image_url);
+            using Stream s = wc.OpenRead(ImagePath);
             var newImage = new Bitmap(s);
-            try { newImage.Save(Path.Combine(GetImageDirectoryPath(), ImageName)); }
+            try { newImage.Save(Path.Combine(ImageDirectory, ImageName)); }
             catch (Exception e) { Debug.WriteLine("Could not save image:\n"+e); }
             return newImage;
         }

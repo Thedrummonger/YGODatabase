@@ -74,6 +74,7 @@
             this.isPaperCollectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gbCurrentCollection = new System.Windows.Forms.GroupBox();
             this.chkInvDescending = new System.Windows.Forms.CheckBox();
+            this.popoutDisplayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gbSelectedCard.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -286,6 +287,7 @@
             this.listView1.View = System.Windows.Forms.View.Details;
             this.listView1.SelectedIndexChanged += new System.EventHandler(this.HighlightCard);
             this.listView1.DoubleClick += new System.EventHandler(this.listView1_DoubleClick);
+            this.listView1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseClick);
             // 
             // Count
             // 
@@ -423,7 +425,8 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.editToolStripMenuItem});
+            this.editToolStripMenuItem,
+            this.popoutDisplayToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(598, 24);
@@ -525,6 +528,13 @@
             this.chkInvDescending.UseVisualStyleBackColor = true;
             this.chkInvDescending.CheckedChanged += new System.EventHandler(this.InventorySearchUpdated);
             // 
+            // popoutDisplayToolStripMenuItem
+            // 
+            this.popoutDisplayToolStripMenuItem.Name = "popoutDisplayToolStripMenuItem";
+            this.popoutDisplayToolStripMenuItem.Size = new System.Drawing.Size(99, 20);
+            this.popoutDisplayToolStripMenuItem.Text = "Popout Display";
+            this.popoutDisplayToolStripMenuItem.Click += new System.EventHandler(this.popoutDisplayToolStripMenuItem_Click);
+            // 
             // InventoryManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -609,5 +619,6 @@
         private ComboBox cmbAddTo;
         private CheckBox chkInvDescending;
         private ToolStripMenuItem editToolStripMenuItem;
+        private ToolStripMenuItem popoutDisplayToolStripMenuItem;
     }
 }
