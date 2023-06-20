@@ -61,14 +61,13 @@ namespace YGODatabase
 
             foreach (var i in Collections[CurrentCollectionInd].data)
             {
-                var Card = Utility.GetCardByID(i.Value.cardID);
-                var Set = Utility.GetExactCard(Card, i.Value.set_code, i.Value.set_rarity);
                 string InventoryID = i.Value.CreateIDString();
 
                 if (!UniqueEntries.ContainsKey(InventoryID))
                 {
-                    UniqueEntries.Add(InventoryID, new DuplicateCardContainer(Collections[CurrentCollectionInd].UUID) { Entries = new List<Guid>()});
-                    UniqueEntries[InventoryID].InvData = new InventoryDatabaseEntry(Collections[CurrentCollectionInd].UUID)
+                    DuplicateCardContainer Container = new DuplicateCardContainer(Collections[CurrentCollectionInd].UUID);
+                    Container.Entries = new List<Guid>();
+                    Container.InvData = new InventoryDatabaseEntry(Collections[CurrentCollectionInd].UUID)
                     {
                         DateAdded = i.Value.DateAdded,
                         LastUpdated = i.Value.LastUpdated,
@@ -81,6 +80,8 @@ namespace YGODatabase
                         set_code = i.Value.set_code,
                         set_rarity = i.Value.set_rarity
                     };
+
+                    UniqueEntries.Add(InventoryID, Container);
                 }
                 UniqueEntries[InventoryID].Entries.Add(i.Key);
                 UniqueEntries[InventoryID].InvData.DateAdded = UniqueEntries[InventoryID].InvData.DateAdded >= i.Value.DateAdded ? UniqueEntries[InventoryID].InvData.DateAdded : i.Value.DateAdded;

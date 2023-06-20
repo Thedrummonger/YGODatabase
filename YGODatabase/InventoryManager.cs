@@ -23,7 +23,7 @@ namespace YGODatabase
     {
         MainInterface _DatabaseForm;
 
-        private Guid selectedCard = Guid.Empty;
+        private DuplicateCardContainer? selectedCard = null;
 
         public List<CardCollection> Collections = new List<CardCollection>();
         public int CurrentCollectionInd;
@@ -162,7 +162,7 @@ namespace YGODatabase
 
             SaveCollection(Collections[CurrentCollectionInd]);
 
-            selectedCard = UUID;
+            selectedCard = Utility.CreateDuplicateCardContainer(Collections[CurrentCollectionInd], UUID);
             PrintSelectedCard("Last Added Card");
 
             PrintInventory();
@@ -188,7 +188,7 @@ namespace YGODatabase
             BtnAddOneSelected.Enabled = true;
             numericUpDown1.Enabled = true;
             numericUpDown2.Enabled = true;
-            if (selectedCard == Guid.Empty || !Collections[CurrentCollectionInd].data.ContainsKey(selectedCard))
+            if (selectedCard == null || selectedCard.ParentCollectionID != Collections[CurrentCollectionInd].UUID)
             {
                 gbSelectedCard.Text = "N/A";
                 lblSelectedCard.Text = "N/A";
@@ -214,7 +214,7 @@ namespace YGODatabase
                 SelectedCardUpdating = false;
                 return;
             }
-            var InventoryObject = Collections[CurrentCollectionInd].data[selectedCard];
+            var InventoryObject = selectedCard.InvData;
             var Card = Utility.GetCardByID(InventoryObject.cardID);
             var SetEntry = Card.card_sets.First(x => x.set_code == InventoryObject.set_code && x.set_rarity == InventoryObject.set_rarity);
             lblSelectedCard.Text = $"{Card.name}";
@@ -231,11 +231,11 @@ namespace YGODatabase
             numericUpDown2.Maximum = Card.card_images.Length;
             numericUpDown2.Value = InventoryObject.ImageIndex + 1;
 
-            var IdenticalCards = Collections[CurrentCollectionInd].GetIdenticalCards(selectedCard, true);
-            if (AmountToEdit > IdenticalCards.Length) { AmountToEdit = IdenticalCards.Length; }
+            var IdenticalCards = selectedCard.Entries.Count;
+            if (AmountToEdit > IdenticalCards) { AmountToEdit = IdenticalCards; }
             
             numericUpDown1.Minimum = 1;
-            numericUpDown1.Maximum = IdenticalCards.Length;
+            numericUpDown1.Maximum = IdenticalCards;
             numericUpDown1.Value = AmountToEdit;
 
             SelectedCardUpdating = false;
@@ -252,7 +252,7 @@ namespace YGODatabase
             int Image = (int)numericUpDown2.Value - 1;
             Categories Category = (Categories)((ComboBoxItem)cmbCollectedCardCategory.SelectedItem).tag;
 
-            Guid[] SelectedCards = Collections[CurrentCollectionInd].GetIdenticalCards(selectedCard, true).Reverse().ToArray();
+            Guid[] SelectedCards = selectedCard.Entries.ToArray().Reverse().ToArray();
             Guid[] CardsToEdit = SelectedCards.Take((int)numericUpDown1.Value).ToArray();
 
             foreach(var i in CardsToEdit)
@@ -260,15 +260,14 @@ namespace YGODatabase
                 EditCard(i, Rarity, Set, Condition, sender == cmbSelectedCardSet, Category, Image);
             }
 
-            Guid[] NewCardGroup = Collections[CurrentCollectionInd].GetIdenticalCards(CardsToEdit.First(), true).ToArray();
-            selectedCard = NewCardGroup.Last();
+            selectedCard = Utility.CreateDuplicateCardContainer(Collections[CurrentCollectionInd], CardsToEdit.First());
 
             SaveCollection(Collections[CurrentCollectionInd]);
 
             PrintSelectedCard(gbSelectedCard.Text, (int)numericUpDown1.Value);
             PrintInventory();
             UpdatePopoutForms(false);
-            UpdatepictureBox(Utility.GetCardByID(Collections[CurrentCollectionInd].data[selectedCard].cardID), Collections[CurrentCollectionInd].data[selectedCard].ImageIndex);
+            UpdatepictureBox(selectedCard.CardData(), selectedCard.InvData.ImageIndex);
         }
 
         private void EditCard(Guid UUID, string NewRarity, string NewSetName, string NewCondition, bool EditingSet, Categories NewCategory, int ImageIndex)
@@ -297,7 +296,7 @@ namespace YGODatabase
 
         private void btnRemoveSelected_Click(object sender, EventArgs e)
         {
-            List<Guid> SelectedCards = Collections[CurrentCollectionInd].GetIdenticalCards(selectedCard, true).ToList();
+            List<Guid> SelectedCards = selectedCard.Entries;
             List<Guid> RemovedCards = new List<Guid>();
 
             for (var i = (int)numericUpDown1.Value - 1; i >= 0; i--)
@@ -306,7 +305,7 @@ namespace YGODatabase
                 RemovedCards.Add(SelectedCards[i]);
             }
             var RemainingInventory = SelectedCards.Where(x => !RemovedCards.Contains(x)).ToList();
-            selectedCard = RemainingInventory.Any() ? RemainingInventory.Last() : Guid.Empty;
+            selectedCard = RemainingInventory.Any() ? Utility.CreateDuplicateCardContainer(Collections[CurrentCollectionInd], RemainingInventory.Last()) : null;
 
             SaveCollection(Collections[CurrentCollectionInd]);
             PrintSelectedCard(gbSelectedCard.Text);
@@ -318,9 +317,9 @@ namespace YGODatabase
         {
             Guid UUID = Guid.NewGuid();
 
-            var CurrentCard = Collections[CurrentCollectionInd].data[selectedCard];
+            var CurrentCard = selectedCard.InvData;
 
-            Collections[CurrentCollectionInd].data.Add(UUID, new DataModel.InventoryDatabaseEntry(Collections[CurrentCollectionInd].UUID)
+            var NewDataEntry = new DataModel.InventoryDatabaseEntry(Collections[CurrentCollectionInd].UUID)
             {
                 cardID = CurrentCard.cardID,
                 set_code = CurrentCard.set_code,
@@ -329,11 +328,13 @@ namespace YGODatabase
                 ImageIndex = CurrentCard.ImageIndex,
                 DateAdded = DateAndTime.Now,
                 LastUpdated= DateAndTime.Now
-            });
+            };
+
+            Collections[CurrentCollectionInd].data.Add(UUID, NewDataEntry);
 
             SaveCollection(Collections[CurrentCollectionInd]);
 
-            selectedCard = UUID;
+            selectedCard = Utility.CreateDuplicateCardContainer(Collections[CurrentCollectionInd], UUID);
             PrintSelectedCard("Last Added Card");
 
             PrintInventory();
@@ -448,7 +449,7 @@ namespace YGODatabase
                 listView1.SelectedItems[0].Tag is not DataModel.DuplicateCardContainer Data) 
             { return; }
 
-            selectedCard = Data.Entries.Last();
+            selectedCard = Data;
             PrintSelectedCard("Selected Card");
         }
         private void btnImportCards_Click(object sender, EventArgs e)
@@ -476,7 +477,7 @@ namespace YGODatabase
             if (SelectedEntry.Tag is DuplicateCardContainer inventoryObject)
             {
                 ToolStripItem SelectCard = contextMenu.Items.Add("Select Card");
-                SelectCard.Click += (sender, e) => { selectedCard = inventoryObject.Entries.Last(); PrintSelectedCard("Selected Card"); };
+                SelectCard.Click += (sender, e) => { selectedCard = inventoryObject; PrintSelectedCard("Selected Card"); };
 
                 if (SelectedEntry.BackColor == Color.LightPink)
                 {
@@ -555,7 +556,7 @@ namespace YGODatabase
             if (Index == 0) { cmbAddTo.SelectedIndex = 0; }
             lblAddTo.Visible = Index != 0;
             cmbAddTo.Visible = Index != 0;
-            selectedCard = Guid.Empty;
+            selectedCard = null;
             txtSearch.Text = string.Empty;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(InventoryManager));
             pictureBox1.Image = ((Image)(resources.GetObject("pictureBox1.Image")));

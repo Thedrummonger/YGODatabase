@@ -223,6 +223,28 @@ namespace YGODatabase
             return CommonSets.ToArray();
         }
 
+        public static DuplicateCardContainer CreateDuplicateCardContainer(CardCollection Collection, Guid UUID)
+        {
+            var databaseEntry = Collection.data[UUID];
+            DuplicateCardContainer Container = new DuplicateCardContainer(databaseEntry.ParentCollectionID);
+            Container.Entries = new List<Guid>();
+            Container.InvData = new InventoryDatabaseEntry(databaseEntry.ParentCollectionID)
+            {
+                DateAdded = databaseEntry.DateAdded,
+                LastUpdated = databaseEntry.LastUpdated,
+                cardID = databaseEntry.cardID,
+                Category = databaseEntry.Category,
+                Condition = databaseEntry.Condition,
+                ImageIndex = databaseEntry.ImageIndex,
+                Language = databaseEntry.Language,
+                ParentCollectionID = databaseEntry.ParentCollectionID,
+                set_code = databaseEntry.set_code,
+                set_rarity = databaseEntry.set_rarity
+            };
+            Container.Entries = Utility.GetIdenticalCards(Collection, UUID, true).ToList();
+            return Container;
+        }
+
         public static void MoveItemAtIndexToFront<T>(this List<T> list, int index)
         {
             T item = list[index];
