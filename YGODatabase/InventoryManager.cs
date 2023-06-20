@@ -69,6 +69,8 @@ namespace YGODatabase
                 } 
                 catch { Debug.WriteLine($"{Path.GetFileName(i)} Was not a valid deck"); }
             }
+            //TODO: this is just for sanitizing old json files
+            foreach(var c in Collections) { foreach(var i in c.data) { i.Value.ParentCollectionID = c.UUID; } }
         }
 
         #region Search Functions
@@ -148,7 +150,7 @@ namespace YGODatabase
             }
             Debug.WriteLine($"Adding to collection {SelectedCard.Card.name} | {BestSetMatch.set_name} | {BestSetMatch.set_rarity}");
 
-            Collections[CurrentCollectionInd].data.Add(UUID, new DataModel.InventoryDatabaseEntry
+            Collections[CurrentCollectionInd].data.Add(UUID, new DataModel.InventoryDatabaseEntry (Collections[CurrentCollectionInd].UUID)
             {
                 cardID = SelectedCard.Card.id,
                 set_code = BestSetMatch.set_code,
@@ -251,10 +253,15 @@ namespace YGODatabase
             Categories Category = (Categories)((ComboBoxItem)cmbCollectedCardCategory.SelectedItem).tag;
 
             Guid[] SelectedCards = Collections[CurrentCollectionInd].GetIdenticalCards(selectedCard, true).Reverse().ToArray();
-            for(var i = 0; i < numericUpDown1.Value; i++)
+            Guid[] CardsToEdit = SelectedCards.Take((int)numericUpDown1.Value).ToArray();
+
+            foreach(var i in CardsToEdit)
             {
-                EditCard(SelectedCards[i], Rarity, Set, Condition, sender == cmbSelectedCardSet, Category, Image);
+                EditCard(i, Rarity, Set, Condition, sender == cmbSelectedCardSet, Category, Image);
             }
+
+            Guid[] NewCardGroup = Collections[CurrentCollectionInd].GetIdenticalCards(CardsToEdit.First(), true).ToArray();
+            selectedCard = NewCardGroup.Last();
 
             SaveCollection(Collections[CurrentCollectionInd]);
 
@@ -313,7 +320,7 @@ namespace YGODatabase
 
             var CurrentCard = Collections[CurrentCollectionInd].data[selectedCard];
 
-            Collections[CurrentCollectionInd].data.Add(UUID, new DataModel.InventoryDatabaseEntry
+            Collections[CurrentCollectionInd].data.Add(UUID, new DataModel.InventoryDatabaseEntry(Collections[CurrentCollectionInd].UUID)
             {
                 cardID = CurrentCard.cardID,
                 set_code = CurrentCard.set_code,
@@ -395,10 +402,10 @@ namespace YGODatabase
             {
                 Card = SearchSelectedCard.Card;
             }
-            else if (sender == listView1 && listView1.SelectedItems.Count > 0 && listView1.SelectedItems[0].Tag is DataModel.InventoryObject InventorySelectedCard)
+            else if (sender == listView1 && listView1.SelectedItems.Count > 0 && listView1.SelectedItems[0].Tag is DataModel.DuplicateCardContainer InventorySelectedCard)
             {
-                Card = InventorySelectedCard.Card;
-                ImageIndex = Collections[CurrentCollectionInd].data[InventorySelectedCard.InventoryID].ImageIndex;
+                Card = InventorySelectedCard.CardData();
+                ImageIndex = InventorySelectedCard.InvData.ImageIndex;
             }
             else
             {
@@ -438,10 +445,10 @@ namespace YGODatabase
             if (listView1.SelectedItems.Count < 1 || 
                 listView1.SelectedItems[0] is null || 
                 listView1.SelectedItems[0].Tag is null || 
-                listView1.SelectedItems[0].Tag is not DataModel.InventoryObject Data) 
+                listView1.SelectedItems[0].Tag is not DataModel.DuplicateCardContainer Data) 
             { return; }
 
-            selectedCard = Data.InventoryID;
+            selectedCard = Data.Entries.Last();
             PrintSelectedCard("Selected Card");
         }
         private void btnImportCards_Click(object sender, EventArgs e)
@@ -466,10 +473,10 @@ namespace YGODatabase
             ToolStripItem RefreshContextItem = contextMenu.Items.Add("Refresh");
             RefreshContextItem.Click += (sender, e) => { PrintInventory(); };
 
-            if (SelectedEntry.Tag is InventoryObject inventoryObject)
+            if (SelectedEntry.Tag is DuplicateCardContainer inventoryObject)
             {
                 ToolStripItem SelectCard = contextMenu.Items.Add("Select Card");
-                SelectCard.Click += (sender, e) => { selectedCard = inventoryObject.InventoryID; PrintSelectedCard("Selected Card"); };
+                SelectCard.Click += (sender, e) => { selectedCard = inventoryObject.Entries.Last(); PrintSelectedCard("Selected Card"); };
 
                 if (SelectedEntry.BackColor == Color.LightPink)
                 {
@@ -485,16 +492,16 @@ namespace YGODatabase
             }
         }
 
-        private void ShowOtherDecksUsingCard(InventoryObject inventoryObject)
+        private void ShowOtherDecksUsingCard(DuplicateCardContainer inventoryObject)
         {
             Dictionary<Guid, Tuple<string, int, int>> DeckCounts = new Dictionary<Guid, Tuple<string, int, int>>();
             foreach(var i in Collections.Where(x => x.UUID != Guid.Empty && x.UUID != Collections[CurrentCollectionInd].UUID))
             {
-                var AmountinDeck = SmartCardSetSelector.GetCardsFromInventory(inventoryObject.Card, i, inventoryObject.Set.set_code, inventoryObject.Set.set_rarity).Count();
-                var SimilarAmountinDeck = SmartCardSetSelector.GetCardsFromInventory(inventoryObject.Card, i).Count();
+                var AmountinDeck = SmartCardSetSelector.GetCardsFromInventory(inventoryObject.CardData(), i, inventoryObject.SetData().set_code, inventoryObject.SetData().set_rarity).Count();
+                var SimilarAmountinDeck = SmartCardSetSelector.GetCardsFromInventory(inventoryObject.CardData(), i).Count();
                 DeckCounts[i.UUID] = new(i.Name, AmountinDeck, SimilarAmountinDeck);
             }
-            string Message = $"Decks containing: {inventoryObject.Card.name} {inventoryObject.Set.GetRarityCode()} {inventoryObject.Set.set_name}\n\n";
+            string Message = $"Decks containing: {inventoryObject.CardData().name} {inventoryObject.SetData().GetRarityCode()} {inventoryObject.SetData().set_name}\n\n";
             foreach(var i in DeckCounts.Values)
             {
                 if (i.Item3 <= 0) { continue; }
@@ -508,9 +515,9 @@ namespace YGODatabase
             MessageBox.Show(Message);
         }
 
-        public void ShowOtherAvailablePrinting(InventoryObject inventoryObject)
+        public void ShowOtherAvailablePrinting(DuplicateCardContainer inventoryContainer)
         {
-            var OtherPrintings = SmartCardSetSelector.GetCardsFromInventory(inventoryObject.Card, Collections[0]);
+            var OtherPrintings = SmartCardSetSelector.GetCardsFromInventory(inventoryContainer.CardData(), Collections[0]);
             Dictionary<string, Tuple<string, int, int>> AltPrintings = new();
             foreach (var i in OtherPrintings)
             {
@@ -522,8 +529,8 @@ namespace YGODatabase
                 if (!AltPrintings.ContainsKey(IDString)) { AltPrintings[IDString] = new($"{Set.set_name} {Set.GetRarityCode()} ({Entry.Condition})", 0, OtherDecks); }
                 AltPrintings[IDString] = new(AltPrintings[IDString].Item1, AltPrintings[IDString].Item2 + 1, AltPrintings[IDString].Item3);
             }
-            var Available = AltPrintings.Where(x => inventoryObject.Amount + x.Value.Item3 <= x.Value.Item2).Select(x => $"{x.Value.Item2}X {x.Value.Item1}").ToArray();
-            var Shareable = AltPrintings.Where(x => inventoryObject.Amount <= x.Value.Item2 && inventoryObject.Amount + x.Value.Item3 > x.Value.Item2).Select(x => $"{x.Value.Item2}X {x.Value.Item1}");
+            var Available = AltPrintings.Where(x => inventoryContainer.CardCount() + x.Value.Item3 <= x.Value.Item2).Select(x => $"{x.Value.Item2}X {x.Value.Item1}").ToArray();
+            var Shareable = AltPrintings.Where(x => inventoryContainer.CardCount() <= x.Value.Item2 && inventoryContainer.Entries.Count + x.Value.Item3 > x.Value.Item2).Select(x => $"{x.Value.Item2}X {x.Value.Item1}");
 
             string Message = $"Printings available for use in this deck:\n{string.Join('\n', Available)}";
             if (Shareable.Any()) { Message += $"\n\nPrintings available for sharing with other decks\n{string.Join('\n', Shareable)}"; }
@@ -654,7 +661,7 @@ namespace YGODatabase
                 }
                 var DefaultCard = SmartCardSetSelector.GetBestSetPrinting(card.Item1, Collections, CurrentCollectionInd, setOverride, RarityOverride);
                 Guid UUID = Guid.NewGuid();
-                Collection.data.Add(UUID, new DataModel.InventoryDatabaseEntry
+                Collection.data.Add(UUID, new DataModel.InventoryDatabaseEntry(Collection.UUID)
                 {
                     cardID = card.Item1.id,
                     set_code = DefaultCard.set_code,
@@ -737,7 +744,7 @@ namespace YGODatabase
             {
                 if (card.Value.Category == Categories.MaybeDeck) { continue; }
                 Guid UUID = Guid.NewGuid();
-                Collections[0].data.Add(UUID, new DataModel.InventoryDatabaseEntry
+                Collections[0].data.Add(UUID, new DataModel.InventoryDatabaseEntry(Collections[0].UUID)
                 {
                     cardID = card.Value.cardID,
                     set_code = card.Value.set_code,

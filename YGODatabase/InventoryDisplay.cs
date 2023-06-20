@@ -57,7 +57,7 @@ namespace YGODatabase
             bool MainInventory = CurrentCollectionInd < 1;
 
             Debug.WriteLine($"Printing {Collections[CurrentCollectionInd].Name}");
-            Dictionary<string, DataModel.InventoryObject> UniqueEntries = new Dictionary<string, DataModel.InventoryObject>();
+            Dictionary<string, DuplicateCardContainer> UniqueEntries = new Dictionary<string, DataModel.DuplicateCardContainer>();
 
             foreach (var i in Collections[CurrentCollectionInd].data)
             {
@@ -67,12 +67,24 @@ namespace YGODatabase
 
                 if (!UniqueEntries.ContainsKey(InventoryID))
                 {
-                    UniqueEntries.Add(InventoryID, new DataModel.InventoryObject { Amount = 0 });
+                    UniqueEntries.Add(InventoryID, new DuplicateCardContainer(Collections[CurrentCollectionInd].UUID) { Entries = new List<Guid>()});
+                    UniqueEntries[InventoryID].InvData = new InventoryDatabaseEntry(Collections[CurrentCollectionInd].UUID)
+                    {
+                        DateAdded = i.Value.DateAdded,
+                        LastUpdated = i.Value.LastUpdated,
+                        cardID = i.Value.cardID,
+                        Category = i.Value.Category,
+                        Condition = i.Value.Condition,
+                        ImageIndex = i.Value.ImageIndex,
+                        Language = i.Value.Language,
+                        ParentCollectionID = i.Value.ParentCollectionID,
+                        set_code = i.Value.set_code,
+                        set_rarity = i.Value.set_rarity
+                    };
                 }
-                UniqueEntries[InventoryID].Amount++;
-                UniqueEntries[InventoryID].Card = Card;
-                UniqueEntries[InventoryID].Set = Set;
-                UniqueEntries[InventoryID].InventoryID = i.Key;
+                UniqueEntries[InventoryID].Entries.Add(i.Key);
+                UniqueEntries[InventoryID].InvData.DateAdded = UniqueEntries[InventoryID].InvData.DateAdded >= i.Value.DateAdded ? UniqueEntries[InventoryID].InvData.DateAdded : i.Value.DateAdded;
+                UniqueEntries[InventoryID].InvData.LastUpdated = UniqueEntries[InventoryID].InvData.LastUpdated >= i.Value.LastUpdated ? UniqueEntries[InventoryID].InvData.LastUpdated : i.Value.LastUpdated;
             }
 
             LVTarget.BeginUpdate();
@@ -100,35 +112,35 @@ namespace YGODatabase
                 SortPriority.Insert(0, OrderInd);
             }
 
-            IOrderedEnumerable<InventoryObject> PrintList = UniqueEntries.Values.OrderBy(x => Collections[CurrentCollectionInd].data[x.InventoryID].Category);
+            IOrderedEnumerable<DuplicateCardContainer> PrintList = UniqueEntries.Values.OrderBy(x => x.InvData.Category);
 
             foreach (var i in SortPriority)
             {
                 switch (i)
                 {
                     case 0:
-                        PrintList = OrderDescending ? PrintList.ThenByDescending(x => x.Card.name) : PrintList.ThenBy(x => x.Card.name);
+                        PrintList = OrderDescending ? PrintList.ThenByDescending(x => x.CardData().name) : PrintList.ThenBy(x => x.CardData().name);
                         break;
                     case 1:
-                        PrintList = OrderDescending ? PrintList.ThenByDescending(x => x.Set.set_name) : PrintList.ThenBy(x => x.Set.set_name);
+                        PrintList = OrderDescending ? PrintList.ThenByDescending(x => x.SetData().set_name) : PrintList.ThenBy(x => x.SetData().set_name);
                         break;
                     case 2:
-                        PrintList = OrderDescending ? PrintList.ThenByDescending(x => x.Set.GetRarityIndex()) : PrintList.ThenBy(x => x.Set.GetRarityIndex());
+                        PrintList = OrderDescending ? PrintList.ThenByDescending(x => x.SetData().GetRarityIndex()) : PrintList.ThenBy(x => x.SetData().GetRarityIndex());
                         break;
                     case 3:
-                        PrintList = OrderDescending ? PrintList.ThenByDescending(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]) : PrintList.ThenBy(x => BulkData.Conditions[Collections[CurrentCollectionInd].data[x.InventoryID].Condition]);
+                        PrintList = OrderDescending ? PrintList.ThenByDescending(x => BulkData.Conditions[x.InvData.Condition]) : PrintList.ThenBy(x => BulkData.Conditions[x.InvData.Condition]);
                         break;
                     case 4:
-                        PrintList = OrderDescending ? PrintList.ThenByDescending(x => Collections[CurrentCollectionInd].data[x.InventoryID].DateAdded) : PrintList.ThenBy(x => Collections[CurrentCollectionInd].data[x.InventoryID].DateAdded);
+                        PrintList = OrderDescending ? PrintList.ThenByDescending(x => x.InvData.DateAdded) : PrintList.ThenBy(x => x.InvData.DateAdded);
                         break;
                     case 5:
-                        PrintList = OrderDescending ? PrintList.ThenByDescending(x => Collections[CurrentCollectionInd].data[x.InventoryID].LastUpdated) : PrintList.ThenBy(x => Collections[CurrentCollectionInd].data[x.InventoryID].LastUpdated);
+                        PrintList = OrderDescending ? PrintList.ThenByDescending(x => x.InvData.LastUpdated) : PrintList.ThenBy(x => x.InvData.LastUpdated);
                         break;
                     case 6:
-                        PrintList = OrderDescending ? PrintList.ThenByDescending(x => x.Card.type) : PrintList.ThenBy(x => x.Card.type);
+                        PrintList = OrderDescending ? PrintList.ThenByDescending(x => x.CardData().type) : PrintList.ThenBy(x => x.CardData().type);
                         break;
                     case 7:
-                        PrintList = OrderDescending ? PrintList.ThenByDescending(x => x.Amount) : PrintList.ThenBy(x => x.Amount);
+                        PrintList = OrderDescending ? PrintList.ThenByDescending(x => x.CardCount()) : PrintList.ThenBy(x => x.CardCount());
                         break;
                 }
             }
@@ -162,35 +174,34 @@ namespace YGODatabase
             Categories CurrentCategory = Categories.None;
             foreach (var i in PrintList)
             {
-                bool SearchValid = SearchParser.CardMatchesFilter($"{i.Card.name} {i.Set.set_name} {i.Set.set_rarity}", i.Card, i.Set, Filter, true, true);
+                bool SearchValid = SearchParser.CardMatchesFilter($"", i.CardData(), i.SetData(), Filter, true, true);
                 if (!SearchValid) { continue; }
 
-                CollectionShownCount += i.Amount;
-                var InventoryDatabaseEntry = Collections[CurrentCollectionInd].data[i.InventoryID];
-                int ImageInd = InventoryDatabaseEntry.ImageIndex;
-                List<string> DisplayData = new List<string> { i.Amount.ToString(), i.Card.name + (ImageInd > 0 ? $" ({ImageInd +1 })" : ""), i.Set.set_name, i.Set.GetRarityCode(), BulkData.Conditions[Collections[CurrentCollectionInd].data[i.InventoryID].Condition] };
+                CollectionShownCount += i.CardCount();
+                int ImageInd = i.InvData.ImageIndex;
+                List<string> DisplayData = new List<string> { i.CardCount().ToString(), i.CardData().name + (ImageInd > 0 ? $" ({ImageInd +1 })" : ""), i.SetData().set_name, i.SetData().GetRarityCode(), BulkData.Conditions[i.InvData.Condition] };
                 Color? BackColor = null;
                 if (!MainInventory)
                 {
-                    if (Collections[CurrentCollectionInd].data[i.InventoryID].Category != CurrentCategory)
+                    if (i.InvData.Category != CurrentCategory)
                     {
-                        CurrentCategory = Collections[CurrentCollectionInd].data[i.InventoryID].Category;
+                        CurrentCategory = i.InvData.Category;
                         List<string> CategoryHeader = new List<string> { "#", "", "", CategoryNames[CurrentCategory].ToUpper() + " DECK:", "", "", "" };
                         LVTarget.Items.Add(Utility.CreateListViewItem(null, CategoryHeader.ToArray()));
                         CategoryHeaderEdits[CurrentCategory] = new(InvListPos, 0);
                         InvListPos++;
                     }
-                    var OtherDecks = SmartCardSetSelector.GetAmountOfCardInOtherDecks(i.Card, Collections, CurrentCollectionInd, i.Set.set_code, i.Set.set_rarity, true);
-                    var InInventory = SmartCardSetSelector.GetCardsFromInventory(i.Card, Collections[0], i.Set.set_code, i.Set.set_rarity);
-                    var InInventorySimilar = SmartCardSetSelector.GetCardsFromInventory(i.Card, Collections[0]);
+                    var OtherDecks = SmartCardSetSelector.GetAmountOfCardInOtherDecks(i.CardData(), Collections, CurrentCollectionInd, i.SetData().set_code, i.SetData().set_rarity, true);
+                    var InInventory = SmartCardSetSelector.GetCardsFromInventory(i.CardData(), Collections[0], i.SetData().set_code, i.SetData().set_rarity);
+                    var InInventorySimilar = SmartCardSetSelector.GetCardsFromInventory(i.CardData(), Collections[0]);
                     DisplayData.Insert(1, InInventory.Count().ToString());
                     DisplayData.Insert(1, OtherDecks.ToString());
-                    if (i.Amount > InInventorySimilar.Count()) { BackColor = Color.LightCoral; }                //No cards available including other printings
-                    else if (i.Amount > InInventory.Count()) { BackColor = Color.LightPink; }                   //No cards of the exact printing available
-                    else if ((i.Amount + OtherDecks) > InInventory.Count()) { BackColor = Color.LightYellow; }  //Cards are available but must be shared between decks
+                    if (i.CardCount() > InInventorySimilar.Count()) { BackColor = Color.LightCoral; }                //No cards available including other printings
+                    else if (i.CardCount() > InInventory.Count()) { BackColor = Color.LightPink; }                   //No cards of the exact printing available
+                    else if ((i.CardCount() + OtherDecks) > InInventory.Count()) { BackColor = Color.LightYellow; }  //Cards are available but must be shared between decks
                 }
                 LVTarget.Items.Add(Utility.CreateListViewItem(i, DisplayData.ToArray(), BackColor));
-                if (CategoryHeaderEdits.ContainsKey(CurrentCategory)) { CategoryHeaderEdits[CurrentCategory] = new(CategoryHeaderEdits[CurrentCategory].Item1, CategoryHeaderEdits[CurrentCategory].Item2+i.Amount); }
+                if (CategoryHeaderEdits.ContainsKey(CurrentCategory)) { CategoryHeaderEdits[CurrentCategory] = new(CategoryHeaderEdits[CurrentCategory].Item1, CategoryHeaderEdits[CurrentCategory].Item2+i.CardCount()); }
                 InvListPos++;
             }
 
@@ -212,14 +223,14 @@ namespace YGODatabase
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
             int ImageIndex = 0;
-            if (listView1.SelectedItems.Count > 0 && listView1.SelectedItems[0].Tag is DataModel.InventoryObject InventorySelectedCard)
+            if (listView1.SelectedItems.Count > 0 && listView1.SelectedItems[0].Tag is DataModel.DuplicateCardContainer InventorySelectedCard)
             {
-                richTextBox1.Text = InventorySelectedCard.Card.desc;
-                ImageIndex = _Parent.Collections[CurrentCollectionInd].data[InventorySelectedCard.InventoryID].ImageIndex; 
+                richTextBox1.Text = InventorySelectedCard.CardData().desc;
+                ImageIndex = InventorySelectedCard.InvData.ImageIndex; 
             }
             else { return; }
-            UpdatepictureBox(InventorySelectedCard.Card, ImageIndex);
-            UpdateCardInfo(InventorySelectedCard.Card, InventorySelectedCard.Set);
+            UpdatepictureBox(InventorySelectedCard.CardData(), ImageIndex);
+            UpdateCardInfo(InventorySelectedCard.CardData(), InventorySelectedCard.SetData());
         }
         private async void UpdatepictureBox(DataModel.YGOCardOBJ card, int ImageIndex)
         {

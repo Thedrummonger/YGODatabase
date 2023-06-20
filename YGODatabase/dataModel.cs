@@ -89,6 +89,8 @@ namespace YGODatabase
 
         public class InventoryDatabaseEntry
         {
+            public InventoryDatabaseEntry(Guid _ParentCollectionID) { ParentCollectionID = _ParentCollectionID; }
+            public Guid ParentCollectionID { get; set; }
             public int cardID { get; set; }
             public string set_code { get; set; }
             public string set_rarity { get; set; }
@@ -98,13 +100,19 @@ namespace YGODatabase
             public Categories Category { get; set; }
             public DateTime DateAdded { get; set; }
             public DateTime LastUpdated { get; set; }
+            public YGOCardOBJ CardData() { return Utility.GetCardByID(cardID); }
+            public YGOSetData SetData() { return Utility.GetExactCard(cardID, set_code, set_rarity); }
         };
-        public class InventoryObject
+        public class DuplicateCardContainer //Contains all exact duplicates of a single card in a given collection
         {
-            public int Amount { get; set; }
-            public YGOCardOBJ Card { get; set; }
-            public YGOSetData Set { get; set; }
-            public Guid InventoryID { get; set; }
+            public DuplicateCardContainer(Guid _ParentCollectionID) { ParentCollectionID = _ParentCollectionID; }
+            public Guid ParentCollectionID { get; set; }
+            public List<Guid> Entries { get; set; }
+            public InventoryDatabaseEntry InvData { get; set; }
+
+            public int CardCount() { return Entries.Count; }
+            public YGOCardOBJ CardData() { return InvData.CardData(); }
+            public YGOSetData SetData() { return InvData.SetData(); }
         }
         public class CardSearchResult
         {
