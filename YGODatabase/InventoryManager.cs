@@ -372,11 +372,16 @@ namespace YGODatabase
                     e.Handled = true;
                     MoveSearchResultListBox(1);
                 }
+                if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Tab) 
+                {
+                    e.Handled = true;
+                    e.SuppressKeyPress = true;
+                }
             }
         }
         private void CaptureTabPress(object sender, PreviewKeyDownEventArgs e)
         {
-            if (e.KeyData == Keys.Tab)
+            if (e.KeyData == Keys.Tab || e.KeyData == Keys.Enter)
             {
                 AddSelectedCard();
                 e.IsInputKey = true;
