@@ -174,7 +174,7 @@ namespace YGODatabase
                     {
                         CurrentCategory = Collections[CurrentCollectionInd].data[i.InventoryID].Category;
                         List<string> CategoryHeader = new List<string> { "#", "", "", CategoryNames[CurrentCategory].ToUpper() + " DECK:", "", "", "" };
-                        LVTarget.Items.Add(Utility.CreateListViewItem(null, CategoryHeader.ToArray(), Color.DarkGray));
+                        LVTarget.Items.Add(Utility.CreateListViewItem(null, CategoryHeader.ToArray()));
                         CategoryHeaderEdits[CurrentCategory] = new(InvListPos, 0);
                         InvListPos++;
                     }
@@ -183,9 +183,9 @@ namespace YGODatabase
                     var InInventorySimilar = SmartCardSetSelector.GetCardsFromInventory(i.Card, Collections[0]);
                     DisplayData.Insert(1, InInventory.Count().ToString());
                     DisplayData.Insert(1, OtherDecks.ToString());
-                    if (i.Amount > InInventorySimilar.Count()) { BackColor = Color.LightCoral; }
-                    else if (i.Amount > InInventory.Count()) { BackColor = Color.LightPink; }
-                    else if ((i.Amount + OtherDecks) > InInventory.Count()) { BackColor = Color.LightYellow; }
+                    if (i.Amount > InInventorySimilar.Count()) { BackColor = Color.LightCoral; }                //No cards available including other printings
+                    else if (i.Amount > InInventory.Count()) { BackColor = Color.LightPink; }                   //No cards of the exact printing available
+                    else if ((i.Amount + OtherDecks) > InInventory.Count()) { BackColor = Color.LightYellow; }  //Cards are available but must be shared between decks
                 }
                 LVTarget.Items.Add(Utility.CreateListViewItem(i, DisplayData.ToArray(), BackColor));
                 if (CategoryHeaderEdits.ContainsKey(CurrentCategory)) { CategoryHeaderEdits[CurrentCategory] = new(CategoryHeaderEdits[CurrentCategory].Item1, CategoryHeaderEdits[CurrentCategory].Item2+i.Amount); }

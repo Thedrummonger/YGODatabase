@@ -15,6 +15,7 @@ using static YGODatabase.DataModel;
 using Microsoft.VisualBasic.ApplicationServices;
 using System.Linq.Expressions;
 using YGODatabase.Properties;
+using System.Drawing;
 
 namespace YGODatabase
 {
@@ -441,13 +442,73 @@ namespace YGODatabase
         private void ShowContextMenu(object sender, ListViewItem SelectedEntry)
         {
             if (SelectedEntry.Tag is null) { return; }
+
+            ContextMenuStrip contextMenu = new();
+            ToolStripItem RefreshContextItem = contextMenu.Items.Add("Refresh");
+            RefreshContextItem.Click += (sender, e) => { PrintInventory(); };
+
             if (SelectedEntry.Tag is InventoryObject inventoryObject)
             {
-                var AllSelectedCards = Collections[CurrentCollectionInd].GetIdenticalCards(inventoryObject.InventoryID, true);
-                Debug.WriteLine(inventoryObject.Card.name);
-                Debug.WriteLine(AllSelectedCards.Count());
-                Debug.WriteLine(SelectedEntry.BackColor);
+                ToolStripItem SelectCard = contextMenu.Items.Add("Select Card");
+                SelectCard.Click += (sender, e) => { selectedCard = inventoryObject.InventoryID; PrintSelectedCard("Selected Card"); };
+
+                if (SelectedEntry.BackColor == Color.LightPink)
+                {
+                    ToolStripItem ShowAltPrintings = contextMenu.Items.Add("Show other available printings");
+                    ShowAltPrintings.Click += (sender, e) => { ShowOtherAvailablePrinting(inventoryObject); };
+                }
+                ToolStripItem ShowOtherdecks = contextMenu.Items.Add("Show other decks using card");
+                ShowOtherdecks.Click += (sender, e) => { ShowOtherDecksUsingCard(inventoryObject); };
             }
+            if (contextMenu.Items.Count > 0)
+            {
+                contextMenu.Show(Cursor.Position);
+            }
+        }
+
+        private void ShowOtherDecksUsingCard(InventoryObject inventoryObject)
+        {
+            Dictionary<Guid, Tuple<string, int, int>> DeckCounts = new Dictionary<Guid, Tuple<string, int, int>>();
+            foreach(var i in Collections.Where(x => x.UUID != Guid.Empty && x.UUID != Collections[CurrentCollectionInd].UUID))
+            {
+                var AmountinDeck = SmartCardSetSelector.GetCardsFromInventory(inventoryObject.Card, i, inventoryObject.Set.set_code, inventoryObject.Set.set_rarity).Count();
+                var SimilarAmountinDeck = SmartCardSetSelector.GetCardsFromInventory(inventoryObject.Card, i).Count();
+                DeckCounts[i.UUID] = new(i.Name, AmountinDeck, SimilarAmountinDeck);
+            }
+            string Message = $"Decks containing: {inventoryObject.Card.name} {inventoryObject.Set.GetRarityCode()} {inventoryObject.Set.set_name}\n\n";
+            foreach(var i in DeckCounts.Values)
+            {
+                if (i.Item3 <= 0) { continue; }
+                Message += $"{i.Item1.ToUpper()}\n";
+                Message += $"Exact Printing: {i.Item2}\n";
+                int OtherPrinting = i.Item3 - i.Item2;
+                if (OtherPrinting > 0) { Message += $"Other Printing: {OtherPrinting} \n"; }
+                Message += $"\n";
+
+            }
+            MessageBox.Show(Message);
+        }
+
+        public void ShowOtherAvailablePrinting(InventoryObject inventoryObject)
+        {
+            var OtherPrintings = SmartCardSetSelector.GetCardsFromInventory(inventoryObject.Card, Collections[0]);
+            Dictionary<string, Tuple<string, int, int>> AltPrintings = new();
+            foreach (var i in OtherPrintings)
+            {
+                var Entry = Collections[0].data[i];
+                var IDString = Entry.CreateIDString();
+                var Card = Utility.GetCardByID(Entry.cardID);
+                var Set = Utility.GetExactCard(Card, Entry.set_code, Entry.set_rarity);
+                var OtherDecks = SmartCardSetSelector.GetAmountOfCardInOtherDecks(Card, Collections, CurrentCollectionInd, Set.set_code, Set.set_rarity, true);
+                if (!AltPrintings.ContainsKey(IDString)) { AltPrintings[IDString] = new($"{Set.set_name} {Set.GetRarityCode()} ({Entry.Condition})", 0, OtherDecks); }
+                AltPrintings[IDString] = new(AltPrintings[IDString].Item1, AltPrintings[IDString].Item2 + 1, AltPrintings[IDString].Item3);
+            }
+            var Available = AltPrintings.Where(x => inventoryObject.Amount + x.Value.Item3 <= x.Value.Item2).Select(x => $"{x.Value.Item2}X {x.Value.Item1}").ToArray();
+            var Shareable = AltPrintings.Where(x => inventoryObject.Amount <= x.Value.Item2 && inventoryObject.Amount + x.Value.Item3 > x.Value.Item2).Select(x => $"{x.Value.Item2}X {x.Value.Item1}");
+
+            string Message = $"Printings available for use in this deck:\n{string.Join('\n', Available)}";
+            if (Shareable.Any()) { Message += $"\n\nPrintings available for sharing with other decks\n{string.Join('\n', Shareable)}"; }
+            MessageBox.Show(Message);
         }
 
         #endregion Inventory Display
