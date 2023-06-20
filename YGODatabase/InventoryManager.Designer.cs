@@ -35,6 +35,8 @@
             this.cmbFilterBy = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.gbSelectedCard = new System.Windows.Forms.GroupBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.numericUpDown2 = new System.Windows.Forms.NumericUpDown();
             this.cmbCollectedCardCategory = new System.Windows.Forms.ComboBox();
             this.label5 = new System.Windows.Forms.Label();
             this.BtnAddOneSelected = new System.Windows.Forms.Button();
@@ -72,10 +74,11 @@
             this.importYDKContentToCurrentInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addCollectionToInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.isPaperCollectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.popoutDisplayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gbCurrentCollection = new System.Windows.Forms.GroupBox();
             this.chkInvDescending = new System.Windows.Forms.CheckBox();
-            this.popoutDisplayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gbSelectedCard.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -139,6 +142,8 @@
             // 
             // gbSelectedCard
             // 
+            this.gbSelectedCard.Controls.Add(this.label6);
+            this.gbSelectedCard.Controls.Add(this.numericUpDown2);
             this.gbSelectedCard.Controls.Add(this.cmbCollectedCardCategory);
             this.gbSelectedCard.Controls.Add(this.label5);
             this.gbSelectedCard.Controls.Add(this.BtnAddOneSelected);
@@ -155,6 +160,24 @@
             this.gbSelectedCard.TabStop = false;
             this.gbSelectedCard.Text = "Last Card added";
             // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("Segoe UI", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label6.Location = new System.Drawing.Point(124, 50);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(40, 24);
+            this.label6.TabIndex = 15;
+            this.label6.Text = "Select\r\nCard Art";
+            // 
+            // numericUpDown2
+            // 
+            this.numericUpDown2.Location = new System.Drawing.Point(124, 76);
+            this.numericUpDown2.Name = "numericUpDown2";
+            this.numericUpDown2.Size = new System.Drawing.Size(36, 23);
+            this.numericUpDown2.TabIndex = 14;
+            this.numericUpDown2.ValueChanged += new System.EventHandler(this.SelectedCardValueEdited);
+            // 
             // cmbCollectedCardCategory
             // 
             this.cmbCollectedCardCategory.FormattingEnabled = true;
@@ -168,7 +191,7 @@
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Segoe UI", 7F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label5.Location = new System.Drawing.Point(117, 42);
+            this.label5.Location = new System.Drawing.Point(81, 50);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(41, 24);
             this.label5.TabIndex = 12;
@@ -176,27 +199,29 @@
             // 
             // BtnAddOneSelected
             // 
-            this.BtnAddOneSelected.Location = new System.Drawing.Point(6, 72);
+            this.BtnAddOneSelected.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.BtnAddOneSelected.Location = new System.Drawing.Point(6, 51);
             this.BtnAddOneSelected.Name = "BtnAddOneSelected";
-            this.BtnAddOneSelected.Size = new System.Drawing.Size(109, 23);
+            this.BtnAddOneSelected.Size = new System.Drawing.Size(71, 23);
             this.BtnAddOneSelected.TabIndex = 11;
-            this.BtnAddOneSelected.Text = "Add One Copy";
+            this.BtnAddOneSelected.Text = "Add 1";
             this.BtnAddOneSelected.UseVisualStyleBackColor = true;
             this.BtnAddOneSelected.Click += new System.EventHandler(this.btnAddOneSelected_Click);
             // 
             // btnRemoveSelected
             // 
-            this.btnRemoveSelected.Location = new System.Drawing.Point(6, 43);
+            this.btnRemoveSelected.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.btnRemoveSelected.Location = new System.Drawing.Point(5, 76);
             this.btnRemoveSelected.Name = "btnRemoveSelected";
-            this.btnRemoveSelected.Size = new System.Drawing.Size(109, 23);
+            this.btnRemoveSelected.Size = new System.Drawing.Size(72, 23);
             this.btnRemoveSelected.TabIndex = 10;
-            this.btnRemoveSelected.Text = "Remove X Copies";
+            this.btnRemoveSelected.Text = "Remove X";
             this.btnRemoveSelected.UseVisualStyleBackColor = true;
             this.btnRemoveSelected.Click += new System.EventHandler(this.btnRemoveSelected_Click);
             // 
             // numericUpDown1
             // 
-            this.numericUpDown1.Location = new System.Drawing.Point(121, 72);
+            this.numericUpDown1.Location = new System.Drawing.Point(81, 76);
             this.numericUpDown1.Name = "numericUpDown1";
             this.numericUpDown1.Size = new System.Drawing.Size(37, 23);
             this.numericUpDown1.TabIndex = 9;
@@ -503,6 +528,13 @@
             this.isPaperCollectionToolStripMenuItem.Text = "Is Paper Collection";
             this.isPaperCollectionToolStripMenuItem.Click += new System.EventHandler(this.chkPaperCollection_CheckedChanged);
             // 
+            // popoutDisplayToolStripMenuItem
+            // 
+            this.popoutDisplayToolStripMenuItem.Name = "popoutDisplayToolStripMenuItem";
+            this.popoutDisplayToolStripMenuItem.Size = new System.Drawing.Size(99, 20);
+            this.popoutDisplayToolStripMenuItem.Text = "Popout Display";
+            this.popoutDisplayToolStripMenuItem.Click += new System.EventHandler(this.popoutDisplayToolStripMenuItem_Click);
+            // 
             // gbCurrentCollection
             // 
             this.gbCurrentCollection.Controls.Add(this.chkInvDescending);
@@ -528,13 +560,6 @@
             this.chkInvDescending.UseVisualStyleBackColor = true;
             this.chkInvDescending.CheckedChanged += new System.EventHandler(this.InventorySearchUpdated);
             // 
-            // popoutDisplayToolStripMenuItem
-            // 
-            this.popoutDisplayToolStripMenuItem.Name = "popoutDisplayToolStripMenuItem";
-            this.popoutDisplayToolStripMenuItem.Size = new System.Drawing.Size(99, 20);
-            this.popoutDisplayToolStripMenuItem.Text = "Popout Display";
-            this.popoutDisplayToolStripMenuItem.Click += new System.EventHandler(this.popoutDisplayToolStripMenuItem_Click);
-            // 
             // InventoryManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -558,6 +583,7 @@
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.CaptureKeyPress);
             this.gbSelectedCard.ResumeLayout(false);
             this.gbSelectedCard.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.groupBox1.ResumeLayout(false);
@@ -620,5 +646,7 @@
         private CheckBox chkInvDescending;
         private ToolStripMenuItem editToolStripMenuItem;
         private ToolStripMenuItem popoutDisplayToolStripMenuItem;
+        private Label label6;
+        private NumericUpDown numericUpDown2;
     }
 }

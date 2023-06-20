@@ -175,15 +175,17 @@ namespace YGODatabase
         bool SelectedCardUpdating = false;
         private void PrintSelectedCard(string Source, int AmountToEdit = 1)
         {
-            gbSelectedCard.Text = Source;
             SelectedCardUpdating = true;
+
+            gbSelectedCard.Text = Source;
             cmbSelctedCardRarity.Enabled = true;
             cmbSelectedCardSet.Enabled = true;
             cmbSelectedCardCondition.Enabled = true;
             cmbCollectedCardCategory.Enabled = true;
             btnRemoveSelected.Enabled = true;
             BtnAddOneSelected.Enabled = true;
-            numericUpDown1.Enabled = false;
+            numericUpDown1.Enabled = true;
+            numericUpDown2.Enabled = true;
             if (selectedCard == Guid.Empty || !Collections[CurrentCollectionInd].data.ContainsKey(selectedCard))
             {
                 gbSelectedCard.Text = "N/A";
@@ -191,19 +193,23 @@ namespace YGODatabase
                 cmbSelctedCardRarity.DataSource = null;
                 cmbSelectedCardSet.DataSource = null;
                 cmbSelectedCardCondition.DataSource = null;
-                numericUpDown1.Enabled = false;
 
                 cmbSelctedCardRarity.Enabled = false;
                 cmbSelectedCardSet.Enabled = false;
                 cmbSelectedCardCondition.Enabled = false;
                 cmbCollectedCardCategory.Enabled = false;
-                SelectedCardUpdating = false;
                 btnRemoveSelected.Enabled = false;
                 BtnAddOneSelected.Enabled = false;
                 numericUpDown1.Enabled = false;
                 numericUpDown1.Minimum = 0;
                 numericUpDown1.Maximum = 0;
                 numericUpDown1.Value = 0;
+                numericUpDown2.Enabled = false;
+                numericUpDown2.Minimum = 0;
+                numericUpDown2.Maximum = 0;
+                numericUpDown2.Value = 0;
+
+                SelectedCardUpdating = false;
                 return;
             }
             var InventoryObject = Collections[CurrentCollectionInd].data[selectedCard];
@@ -219,14 +225,19 @@ namespace YGODatabase
             cmbCollectedCardCategory.DataSource = CategoryNames.Select(x => new ComboBoxItem { DisplayName = x.Value, tag = x.Key }).ToArray();
             foreach (ComboBoxItem i in cmbCollectedCardCategory.Items) { if ((Categories)i.tag == InventoryObject.Category) { cmbCollectedCardCategory.SelectedItem = i; break; } }
 
-            SelectedCardUpdating = false;
+            numericUpDown2.Minimum = 1;
+            numericUpDown2.Maximum = Card.card_images.Length;
+            numericUpDown2.Value = InventoryObject.ImageIndex + 1;
 
             var IdenticalCards = Collections[CurrentCollectionInd].GetIdenticalCards(selectedCard, true);
             if (AmountToEdit > IdenticalCards.Length) { AmountToEdit = IdenticalCards.Length; }
-            numericUpDown1.Enabled = true;
+            
             numericUpDown1.Minimum = 1;
             numericUpDown1.Maximum = IdenticalCards.Length;
             numericUpDown1.Value = AmountToEdit;
+
+            SelectedCardUpdating = false;
+
 
         }
         private void SelectedCardValueEdited(object sender, EventArgs e)
@@ -236,12 +247,13 @@ namespace YGODatabase
             string Rarity = (string)cmbSelctedCardRarity.SelectedItem;
             string Set = (string)cmbSelectedCardSet.SelectedItem;
             string Condition = (string)cmbSelectedCardCondition.SelectedItem;
+            int Image = (int)numericUpDown2.Value - 1;
             Categories Category = (Categories)((ComboBoxItem)cmbCollectedCardCategory.SelectedItem).tag;
 
-            Guid[] SelectedCards = Collections[CurrentCollectionInd].GetIdenticalCards(selectedCard, true);
+            Guid[] SelectedCards = Collections[CurrentCollectionInd].GetIdenticalCards(selectedCard, true).Reverse().ToArray();
             for(var i = 0; i < numericUpDown1.Value; i++)
             {
-                EditCard(SelectedCards[i], Rarity, Set, Condition, sender == cmbSelectedCardSet, Category);
+                EditCard(SelectedCards[i], Rarity, Set, Condition, sender == cmbSelectedCardSet, Category, Image);
             }
 
             SaveCollection(Collections[CurrentCollectionInd]);
@@ -249,9 +261,10 @@ namespace YGODatabase
             PrintSelectedCard(gbSelectedCard.Text, (int)numericUpDown1.Value);
             PrintInventory();
             UpdatePopoutForms(false);
+            UpdatepictureBox(Utility.GetCardByID(Collections[CurrentCollectionInd].data[selectedCard].cardID), Collections[CurrentCollectionInd].data[selectedCard].ImageIndex);
         }
 
-        private void EditCard(Guid UUID, string NewRarity, string NewSetName, string NewCondition, bool EditingSet, Categories NewCategory)
+        private void EditCard(Guid UUID, string NewRarity, string NewSetName, string NewCondition, bool EditingSet, Categories NewCategory, int ImageIndex)
         {
             var InventoryObject = Collections[CurrentCollectionInd].data[UUID];
             var Card = Utility.GetCardByID(InventoryObject.cardID);
@@ -272,6 +285,7 @@ namespace YGODatabase
             InventoryObject.set_code = NewSetEntry.set_code;
             InventoryObject.Condition = NewCondition;
             InventoryObject.Category = NewCategory;
+            InventoryObject.ImageIndex = ImageIndex;
         }
 
         private void btnRemoveSelected_Click(object sender, EventArgs e)
@@ -288,7 +302,6 @@ namespace YGODatabase
             selectedCard = RemainingInventory.Any() ? RemainingInventory.Last() : Guid.Empty;
 
             SaveCollection(Collections[CurrentCollectionInd]);
-
             PrintSelectedCard(gbSelectedCard.Text);
             PrintInventory();
             UpdatePopoutForms(false);
@@ -306,6 +319,7 @@ namespace YGODatabase
                 set_code = CurrentCard.set_code,
                 set_rarity = CurrentCard.set_rarity,
                 Category = CurrentCard.Category,
+                ImageIndex = CurrentCard.ImageIndex,
                 DateAdded = DateAndTime.Now,
                 LastUpdated= DateAndTime.Now
             });
@@ -525,7 +539,7 @@ namespace YGODatabase
             isPaperCollectionToolStripMenuItem.Visible = Index != 0;
             isPaperCollectionToolStripMenuItem.Checked = Collections[Index].PaperCollection;
             addCollectionToInventoryToolStripMenuItem.Visible = Index != 0;
-            cmbCollectedCardCategory.Visible = Index != 0;
+            cmbCollectedCardCategory.Enabled = Index != 0;
             if (Index == 0) { cmbAddTo.SelectedIndex = 0; }
             lblAddTo.Visible = Index != 0;
             cmbAddTo.Visible = Index != 0;
@@ -699,8 +713,7 @@ namespace YGODatabase
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
-            string Gramar = numericUpDown1.Value > 1 ? "Copies" : "Copy";
-            btnRemoveSelected.Text = $"Remove {numericUpDown1.Value} {Gramar}";
+            btnRemoveSelected.Text = $"Remove {numericUpDown1.Value}";
         }
 
         private void addCollectionToInventoryToolStripMenuItem_Click(object sender, EventArgs e)

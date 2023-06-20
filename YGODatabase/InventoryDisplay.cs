@@ -166,7 +166,9 @@ namespace YGODatabase
                 if (!SearchValid) { continue; }
 
                 CollectionShownCount += i.Amount;
-                List<string> DisplayData = new List<string> { i.Amount.ToString(), i.Card.name, i.Set.set_name, i.Set.GetRarityCode(), BulkData.Conditions[Collections[CurrentCollectionInd].data[i.InventoryID].Condition] };
+                var InventoryDatabaseEntry = Collections[CurrentCollectionInd].data[i.InventoryID];
+                int ImageInd = InventoryDatabaseEntry.ImageIndex;
+                List<string> DisplayData = new List<string> { i.Amount.ToString(), i.Card.name + (ImageInd > 0 ? $" ({ImageInd +1 })" : ""), i.Set.set_name, i.Set.GetRarityCode(), BulkData.Conditions[Collections[CurrentCollectionInd].data[i.InventoryID].Condition] };
                 Color? BackColor = null;
                 if (!MainInventory)
                 {
