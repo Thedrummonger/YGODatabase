@@ -16,6 +16,8 @@ using Microsoft.VisualBasic.ApplicationServices;
 using System.Linq.Expressions;
 using YGODatabase.Properties;
 using System.Drawing;
+using System.Security.Cryptography.X509Certificates;
+using System.Collections.ObjectModel;
 
 namespace YGODatabase
 {
@@ -185,8 +187,8 @@ namespace YGODatabase
             {
                 gbSelectedCard.Text = "N/A";
                 lblSelectedCard.Text = "N/A";
-                ManageNUD(numericUpDown1, 0, 0, 0);
-                ManageNUD(numericUpDown2, 0, 0, 0);
+                Utility.ManageNUD(numericUpDown1, 0, 0, 0);
+                Utility.ManageNUD(numericUpDown2, 0, 0, 0);
                 cmbSelctedCardRarity.DataSource = null;
                 cmbSelectedCardSet.DataSource = null;
                 cmbSelectedCardCondition.DataSource = null;
@@ -195,7 +197,7 @@ namespace YGODatabase
             }
             var InventoryObject = selectedCard.InvData;
             var Card = Utility.GetCardByID(InventoryObject.cardID);
-            var SetEntry = Card.card_sets.First(x => x.set_code == InventoryObject.set_code && x.set_rarity == InventoryObject.set_rarity);
+            var SetEntry = Utility.GetExactCard(Card, InventoryObject.set_code, InventoryObject.set_rarity);
 
             gbSelectedCard.Text = Source;
             lblSelectedCard.Text = $"{Card.name}";
@@ -211,17 +213,10 @@ namespace YGODatabase
 
             var IdenticalCards = selectedCard.Entries.Count;
             if (AmountToEdit > IdenticalCards) { AmountToEdit = IdenticalCards; }
-            ManageNUD(numericUpDown1, 1, IdenticalCards, AmountToEdit);
-            ManageNUD(numericUpDown2, 1, Card.card_images.Length, InventoryObject.ImageIndex + 1);
+            Utility.ManageNUD(numericUpDown1, 1, IdenticalCards, AmountToEdit);
+            Utility.ManageNUD(numericUpDown2, 1, Card.card_images.Length, InventoryObject.ImageIndex + 1);
 
             SelectedCardUpdating = false;
-
-            void ManageNUD(NumericUpDown NUD, int min, int max, int cur)
-            {
-                NUD.Minimum = min;
-                NUD.Maximum = max;
-                NUD.Value = cur;
-            }
 
         }
         private void SelectedCardValueEdited(object sender, EventArgs e)
@@ -362,7 +357,7 @@ namespace YGODatabase
                     e.Handled = true;
                     MoveSearchResultListBox(1);
                 }
-                if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Tab) 
+                if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Tab)
                 {
                     e.Handled = true;
                     e.SuppressKeyPress = true;
@@ -480,9 +475,9 @@ namespace YGODatabase
             Dictionary<Guid, Tuple<string, int, int>> DeckCounts = new Dictionary<Guid, Tuple<string, int, int>>();
             foreach(var i in Collections.Where(x => x.UUID != Guid.Empty && x.UUID != Collections[CurrentCollectionInd].UUID))
             {
-                var AmountinDeck = SmartCardSetSelector.GetCardsFromInventory(inventoryObject.CardData(), i, inventoryObject.SetData().set_code, inventoryObject.SetData().set_rarity).Count();
-                var SimilarAmountinDeck = SmartCardSetSelector.GetCardsFromInventory(inventoryObject.CardData(), i).Count();
-                DeckCounts[i.UUID] = new(i.Name, AmountinDeck, SimilarAmountinDeck);
+                var AmountinDeck = CollectionSearchUtils.GetIdenticalCardsFromCollection(i, inventoryObject.InvData, new CardMatchFilters().SetAll(true));
+                var SimilarAmountinDeck = CollectionSearchUtils.GetIdenticalCardsFromCollection(i, inventoryObject.InvData, new CardMatchFilters().SetAll(false));
+                DeckCounts[i.UUID] = new(i.Name, AmountinDeck.Count(), SimilarAmountinDeck.Count());
             }
             string Message = $"Decks containing: {inventoryObject.CardData().name} {inventoryObject.SetData().GetRarityCode()} {inventoryObject.SetData().set_name}\n\n";
             foreach(var i in DeckCounts.Values)
@@ -500,7 +495,7 @@ namespace YGODatabase
 
         public void ShowOtherAvailablePrinting(DuplicateCardContainer inventoryContainer)
         {
-            var OtherPrintings = SmartCardSetSelector.GetCardsFromInventory(inventoryContainer.CardData(), Collections[0]);
+            var OtherPrintings = CollectionSearchUtils.GetIdenticalCardsFromCollection(Collections[0], inventoryContainer.InvData, new CardMatchFilters().SetAll(false)); ;
             Dictionary<string, Tuple<string, int, int>> AltPrintings = new();
             foreach (var i in OtherPrintings)
             {
@@ -508,12 +503,12 @@ namespace YGODatabase
                 var IDString = Entry.CreateIDString();
                 var Card = Utility.GetCardByID(Entry.cardID);
                 var Set = Utility.GetExactCard(Card, Entry.set_code, Entry.set_rarity);
-                var OtherDecks = SmartCardSetSelector.GetAmountOfCardInOtherDecks(Card, Collections, CurrentCollectionInd, Set.set_code, Set.set_rarity, true);
-                if (!AltPrintings.ContainsKey(IDString)) { AltPrintings[IDString] = new($"{Set.set_name} {Set.GetRarityCode()} ({Entry.Condition})", 0, OtherDecks); }
+                var OtherDecks = CollectionSearchUtils.GetAmountOfCardInNonInventoryCollections(Collections, inventoryContainer.InvData, new int[] {CurrentCollectionInd}, new CardMatchFilters(), true);
+                if (!AltPrintings.ContainsKey(IDString)) { AltPrintings[IDString] = new($"{Set.set_name} {Set.GetRarityCode()} ({Entry.Condition}) (Art{Entry.ImageIndex+1})", 0, OtherDecks); }
                 AltPrintings[IDString] = new(AltPrintings[IDString].Item1, AltPrintings[IDString].Item2 + 1, AltPrintings[IDString].Item3);
             }
-            var Available = AltPrintings.Where(x => inventoryContainer.CardCount() + x.Value.Item3 <= x.Value.Item2).Select(x => $"{x.Value.Item2}X {x.Value.Item1}").ToArray();
-            var Shareable = AltPrintings.Where(x => inventoryContainer.CardCount() <= x.Value.Item2 && inventoryContainer.Entries.Count + x.Value.Item3 > x.Value.Item2).Select(x => $"{x.Value.Item2}X {x.Value.Item1}");
+            var Available = AltPrintings.Where(x => x.Value.Item3 < 1).Select(x => $"{x.Value.Item2 - x.Value.Item3}X {x.Value.Item1}").ToArray();
+            var Shareable = AltPrintings.Where(x => x.Value.Item3 > 0).Select(x => $"{x.Value.Item2}X {x.Value.Item1}");
 
             string Message = $"Printings available for use in this deck:\n{string.Join('\n', Available)}";
             if (Shareable.Any()) { Message += $"\n\nPrintings available for sharing with other decks\n{string.Join('\n', Shareable)}"; }
@@ -751,6 +746,8 @@ namespace YGODatabase
                 Collection.Name = input;
                 SaveCollection(Collections[CurrentCollectionInd]);
             }
+            UpdateCollectionsList();
+            comboBox1.SelectedIndex = CurrentCollectionInd;
         }
 
         public List<InventoryDisplay> ActiveDisplays = new List<InventoryDisplay>();
@@ -770,5 +767,6 @@ namespace YGODatabase
                 i.UpdateData(CollectionsChanged);
             }
         }
+
     }
 }

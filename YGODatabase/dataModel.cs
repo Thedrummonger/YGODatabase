@@ -86,7 +86,33 @@ namespace YGODatabase
             public string coolstuffinc_price { get; set; }
         }
 
+        public class CardMatchFilters
+        {
+            public bool FilterSet { get; set; } = true;
+            public bool FilterRarity { get; set; } = true;
+            public bool FilterCondition { get; set; } = true;
+            public bool FilterCategory { get; set; } = true;
+            public bool FilterArt { get; set; } = true;
+            public CardMatchFilters SetAll(bool val)
+            {
+                FilterSet = val;
+                FilterRarity = val;
+                FilterCondition = val;
+                FilterCategory = val;
+                FilterArt = val;
+                return this;
+            }
+            public CardMatchFilters Set(bool? _FilterSet = null, bool? _FilterRarity = null, bool? _FilterCondition = null, bool? _FilterCategory = null, bool? _FilterArt = null)
+            {
+                FilterSet = _FilterSet??FilterSet;
+                FilterRarity = _FilterRarity??FilterRarity;
+                FilterCondition = _FilterCondition??FilterCondition;
+                FilterCategory = _FilterCategory??FilterCategory;
+                FilterArt = _FilterArt??FilterArt;
+                return this;
+            }
 
+        }
         public class InventoryDatabaseEntry
         {
             public InventoryDatabaseEntry(Guid _ParentCollectionID) { ParentCollectionID = _ParentCollectionID; }

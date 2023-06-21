@@ -25,11 +25,16 @@ namespace YGODatabase
 
             List<YGOSetData> AvailableValidPrintings = new List<YGOSetData>();
 
+            string FileterSetCode = SetCode??Card.card_sets.First().set_code;
+            string FileterSetRarity = SetRarity??Card.card_sets.First().set_rarity;
+
             if (CurrentCollection > 0) //Is a deck and not inventory
             {
                 foreach(var i in ValidPrintings)
                 {
-                    int AmountAvailable = GetAmountOfCardAvailable(Card, Collections, Array.Empty<int>(), i.set_code, i.set_rarity, true);
+                    InventoryDatabaseEntry Target = new InventoryDatabaseEntry(Collections[CurrentCollection].UUID) { cardID = Card.id, set_code = FileterSetCode, set_rarity = FileterSetRarity };
+                    CardMatchFilters filters = new CardMatchFilters().SetAll(false).Set(_FilterSet: SetCode is not null, _FilterRarity: SetRarity is not null);
+                    int AmountAvailable = CollectionSearchUtils.GetAmountOfCardAvailable(Target, Collections, Array.Empty<int>(), filters, true);
                     if (AmountAvailable > 0) { AvailableValidPrintings.Add(i); }
                 }
             }
@@ -38,46 +43,6 @@ namespace YGODatabase
             ValidPrintings = ValidPrintings.OrderBy(x => x.GetRarityIndex());
 
             return ValidPrintings.FirstOrDefault();
-        }
-
-        public static IEnumerable<Guid> GetCardsFromInventory(YGOCardOBJ Card, CardCollection Inventory, string? FilerSet = null, string? FilerRarity = null)
-        {
-            return Inventory.data.Where(x => 
-                x.Value.cardID == Card.id && 
-                (FilerSet == null || x.Value.set_code == FilerSet) && 
-                (FilerRarity == null || x.Value.set_rarity == FilerRarity) &&
-                x.Value.Category != Categories.MaybeDeck
-            ).Select(x => x.Key);
-        }
-
-        public static int GetAmountOfCardInOtherDecks(YGOCardOBJ Card, List<CardCollection> Collections, int IgnoreCollection, string? FilerSet = null, string? FilerRarity = null, bool PaperOnly = false)
-        {
-            return GetAmountOfCardInOtherDecks(Card, Collections, new int[] { IgnoreCollection }, FilerSet, FilerRarity, PaperOnly);
-        }
-        public static int GetAmountOfCardInOtherDecks(YGOCardOBJ Card, List<CardCollection> Collections, int[] IgnoreCollection, string? FilerSet = null, string? FilerRarity = null, bool PaperOnly = false)
-        {
-            int CardsInOtherDecks = 0;
-            int CollectionIndex = -1;
-            foreach (var collection in Collections.Where(x => x.PaperCollection || !PaperOnly))
-            {
-                CollectionIndex++;
-                if (CollectionIndex == 0 ||  IgnoreCollection.Contains(CollectionIndex)) { continue; }
-                var OtherDeckCount = GetCardsFromInventory(Card, collection, FilerSet, FilerRarity);
-                CardsInOtherDecks += OtherDeckCount.Count();
-            }
-            return CardsInOtherDecks;
-        }
-
-        public static int GetAmountOfCardAvailable(YGOCardOBJ Card, List<CardCollection> Collections, int IgnoreCollection, string? FilerSet = null, string? FilerRarity = null, bool IgnoreNonPape = true)
-        {
-            return GetAmountOfCardAvailable(Card, Collections, new int[] { IgnoreCollection }, FilerSet, FilerRarity, IgnoreNonPape);
-        }
-        public static int GetAmountOfCardAvailable(YGOCardOBJ Card, List<CardCollection> Collections, int[] IgnoreCollection, string? FilerSet = null, string? FilerRarity = null, bool IgnoreNonPape = true)
-        {
-            int InInventory = GetCardsFromInventory(Card, Collections[0], FilerSet, FilerRarity).Count();
-            int InOtherDecks = GetAmountOfCardInOtherDecks(Card, Collections, IgnoreCollection, FilerSet, FilerRarity, IgnoreNonPape);
-            int AmountAvailable = InInventory - InOtherDecks;
-            return AmountAvailable;
         }
 
     }

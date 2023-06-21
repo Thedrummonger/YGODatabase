@@ -108,6 +108,36 @@ namespace YGODatabase
             }
             return Rarities;
         }
+        public static string[] GetCommonSets(IEnumerable<YGOCardOBJ> Cards)
+        {
+            List<string> AllSetNames = new List<string>();
+            foreach (var Card in Cards)
+            {
+                foreach (var set in Card.card_sets)
+                {
+                    if (!AllSetNames.Contains(set.set_name)) { AllSetNames.Add(set.set_name); }
+                }
+            }
+
+            List<string> CommonSets = new List<string>();
+            foreach (var SetName in AllSetNames)
+            {
+                var CardsInThisSet = Cards.Where(x => x.card_sets.Any(y => SetName == y.set_name));
+                var CardsNotInThisSet = Cards.Where(x => !x.card_sets.Any(y => SetName == y.set_name));
+
+                if (!CardsNotInThisSet.Any())
+                {
+                    CommonSets.Add(SetName);
+                    Debug.WriteLine($"All cards were printed in set {SetName}");
+                }
+                else
+                {
+                    Debug.WriteLine($"Not all cards were printed in set {SetName}");
+                    Debug.WriteLine($"Missing: {JsonConvert.SerializeObject(CardsNotInThisSet.Select(x => x.name).Count())}");
+                }
+            }
+            return CommonSets.ToArray();
+        }
 
         public static string CleanCardName(this string input, string SpecialCharReplace = "")
         {
@@ -116,29 +146,18 @@ namespace YGODatabase
             s1 = s1.ToLower();
             return s1;
         }
-
-        public static string CreateIDString(this InventoryDatabaseEntry Inventory)
+        public static string CreateIDString(this InventoryDatabaseEntry Inventory, CardMatchFilters? filters = null)
         {
+            var Filter = filters?? new CardMatchFilters();
             var Card = GetCardByID(Inventory.cardID);
             var Set = GetExactCard(Inventory.cardID, Inventory.set_code, Inventory.set_rarity);
-            return $"{Card.name} {Set.set_name} {Set.set_rarity} {Inventory.Condition} {Inventory.Category} ART{Inventory.ImageIndex}";
-        }
-
-        public static Guid[] GetIdenticalCards(this CardCollection CurrentCollction, Guid TargetCardUUID, bool IncludeTarget)
-        {
-            var Target = CurrentCollction.data[TargetCardUUID];
-            Guid[] IdenticalEntries = CurrentCollction.data.Where(x => (x.Key != TargetCardUUID || IncludeTarget) && x.Value.CreateIDString() == Target.CreateIDString()).Select(x => x.Key).ToArray();
-            return IdenticalEntries??Array.Empty<Guid>();
-        }
-
-        public static ListViewItem CreateListViewItem(object Tag, string[] Columns, Color? color = null)
-        {
-            ListViewItem item = new ListViewItem();
-            item.SubItems.AddRange(Columns);
-            item.SubItems.RemoveAt(0);
-            item.Tag = Tag;
-            if (color is not null) { item.BackColor = (Color)color; }
-            return item;
+            string ID = $"{Card.name}";
+            if (Filter.FilterSet) { ID += $" {Set.set_name}"; }
+            if (Filter.FilterRarity) { ID += $" {Set.set_rarity}"; }
+            if (Filter.FilterCondition) { ID += $" {Inventory.Condition}"; }
+            if (Filter.FilterCategory) { ID += $" {Inventory.Category}"; }
+            if (Filter.FilterArt) { ID += $" {Inventory.ImageIndex}"; }
+            return ID;
         }
         public static string BuildFileName(string File, int ID, string Dir)
         {
@@ -154,7 +173,17 @@ namespace YGODatabase
             }
             return BuildFileName(File, UniqueID, Dir);
         }
-        public static DataModel.Divider CreateDivider(object containerObject, string DividerText = "")
+
+        public static ListViewItem CreateListViewItem(object Tag, string[] Columns, Color? color = null)
+        {
+            ListViewItem item = new ListViewItem();
+            item.SubItems.AddRange(Columns);
+            item.SubItems.RemoveAt(0);
+            item.Tag = Tag;
+            if (color is not null) { item.BackColor = (Color)color; }
+            return item;
+        }
+        public static Divider CreateDivider(object containerObject, string DividerText = "")
         {
             Font font;
             Graphics g;
@@ -191,44 +220,25 @@ namespace YGODatabase
             }
             return new DataModel.Divider { Display = Divider };
         }
-
-        public static string[] GetCommonSets(IEnumerable<YGOCardOBJ> Cards)
+        public static void MoveItemAtIndexToFront<T>(this List<T> list, int index)
         {
-            List<string> AllSetNames = new List<string>();
-            foreach (var Card in Cards)
-            {
-                foreach (var set in Card.card_sets)
-                {
-                    if (!AllSetNames.Contains(set.set_name)) { AllSetNames.Add(set.set_name); }
-                }
-            }
-
-            List<string> CommonSets = new List<string>();
-            foreach (var SetName in AllSetNames)
-            { 
-                var CardsInThisSet = Cards.Where(x => x.card_sets.Any(y => SetName == y.set_name));
-                var CardsNotInThisSet = Cards.Where(x => !x.card_sets.Any(y => SetName == y.set_name));
-
-                if (!CardsNotInThisSet.Any())
-                {
-                    CommonSets.Add(SetName);
-                    Debug.WriteLine($"All cards were printed in set {SetName}");
-                }
-                else
-                {
-                    Debug.WriteLine($"Not all cards were printed in set {SetName}");
-                    Debug.WriteLine($"Missing: {JsonConvert.SerializeObject(CardsNotInThisSet.Select(x => x.name).Count())}");
-                }
-            }
-            return CommonSets.ToArray();
+            T item = list[index];
+            list.RemoveAt(index);
+            list.Insert(0, item);
+        }
+        public static void ManageNUD(NumericUpDown NUD, int min, int max, int cur)
+        {
+            NUD.Minimum = min;
+            NUD.Maximum = max;
+            NUD.Value = cur;
         }
 
         public static DuplicateCardContainer CreateDuplicateCardContainer(CardCollection Collection, Guid UUID)
         {
             var databaseEntry = Collection.data[UUID];
-            DuplicateCardContainer Container = new DuplicateCardContainer(databaseEntry.ParentCollectionID);
+            DuplicateCardContainer Container = new(Collection.UUID);
             Container.Entries = new List<Guid>();
-            Container.InvData = new InventoryDatabaseEntry(databaseEntry.ParentCollectionID)
+            Container.InvData = new InventoryDatabaseEntry(Collection.UUID)
             {
                 DateAdded = databaseEntry.DateAdded,
                 LastUpdated = databaseEntry.LastUpdated,
@@ -241,15 +251,8 @@ namespace YGODatabase
                 set_code = databaseEntry.set_code,
                 set_rarity = databaseEntry.set_rarity
             };
-            Container.Entries = Utility.GetIdenticalCards(Collection, UUID, true).ToList();
+            Container.Entries = CollectionSearchUtils.GetIdenticalCardsFromCollection(Collection, Container.InvData).ToList();
             return Container;
-        }
-
-        public static void MoveItemAtIndexToFront<T>(this List<T> list, int index)
-        {
-            T item = list[index];
-            list.RemoveAt(index);
-            list.Insert(0, item);
         }
     }
 }

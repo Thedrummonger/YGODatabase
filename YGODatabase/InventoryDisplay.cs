@@ -156,34 +156,38 @@ namespace YGODatabase
             if (MainInventory)
             {
                 LVTarget.Columns.Add("#", 20);
-                LVTarget.Columns.Add("Card", 296);
-                LVTarget.Columns.Add("Set", 150);
+                LVTarget.Columns.Add("D", 25);
+                LVTarget.Columns.Add("Card", 276);
+                LVTarget.Columns.Add("Set", 145);
                 LVTarget.Columns.Add("Rarity", 42);
                 LVTarget.Columns.Add("Con", 45);
             }
             else
             {
                 LVTarget.Columns.Add("#", 20);
-                LVTarget.Columns.Add("D", 20);
-                LVTarget.Columns.Add("I", 20);
+                LVTarget.Columns.Add("D", 25);
+                LVTarget.Columns.Add("I", 25);
                 LVTarget.Columns.Add("Card", 267);
-                LVTarget.Columns.Add("Set", 138);
+                LVTarget.Columns.Add("Set", 128);
                 LVTarget.Columns.Add("Rarity", 42);
                 LVTarget.Columns.Add("Con", 45);
             }
 
             Categories CurrentCategory = Categories.None;
+
             foreach (var i in PrintList)
             {
                 bool SearchValid = SearchParser.CardMatchesFilter($"", i.CardData(), i.SetData(), Filter, true, true);
                 if (!SearchValid) { continue; }
 
+                var OtherDecks = CollectionSearchUtils.GetAmountOfCardInNonInventoryCollections(Collections, i.InvData, new int[] { CurrentCollectionInd }, new CardMatchFilters().SetAll(true), true);
                 CollectionShownCount += i.CardCount();
                 int ImageInd = i.InvData.ImageIndex;
-                List<string> DisplayData = new List<string> { i.CardCount().ToString(), i.CardData().name + (ImageInd > 0 ? $" ({ImageInd +1 })" : ""), i.SetData().set_name, i.SetData().GetRarityCode(), BulkData.Conditions[i.InvData.Condition] };
+                List<string> DisplayData = new List<string> { i.CardCount().ToString(), OtherDecks.ToString(), i.CardData().name + (ImageInd > 0 ? $" ({ImageInd +1 })" : ""), i.SetData().set_name, i.SetData().GetRarityCode(), BulkData.Conditions[i.InvData.Condition] };
                 Color? BackColor = null;
                 if (!MainInventory)
                 {
+                    Debug.WriteLine("Danger Zone");
                     if (i.InvData.Category != CurrentCategory)
                     {
                         CurrentCategory = i.InvData.Category;
@@ -192,11 +196,9 @@ namespace YGODatabase
                         CategoryHeaderEdits[CurrentCategory] = new(InvListPos, 0);
                         InvListPos++;
                     }
-                    var OtherDecks = SmartCardSetSelector.GetAmountOfCardInOtherDecks(i.CardData(), Collections, CurrentCollectionInd, i.SetData().set_code, i.SetData().set_rarity, true);
-                    var InInventory = SmartCardSetSelector.GetCardsFromInventory(i.CardData(), Collections[0], i.SetData().set_code, i.SetData().set_rarity);
-                    var InInventorySimilar = SmartCardSetSelector.GetCardsFromInventory(i.CardData(), Collections[0]);
-                    DisplayData.Insert(1, InInventory.Count().ToString());
-                    DisplayData.Insert(1, OtherDecks.ToString());
+                    var InInventory = CollectionSearchUtils.GetIdenticalCardsFromCollection(Collections[0], i.InvData, new CardMatchFilters().SetAll(true));
+                    var InInventorySimilar = CollectionSearchUtils.GetIdenticalCardsFromCollection(Collections[0], i.InvData, new CardMatchFilters().SetAll(false));
+                    DisplayData.Insert(2, InInventory.Count().ToString());
                     if (i.CardCount() > InInventorySimilar.Count()) { BackColor = Color.LightCoral; }                //No cards available including other printings
                     else if (i.CardCount() > InInventory.Count()) { BackColor = Color.LightPink; }                   //No cards of the exact printing available
                     else if ((i.CardCount() + OtherDecks) > InInventory.Count()) { BackColor = Color.LightYellow; }  //Cards are available but must be shared between decks
