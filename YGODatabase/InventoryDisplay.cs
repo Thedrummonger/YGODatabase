@@ -65,22 +65,9 @@ namespace YGODatabase
 
                 if (!UniqueEntries.ContainsKey(InventoryID))
                 {
-                    DuplicateCardContainer Container = new DuplicateCardContainer(Collections[CurrentCollectionInd].UUID);
+                    DuplicateCardContainer Container = new();
                     Container.Entries = new List<Guid>();
-                    Container.InvData = new InventoryDatabaseEntry(Collections[CurrentCollectionInd].UUID)
-                    {
-                        DateAdded = i.Value.DateAdded,
-                        LastUpdated = i.Value.LastUpdated,
-                        cardID = i.Value.cardID,
-                        Category = i.Value.Category,
-                        Condition = i.Value.Condition,
-                        ImageIndex = i.Value.ImageIndex,
-                        Language = i.Value.Language,
-                        ParentCollectionID = i.Value.ParentCollectionID,
-                        set_code = i.Value.set_code,
-                        set_rarity = i.Value.set_rarity
-                    };
-
+                    Container.InheritInvData(i.Value);
                     UniqueEntries.Add(InventoryID, Container);
                 }
                 UniqueEntries[InventoryID].Entries.Add(i.Key);

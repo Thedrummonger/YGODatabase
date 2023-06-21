@@ -115,8 +115,6 @@ namespace YGODatabase
         }
         public class InventoryDatabaseEntry
         {
-            public InventoryDatabaseEntry(Guid _ParentCollectionID) { ParentCollectionID = _ParentCollectionID; }
-            public Guid ParentCollectionID { get; set; }
             public int cardID { get; set; }
             public string set_code { get; set; }
             public string set_rarity { get; set; }
@@ -131,14 +129,29 @@ namespace YGODatabase
         };
         public class DuplicateCardContainer //Contains all exact duplicates of a single card in a given collection
         {
-            public DuplicateCardContainer(Guid _ParentCollectionID) { ParentCollectionID = _ParentCollectionID; }
-            public Guid ParentCollectionID { get; set; }
             public List<Guid> Entries { get; set; }
             public InventoryDatabaseEntry InvData { get; set; }
 
             public int CardCount() { return Entries.Count; }
             public YGOCardOBJ CardData() { return InvData.CardData(); }
             public YGOSetData SetData() { return InvData.SetData(); }
+
+            public DuplicateCardContainer InheritInvData(InventoryDatabaseEntry entry)
+            {
+                InvData = new InventoryDatabaseEntry()
+                {
+                    cardID= entry.cardID,
+                    Category = entry.Category,
+                    Condition = entry.Condition,
+                    set_code= entry.set_code,
+                    DateAdded= entry.DateAdded,
+                    LastUpdated= entry.LastUpdated,
+                    ImageIndex= entry.ImageIndex,
+                    Language= entry.Language,
+                    set_rarity= entry.set_rarity,
+                };
+                return this;
+            }
         }
         public class CardSearchResult
         {

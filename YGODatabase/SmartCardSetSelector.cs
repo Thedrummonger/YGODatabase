@@ -32,7 +32,7 @@ namespace YGODatabase
             {
                 foreach(var i in ValidPrintings)
                 {
-                    InventoryDatabaseEntry Target = new InventoryDatabaseEntry(Collections[CurrentCollection].UUID) { cardID = Card.id, set_code = FileterSetCode, set_rarity = FileterSetRarity };
+                    InventoryDatabaseEntry Target = new InventoryDatabaseEntry() { cardID = Card.id, set_code = FileterSetCode, set_rarity = FileterSetRarity };
                     CardMatchFilters filters = new CardMatchFilters().SetAll(false).Set(_FilterSet: SetCode is not null, _FilterRarity: SetRarity is not null);
                     int AmountAvailable = CollectionSearchUtils.GetAmountOfCardAvailable(Target, Collections, Array.Empty<int>(), filters, true);
                     if (AmountAvailable > 0) { AvailableValidPrintings.Add(i); }

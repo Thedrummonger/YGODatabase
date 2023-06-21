@@ -233,25 +233,11 @@ namespace YGODatabase
             NUD.Value = cur;
         }
 
-        public static DuplicateCardContainer CreateDuplicateCardContainer(CardCollection Collection, Guid UUID)
+        public static DuplicateCardContainer CreateSelectedCardEntry(CardCollection SelectedCardCollection, Guid SelectedCardID)
         {
-            var databaseEntry = Collection.data[UUID];
-            DuplicateCardContainer Container = new(Collection.UUID);
-            Container.Entries = new List<Guid>();
-            Container.InvData = new InventoryDatabaseEntry(Collection.UUID)
-            {
-                DateAdded = databaseEntry.DateAdded,
-                LastUpdated = databaseEntry.LastUpdated,
-                cardID = databaseEntry.cardID,
-                Category = databaseEntry.Category,
-                Condition = databaseEntry.Condition,
-                ImageIndex = databaseEntry.ImageIndex,
-                Language = databaseEntry.Language,
-                ParentCollectionID = databaseEntry.ParentCollectionID,
-                set_code = databaseEntry.set_code,
-                set_rarity = databaseEntry.set_rarity
-            };
-            Container.Entries = CollectionSearchUtils.GetIdenticalCardsFromCollection(Collection, Container.InvData).ToList();
+            DuplicateCardContainer Container = new();
+            Container.InheritInvData(SelectedCardCollection.data[SelectedCardID]);
+            Container.Entries = CollectionSearchUtils.GetIdenticalCardsFromCollection(SelectedCardCollection, Container.InvData).ToList();
             return Container;
         }
     }

@@ -71,8 +71,6 @@ namespace YGODatabase
                 } 
                 catch { Debug.WriteLine($"{Path.GetFileName(i)} Was not a valid deck"); }
             }
-            //TODO: this is just for sanitizing old json files
-            foreach(var c in Collections) { foreach(var i in c.data) { i.Value.ParentCollectionID = c.UUID; } }
         }
 
         #region Search Functions
@@ -152,7 +150,7 @@ namespace YGODatabase
             }
             Debug.WriteLine($"Adding to collection {SelectedCard.Card.name} | {BestSetMatch.set_name} | {BestSetMatch.set_rarity}");
 
-            Collections[CurrentCollectionInd].data.Add(UUID, new DataModel.InventoryDatabaseEntry (Collections[CurrentCollectionInd].UUID)
+            Collections[CurrentCollectionInd].data.Add(UUID, new DataModel.InventoryDatabaseEntry ()
             {
                 cardID = SelectedCard.Card.id,
                 set_code = BestSetMatch.set_code,
@@ -164,7 +162,7 @@ namespace YGODatabase
 
             SaveCollection(Collections[CurrentCollectionInd]);
 
-            selectedCard = Utility.CreateDuplicateCardContainer(Collections[CurrentCollectionInd], UUID);
+            selectedCard = Utility.CreateSelectedCardEntry(Collections[CurrentCollectionInd], UUID);
             PrintSelectedCard("Last Added Card");
 
             PrintInventory();
@@ -181,7 +179,7 @@ namespace YGODatabase
         {
             SelectedCardUpdating = true;
 
-            bool DisableControls = selectedCard == null || selectedCard.ParentCollectionID != Collections[CurrentCollectionInd].UUID;
+            bool DisableControls = selectedCard == null;
             gbSelectedCard.Enabled = !DisableControls;
             if (DisableControls)
             {
@@ -237,7 +235,7 @@ namespace YGODatabase
                 EditCard(i, Rarity, Set, Condition, sender == cmbSelectedCardSet, Category, Image);
             }
 
-            selectedCard = Utility.CreateDuplicateCardContainer(Collections[CurrentCollectionInd], CardsToEdit.First());
+            selectedCard = Utility.CreateSelectedCardEntry(Collections[CurrentCollectionInd], CardsToEdit.First());
 
             SaveCollection(Collections[CurrentCollectionInd]);
 
@@ -282,7 +280,7 @@ namespace YGODatabase
                 RemovedCards.Add(SelectedCards[i]);
             }
             var RemainingInventory = SelectedCards.Where(x => !RemovedCards.Contains(x)).ToList();
-            selectedCard = RemainingInventory.Any() ? Utility.CreateDuplicateCardContainer(Collections[CurrentCollectionInd], RemainingInventory.Last()) : null;
+            selectedCard = RemainingInventory.Any() ? Utility.CreateSelectedCardEntry(Collections[CurrentCollectionInd], RemainingInventory.Last()) : null;
 
             SaveCollection(Collections[CurrentCollectionInd]);
             PrintSelectedCard(gbSelectedCard.Text);
@@ -296,22 +294,17 @@ namespace YGODatabase
 
             var CurrentCard = selectedCard.InvData;
 
-            var NewDataEntry = new DataModel.InventoryDatabaseEntry(Collections[CurrentCollectionInd].UUID)
-            {
-                cardID = CurrentCard.cardID,
-                set_code = CurrentCard.set_code,
-                set_rarity = CurrentCard.set_rarity,
-                Category = CurrentCard.Category,
-                ImageIndex = CurrentCard.ImageIndex,
-                DateAdded = DateAndTime.Now,
-                LastUpdated= DateAndTime.Now
-            };
+            //Only using the DuplicateCardContainer class for it's ability to clone and InventoryDatabaseEntry 
+            DuplicateCardContainer TempNewInvObjectContainer = new DuplicateCardContainer();
+            TempNewInvObjectContainer.InheritInvData(CurrentCard);
+            TempNewInvObjectContainer.InvData.DateAdded = DateTime.Now;
+            TempNewInvObjectContainer.InvData.LastUpdated = DateTime.Now;
 
-            Collections[CurrentCollectionInd].data.Add(UUID, NewDataEntry);
+            Collections[CurrentCollectionInd].data.Add(UUID, TempNewInvObjectContainer.InvData);
 
             SaveCollection(Collections[CurrentCollectionInd]);
 
-            selectedCard = Utility.CreateDuplicateCardContainer(Collections[CurrentCollectionInd], UUID);
+            selectedCard = Utility.CreateSelectedCardEntry(Collections[CurrentCollectionInd], UUID);
             PrintSelectedCard("Last Added Card");
 
             PrintInventory();
@@ -639,7 +632,7 @@ namespace YGODatabase
                 }
                 var DefaultCard = SmartCardSetSelector.GetBestSetPrinting(card.Item1, Collections, CurrentCollectionInd, setOverride, RarityOverride);
                 Guid UUID = Guid.NewGuid();
-                Collection.data.Add(UUID, new DataModel.InventoryDatabaseEntry(Collection.UUID)
+                Collection.data.Add(UUID, new DataModel.InventoryDatabaseEntry()
                 {
                     cardID = card.Item1.id,
                     set_code = DefaultCard.set_code,
@@ -722,7 +715,7 @@ namespace YGODatabase
             {
                 if (card.Value.Category == Categories.MaybeDeck) { continue; }
                 Guid UUID = Guid.NewGuid();
-                Collections[0].data.Add(UUID, new DataModel.InventoryDatabaseEntry(Collections[0].UUID)
+                Collections[0].data.Add(UUID, new DataModel.InventoryDatabaseEntry()
                 {
                     cardID = card.Value.cardID,
                     set_code = card.Value.set_code,
