@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using Newtonsoft.Json.Linq;
+using System.Data;
 using System.Diagnostics;
 using static YGODatabase.DataModel;
 
@@ -58,7 +59,7 @@ namespace YGODatabase
                 {
                     DuplicateCardContainer Container = new();
                     Container.Entries = new List<Guid>();
-                    Container.InheritInvData(i.Value);
+                    Container.InvData = i.Value.Clone();
                     UniqueEntries.Add(InventoryID, Container);
                 }
                 UniqueEntries[InventoryID].Entries.Add(i.Key);

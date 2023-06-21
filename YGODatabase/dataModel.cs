@@ -1,10 +1,4 @@
-﻿using Microsoft.VisualBasic;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
 
 namespace YGODatabase
 {
@@ -119,13 +113,17 @@ namespace YGODatabase
             public string set_code { get; set; }
             public string set_rarity { get; set; }
             public string Condition { get; set; } = "Moderately Played";
-            public string Language { get; set; } = "En";
             public int ImageIndex { get; set; } = 0;
             public Categories Category { get; set; }
             public DateTime DateAdded { get; set; }
             public DateTime LastUpdated { get; set; }
             public YGOCardOBJ CardData() { return Utility.GetCardByID(cardID); }
             public YGOSetData SetData() { return Utility.GetExactCard(cardID, set_code, set_rarity); }
+            public InventoryDatabaseEntry Clone()
+            {
+                var serialized = JsonConvert.SerializeObject(this);
+                return JsonConvert.DeserializeObject<InventoryDatabaseEntry>(serialized);
+            }
         };
         public class DuplicateCardContainer //Contains all exact duplicates of a single card in a given collection
         {
@@ -135,23 +133,6 @@ namespace YGODatabase
             public int CardCount() { return Entries.Count; }
             public YGOCardOBJ CardData() { return InvData.CardData(); }
             public YGOSetData SetData() { return InvData.SetData(); }
-
-            public DuplicateCardContainer InheritInvData(InventoryDatabaseEntry entry)
-            {
-                InvData = new InventoryDatabaseEntry()
-                {
-                    cardID= entry.cardID,
-                    Category = entry.Category,
-                    Condition = entry.Condition,
-                    set_code= entry.set_code,
-                    DateAdded= entry.DateAdded,
-                    LastUpdated= entry.LastUpdated,
-                    ImageIndex= entry.ImageIndex,
-                    Language= entry.Language,
-                    set_rarity= entry.set_rarity,
-                };
-                return this;
-            }
         }
         public class CardSearchResult
         {

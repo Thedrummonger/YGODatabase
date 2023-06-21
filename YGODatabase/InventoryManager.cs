@@ -280,8 +280,8 @@ namespace YGODatabase
             var CurrentCard = selectedCard.InvData;
 
             //Only using the DuplicateCardContainer class for it's ability to clone and InventoryDatabaseEntry 
-            DuplicateCardContainer TempNewInvObjectContainer = new DuplicateCardContainer();
-            TempNewInvObjectContainer.InheritInvData(CurrentCard);
+            DuplicateCardContainer TempNewInvObjectContainer = new();
+            TempNewInvObjectContainer.InvData = CurrentCard.Clone();
             TempNewInvObjectContainer.InvData.DateAdded = DateTime.Now;
             TempNewInvObjectContainer.InvData.LastUpdated = DateTime.Now;
 

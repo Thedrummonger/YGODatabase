@@ -236,7 +236,7 @@ namespace YGODatabase
         public static DuplicateCardContainer CreateSelectedCardEntry(CardCollection SelectedCardCollection, Guid SelectedCardID)
         {
             DuplicateCardContainer Container = new();
-            Container.InheritInvData(SelectedCardCollection.data[SelectedCardID]);
+            Container.InvData = SelectedCardCollection.data[SelectedCardID].Clone();
             Container.Entries = CollectionSearchUtils.GetIdenticalCardsFromCollection(SelectedCardCollection, Container.InvData).ToList();
             return Container;
         }
