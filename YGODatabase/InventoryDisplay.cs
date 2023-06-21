@@ -1,14 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+﻿using System.Data;
 using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static YGODatabase.DataModel;
 
 namespace YGODatabase
@@ -57,7 +48,7 @@ namespace YGODatabase
             bool MainInventory = CurrentCollectionInd < 1;
 
             Debug.WriteLine($"Printing {Collections[CurrentCollectionInd].Name}");
-            Dictionary<string, DuplicateCardContainer> UniqueEntries = new Dictionary<string, DataModel.DuplicateCardContainer>();
+            Dictionary<string, DuplicateCardContainer> UniqueEntries = new Dictionary<string, DuplicateCardContainer>();
 
             foreach (var i in Collections[CurrentCollectionInd].data)
             {
@@ -222,7 +213,7 @@ namespace YGODatabase
             UpdatepictureBox(InventorySelectedCard.CardData(), ImageIndex);
             UpdateCardInfo(InventorySelectedCard.CardData(), InventorySelectedCard.SetData());
         }
-        private async void UpdatepictureBox(DataModel.YGOCardOBJ card, int ImageIndex)
+        private async void UpdatepictureBox(YGOCardOBJ card, int ImageIndex)
         {
             await Task.Run(() => pictureBox1.Image = YGODataManagement.GetImage(card, ImageIndex, YGODataManagement.ImageType.standard));
         }

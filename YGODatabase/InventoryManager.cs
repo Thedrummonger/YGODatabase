@@ -1,23 +1,8 @@
 ﻿using Microsoft.VisualBasic;
 using Newtonsoft.Json;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
-using System.Collections.Generic;
-using System.DirectoryServices.ActiveDirectory;
-using System.Globalization;
-using System.Linq;
-using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static YGODatabase.DataModel;
-using Microsoft.VisualBasic.ApplicationServices;
-using System.Linq.Expressions;
-using YGODatabase.Properties;
-using System.Drawing;
-using System.Security.Cryptography.X509Certificates;
-using System.Collections.ObjectModel;
 
 namespace YGODatabase
 {
@@ -89,7 +74,7 @@ namespace YGODatabase
             }
 
             HashSet<string> MatchedDisplayName = new HashSet<string>();
-            List<DataModel.CardSearchResult> Formattedresults = new List<DataModel.CardSearchResult>();
+            List<CardSearchResult> Formattedresults = new List<CardSearchResult>();
 
             foreach (var i in YGODataManagement.MasterDataBase.data)
             {
@@ -106,7 +91,7 @@ namespace YGODatabase
                     if (SearchParser.CardMatchesFilter(DisplayName, i, j, txtSearch.Text, NameSearch, CodeSearch))
                     {
                         MatchedDisplayName.Add(DisplayName);
-                        Formattedresults.Add(new DataModel.CardSearchResult { DisplayName = DisplayName, Card = i, Set = j, FilteringRarity = chkShowRarity.Checked || CodeSearch, FilteringSet = chkShowSet.Checked || CodeSearch });
+                        Formattedresults.Add(new CardSearchResult { DisplayName = DisplayName, Card = i, Set = j, FilteringRarity = chkShowRarity.Checked || CodeSearch, FilteringSet = chkShowSet.Checked || CodeSearch });
                     }
                 }
             }
@@ -127,7 +112,7 @@ namespace YGODatabase
         private void AddSelectedCard()
         {
             if (lbSearchResults.SelectedIndex < 0) { return; }
-            if (lbSearchResults.SelectedItem is not DataModel.CardSearchResult SelectedCard) { return; }
+            if (lbSearchResults.SelectedItem is not CardSearchResult SelectedCard) { return; }
             txtSearch.SelectAll();
             txtSearch.Focus();
 
@@ -150,7 +135,7 @@ namespace YGODatabase
             }
             Debug.WriteLine($"Adding to collection {SelectedCard.Card.name} | {BestSetMatch.set_name} | {BestSetMatch.set_rarity}");
 
-            Collections[CurrentCollectionInd].data.Add(UUID, new DataModel.InventoryDatabaseEntry ()
+            Collections[CurrentCollectionInd].data.Add(UUID, new InventoryDatabaseEntry ()
             {
                 cardID = SelectedCard.Card.id,
                 set_code = BestSetMatch.set_code,
@@ -368,12 +353,12 @@ namespace YGODatabase
         private void HighlightCard(object sender, EventArgs e)
         {
             int ImageIndex = 0;
-            DataModel.YGOCardOBJ Card;
-            if (sender == lbSearchResults && lbSearchResults.SelectedItem is DataModel.CardSearchResult SearchSelectedCard)
+            YGOCardOBJ Card;
+            if (sender == lbSearchResults && lbSearchResults.SelectedItem is CardSearchResult SearchSelectedCard)
             {
                 Card = SearchSelectedCard.Card;
             }
-            else if (sender == listView1 && listView1.SelectedItems.Count > 0 && listView1.SelectedItems[0].Tag is DataModel.DuplicateCardContainer InventorySelectedCard)
+            else if (sender == listView1 && listView1.SelectedItems.Count > 0 && listView1.SelectedItems[0].Tag is DuplicateCardContainer InventorySelectedCard)
             {
                 Card = InventorySelectedCard.CardData();
                 ImageIndex = InventorySelectedCard.InvData.ImageIndex;
@@ -384,7 +369,7 @@ namespace YGODatabase
             }
             UpdatepictureBox(Card, ImageIndex);
         }
-        private async void UpdatepictureBox(DataModel.YGOCardOBJ card, int ImageIndex)
+        private async void UpdatepictureBox(YGOCardOBJ card, int ImageIndex)
         {
             await Task.Run(() => pictureBox1.Image = YGODataManagement.GetImage(card, ImageIndex));
         }
@@ -416,7 +401,7 @@ namespace YGODatabase
             if (listView1.SelectedItems.Count < 1 || 
                 listView1.SelectedItems[0] is null || 
                 listView1.SelectedItems[0].Tag is null || 
-                listView1.SelectedItems[0].Tag is not DataModel.DuplicateCardContainer Data) 
+                listView1.SelectedItems[0].Tag is not DuplicateCardContainer Data) 
             { return; }
 
             selectedCard = Data;
@@ -585,7 +570,7 @@ namespace YGODatabase
         {
             if (comboBox1.SelectedIndex < 1) { return; }
             DialogResult Confirm = DialogResult.OK;
-            if (Control.ModifierKeys != Keys.Shift)
+            if (ModifierKeys != Keys.Shift)
             {
                 Confirm = MessageBox.Show($"Are you sure you want to delete Collection [{Collections[comboBox1.SelectedIndex].Name}]?\n\nHold shift to skip this pormpt", "Confirm Delete", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
             }
@@ -632,7 +617,7 @@ namespace YGODatabase
                 }
                 var DefaultCard = SmartCardSetSelector.GetBestSetPrinting(card.Item1, Collections, CurrentCollectionInd, setOverride, RarityOverride);
                 Guid UUID = Guid.NewGuid();
-                Collection.data.Add(UUID, new DataModel.InventoryDatabaseEntry()
+                Collection.data.Add(UUID, new InventoryDatabaseEntry()
                 {
                     cardID = card.Item1.id,
                     set_code = DefaultCard.set_code,
@@ -647,7 +632,7 @@ namespace YGODatabase
 
         #endregion Collection Management
 
-        int GetDropDownWidth(System.Windows.Forms.ComboBox myCombo)
+        int GetDropDownWidth(ComboBox myCombo)
         {
             int maxWidth = 0, temp = 0;
             foreach (var obj in myCombo.Items)
