@@ -179,45 +179,27 @@ namespace YGODatabase
         {
             SelectedCardUpdating = true;
 
-            gbSelectedCard.Text = Source;
-            cmbSelctedCardRarity.Enabled = true;
-            cmbSelectedCardSet.Enabled = true;
-            cmbSelectedCardCondition.Enabled = true;
-            cmbCollectedCardCategory.Enabled = true;
-            btnRemoveSelected.Enabled = true;
-            BtnAddOneSelected.Enabled = true;
-            numericUpDown1.Enabled = true;
-            numericUpDown2.Enabled = true;
-            if (selectedCard == null || selectedCard.ParentCollectionID != Collections[CurrentCollectionInd].UUID)
+            bool DisableControls = selectedCard == null || selectedCard.ParentCollectionID != Collections[CurrentCollectionInd].UUID;
+            gbSelectedCard.Enabled = !DisableControls;
+            if (DisableControls)
             {
                 gbSelectedCard.Text = "N/A";
                 lblSelectedCard.Text = "N/A";
+                ManageNUD(numericUpDown1, 0, 0, 0);
+                ManageNUD(numericUpDown2, 0, 0, 0);
                 cmbSelctedCardRarity.DataSource = null;
                 cmbSelectedCardSet.DataSource = null;
                 cmbSelectedCardCondition.DataSource = null;
-
-                cmbSelctedCardRarity.Enabled = false;
-                cmbSelectedCardSet.Enabled = false;
-                cmbSelectedCardCondition.Enabled = false;
-                cmbCollectedCardCategory.Enabled = false;
-                btnRemoveSelected.Enabled = false;
-                BtnAddOneSelected.Enabled = false;
-                numericUpDown1.Enabled = false;
-                numericUpDown1.Minimum = 0;
-                numericUpDown1.Maximum = 0;
-                numericUpDown1.Value = 0;
-                numericUpDown2.Enabled = false;
-                numericUpDown2.Minimum = 0;
-                numericUpDown2.Maximum = 0;
-                numericUpDown2.Value = 0;
-
                 SelectedCardUpdating = false;
                 return;
             }
             var InventoryObject = selectedCard.InvData;
             var Card = Utility.GetCardByID(InventoryObject.cardID);
             var SetEntry = Card.card_sets.First(x => x.set_code == InventoryObject.set_code && x.set_rarity == InventoryObject.set_rarity);
+
+            gbSelectedCard.Text = Source;
             lblSelectedCard.Text = $"{Card.name}";
+
             cmbSelectedCardSet.DataSource = Card.GetAllSetsContainingCard();
             foreach (var i in cmbSelectedCardSet.Items) { if (i.ToString() == SetEntry.set_name) { cmbSelectedCardSet.SelectedItem = i; break; } }
             cmbSelctedCardRarity.DataSource = Card.GetAllRaritiesInSet(SetEntry.set_name);
@@ -227,19 +209,19 @@ namespace YGODatabase
             cmbCollectedCardCategory.DataSource = CategoryNames.Select(x => new ComboBoxItem { DisplayName = x.Value, tag = x.Key }).ToArray();
             foreach (ComboBoxItem i in cmbCollectedCardCategory.Items) { if ((Categories)i.tag == InventoryObject.Category) { cmbCollectedCardCategory.SelectedItem = i; break; } }
 
-            numericUpDown2.Minimum = 1;
-            numericUpDown2.Maximum = Card.card_images.Length;
-            numericUpDown2.Value = InventoryObject.ImageIndex + 1;
-
             var IdenticalCards = selectedCard.Entries.Count;
             if (AmountToEdit > IdenticalCards) { AmountToEdit = IdenticalCards; }
-            
-            numericUpDown1.Minimum = 1;
-            numericUpDown1.Maximum = IdenticalCards;
-            numericUpDown1.Value = AmountToEdit;
+            ManageNUD(numericUpDown1, 1, IdenticalCards, AmountToEdit);
+            ManageNUD(numericUpDown2, 1, Card.card_images.Length, InventoryObject.ImageIndex + 1);
 
             SelectedCardUpdating = false;
 
+            void ManageNUD(NumericUpDown NUD, int min, int max, int cur)
+            {
+                NUD.Minimum = min;
+                NUD.Maximum = max;
+                NUD.Value = cur;
+            }
 
         }
         private void SelectedCardValueEdited(object sender, EventArgs e)
