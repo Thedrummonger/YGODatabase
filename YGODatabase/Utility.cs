@@ -69,7 +69,16 @@ namespace YGODatabase
 
         public static YGOCardOBJ GetCardByID(int ID)
         {
-            if (YGODataManagement.IDLookup.ContainsKey(ID)) { return YGODataManagement.MasterDataBase.data[YGODataManagement.IDLookup[ID]]; }
+            return GetCardByID(ID, out _);
+        }
+        public static YGOCardOBJ GetCardByID(int ID, out int ArtID)
+        {
+            if (YGODataManagement.IDLookup.ContainsKey(ID)) 
+            {
+                ArtID = YGODataManagement.IDLookup[ID].Item2;
+                return YGODataManagement.MasterDataBase.data[YGODataManagement.IDLookup[ID].Item1]; 
+            }
+            ArtID = 0;
             return null;
         }
         public static YGOSetData GetExactCard(int CardID, string SetCode, string Rarity)

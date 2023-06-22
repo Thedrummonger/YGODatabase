@@ -589,7 +589,7 @@ namespace YGODatabase
         }
         private void AddYDKToCollection(CardCollection Collection, string[] YDKContent)
         {
-            List<Tuple<YGOCardOBJ, Categories>> Cards = new();
+            List<Tuple<YGOCardOBJ, Categories, int>> Cards = new();
             Categories CurrentCategory = Categories.MainDeck;
             foreach (var line in YDKContent)
             {
@@ -597,9 +597,9 @@ namespace YGODatabase
                 if (line.Trim() == "#extra") { CurrentCategory = Categories.ExtraDeck; }
                 if (line.Trim() == "!side") { CurrentCategory = Categories.SideDeck; }
                 if (!int.TryParse(line.Trim(), out int CardIndex)) { Debug.WriteLine($"Line Invalid {line}"); continue; }
-                var card = Utility.GetCardByID(CardIndex);
+                var card = Utility.GetCardByID(CardIndex, out int ArtID);
                 if (card == null) { Debug.WriteLine($"{CardIndex} not valid"); continue; }
-                Cards.Add(new(card, CurrentCategory));
+                Cards.Add(new(card, CurrentCategory, ArtID));
             }
 
             var CommonSets = Utility.GetCommonSets(Cards.Select(x => x.Item1));
@@ -623,6 +623,7 @@ namespace YGODatabase
                     set_code = DefaultCard.set_code,
                     set_rarity = DefaultCard.set_rarity,
                     Category = card.Item2,
+                    ImageIndex = card.Item3,
                     DateAdded = DateAndTime.Now,
                     LastUpdated= DateAndTime.Now
                 });

@@ -9,7 +9,7 @@ namespace YGODatabase
     {
         public static YGOData MasterDataBase = null;
         public static Dictionary<string, int> SetCodeDict = new Dictionary<string, int>();
-        public static Dictionary<int, int> IDLookup = new Dictionary<int, int>();
+        public static Dictionary<int, Tuple<int, int>> IDLookup = new Dictionary<int, Tuple<int, int>>();
 
         private static bool UseTestingPaths = false;
 
@@ -171,29 +171,39 @@ namespace YGODatabase
         public static void ApplyDataBase(YGOData data)
         {
             MasterDataBase = data;
-            int ind = 0;
+            int DataBaseIndex = 0;
             foreach(var item in MasterDataBase.data)
             {
-                IDLookup[item.id] = ind;
-                foreach(var altID in item.card_images) { if (!IDLookup.ContainsKey(altID.id)) { IDLookup[altID.id] = ind; } }
-                ind++;
-                if (item.card_sets == null || !item.card_sets.Any()) { continue; }
-                foreach(var set in item.card_sets)
-                {
-                    SetCodeDict[set.set_code] = item.id;
-                    set.SearchTags.Add(set.set_code.ToLower());
-                    set.SearchTags.Add(set.set_code.CleanCardName());
-                    var SetcodeData = set.set_code.StringSplit("-");
-                    if (SetcodeData.Length > 1)
-                    {
-                        set.SearchTags.Add(SetcodeData[0].ToLower() + SetcodeData[1].Replace("EN", "").TrimStart('0'));
-                        set.SearchTags.Add(SetcodeData[0].ToLower() + SetcodeData[1].Replace("EN", ""));
-                    }
+                int ImageIndex = 0;
+                IDLookup[item.id] = new(DataBaseIndex, ImageIndex);
+                foreach (var altID in item.card_images) 
+                { 
+                    if (!IDLookup.ContainsKey(altID.id)) { IDLookup[altID.id] = new(DataBaseIndex, ImageIndex); }
+                    ImageIndex++;
                 }
-                item.SearchTags.Add(item.name.ToLower());
-                item.SearchTags.Add(item.name.CleanCardName());
-                item.SearchTags.Add(item.name.CleanCardName(" "));
+                DataBaseIndex++;
+                if (item.card_sets == null || !item.card_sets.Any()) { continue; }
+                CreateSearchTags(item);
             }
+        }
+
+        private static void CreateSearchTags(YGOCardOBJ item)
+        {
+            foreach (var set in item.card_sets)
+            {
+                SetCodeDict[set.set_code] = item.id;
+                set.SearchTags.Add(set.set_code.ToLower());
+                set.SearchTags.Add(set.set_code.CleanCardName());
+                var SetcodeData = set.set_code.StringSplit("-");
+                if (SetcodeData.Length > 1)
+                {
+                    set.SearchTags.Add(SetcodeData[0].ToLower() + SetcodeData[1].Replace("EN", "").TrimStart('0'));
+                    set.SearchTags.Add(SetcodeData[0].ToLower() + SetcodeData[1].Replace("EN", ""));
+                }
+            }
+            item.SearchTags.Add(item.name.ToLower());
+            item.SearchTags.Add(item.name.CleanCardName());
+            item.SearchTags.Add(item.name.CleanCardName(" "));
         }
     }
 }
