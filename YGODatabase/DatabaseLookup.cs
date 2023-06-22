@@ -46,7 +46,7 @@ namespace YGODatabase
             if (Result == DialogResult.OK)
             {
                 YGODataManagement.UpdateLocalData();
-                YGODataManagement.MasterDataBase = YGODataManagement.GetDataBase();
+                YGODataManagement.ApplyDataBase(YGODataManagement.GetDataBase());
                 UpdateListBox();
             }
         }
