@@ -166,7 +166,6 @@ namespace YGODatabase
                 Color? BackColor = null;
                 if (!MainInventory)
                 {
-                    Debug.WriteLine("Danger Zone");
                     if (i.InvData.Category != CurrentCategory)
                     {
                         CurrentCategory = i.InvData.Category;
@@ -175,7 +174,7 @@ namespace YGODatabase
                         CategoryHeaderEdits[CurrentCategory] = new(InvListPos, 0);
                         InvListPos++;
                     }
-                    var InInventory = CollectionSearchUtils.GetIdenticalCardsFromCollection(Collections[0], i.InvData, new CardMatchFilters().SetAll(true));
+                    var InInventory = CollectionSearchUtils.GetIdenticalCardsFromCollection(Collections[0], i.InvData, new CardMatchFilters().SetAll(true).Set(_FilterCategory: false));
                     var InInventorySimilar = CollectionSearchUtils.GetIdenticalCardsFromCollection(Collections[0], i.InvData, new CardMatchFilters().SetAll(false));
                     DisplayData.Insert(2, InInventory.Count().ToString());
                     if (i.CardCount() > InInventorySimilar.Count()) { BackColor = Color.LightCoral; }                //No cards available including other printings

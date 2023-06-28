@@ -453,7 +453,7 @@ namespace YGODatabase
             Dictionary<Guid, Tuple<string, int, int>> DeckCounts = new Dictionary<Guid, Tuple<string, int, int>>();
             foreach(var i in Collections.Where(x => x.UUID != Guid.Empty && x.UUID != Collections[CurrentCollectionInd].UUID))
             {
-                var AmountinDeck = CollectionSearchUtils.GetIdenticalCardsFromCollection(i, inventoryObject.InvData, new CardMatchFilters().SetAll(true));
+                var AmountinDeck = CollectionSearchUtils.GetIdenticalCardsFromCollection(i, inventoryObject.InvData, new CardMatchFilters().SetAll(true).Set(_FilterCategory: false));
                 var SimilarAmountinDeck = CollectionSearchUtils.GetIdenticalCardsFromCollection(i, inventoryObject.InvData, new CardMatchFilters().SetAll(false));
                 DeckCounts[i.UUID] = new(i.Name, AmountinDeck.Count(), SimilarAmountinDeck.Count());
             }
