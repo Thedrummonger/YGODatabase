@@ -253,9 +253,14 @@ namespace YGODatabase
         public static void ResizeLowerListBox(dynamic listBox, dynamic Form)
         {
             int PaddingSpace = 40;
+            listBox.Width = Form.Width - PaddingSpace;
+            StretchListBoxHeightToFormBottom(listBox, Form);
+        }
+        public static void StretchListBoxHeightToFormBottom(dynamic listBox, dynamic Form)
+        {
+            int PaddingSpace = 40;
             int TitleBarHeight = 10;
             int ListViewHeight = Form.Height - TitleBarHeight;
-            listBox.Width = Form.Width - PaddingSpace;
             listBox.Height = ListViewHeight - listBox.Location.Y - PaddingSpace;
         }
     }

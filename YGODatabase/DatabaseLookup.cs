@@ -25,8 +25,16 @@ namespace YGODatabase
             inventoryManager = new InventoryManager(this);
         }
 
+        private void MainInterface_Load(object sender, EventArgs e)
+        {
+            ResizeHeight();
+            ResizeWidth();
+            UpdateCardData();
+        }
+
         private void Form1_Shown(object sender, EventArgs e)
         {
+
             numericUpDown1.Maximum = 0;
             numericUpDown1.Minimum = 0;
             numericUpDown1.Value = 0;
@@ -70,6 +78,11 @@ namespace YGODatabase
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
+            UpdateCardData();
+        }
+
+        private void UpdateCardData()
+        {
             if (lbCardList.SelectedIndex < 0 || lbCardList.SelectedItem is not YGOCardOBJ) { return; }
             CurrentCard = lbCardList.SelectedItem as YGOCardOBJ;
 
@@ -94,7 +107,6 @@ namespace YGODatabase
             lbCardData.Items.Add("TCGPlayer: " + CurrentCard.card_prices.First().tcgplayer_price);
             lbCardData.Items.Add("Card Market: " + CurrentCard.card_prices.First().cardmarket_price);
             lbCardData.Items.Add("Cool Stuff Inc: " + CurrentCard.card_prices.First().coolstuffinc_price);
-
         }
 
         private void inventoryManagerToolStripMenuItem_Click(object sender, EventArgs e)
@@ -115,6 +127,68 @@ namespace YGODatabase
         private void MainInterface_FormClosing(object sender, FormClosingEventArgs e)
         {
             File.WriteAllText(YGODataManagement.GetSettingPath(), JsonConvert.SerializeObject(Settings, Formatting.Indented));
+        }
+
+        private void MainInterface_ResizeEnd(object sender, EventArgs e)
+        {
+            ResizeHeight();
+            ResizeWidth();
+            UpdateCardData();
+        }
+
+        private void ResizeHeight()
+        {
+            int CardDataExtraheight = 80;
+
+            //Stretch the Card List to the bottom of the form
+            Utility.StretchListBoxHeightToFormBottom(lbCardList, this);
+
+            //Move the Card Text box to the half way point of the CardList LB then move it down by the height of the label
+            //and then again by an arbirtrary number so the Card Data LB is big enough to fit most data at it's default height
+            int NewCardTextBoxLocation = ((lbCardList.Height - lbCardList.Location.Y)/2) + CardDataExtraheight + lblCardText.Height;
+            rtxtCardtext.Location = new Point(rtxtCardtext.Location.X, NewCardTextBoxLocation);
+
+            //The Card Text Text box can now be stretched to the bottom of the form 
+            Utility.StretchListBoxHeightToFormBottom(rtxtCardtext, this);
+
+            //Move the CardText Label into the correct position above the TextBox
+            lblCardText.Location = new Point(lblCardText.Location.X, rtxtCardtext.Location.Y - lblCardText.Height);
+            lbldata.Location = new Point(lbldata.Location.X, lbCardData.Location.Y - lbldata.Height);
+
+            //Stretch card data to the position of the Card text label and then up by a small amount for some padding
+            lbCardData.Height = lblCardText.Location.Y - lbCardData.Location.Y - 2;
+        }
+
+        private void ResizeWidth()
+        {
+            int Padding = 8;
+
+            int StaticPBWidth = pictureBox1.Width + Padding;
+            int FormWith = this.Width - StaticPBWidth - 30;
+
+            //The CardList should be slightly wider that the card data
+            int CardListWidth = (int)(FormWith * .60);
+            int CardDataWidth = (int)(FormWith * .40);
+
+            //Set the width of the list boxes
+            lbCardList.Width = CardListWidth;
+            lbCardData.Width = CardDataWidth;
+            rtxtCardtext.Width= CardDataWidth;
+
+            //Set the card data to the right of the card list and add some padding
+            lbCardData.Location = new Point(lbCardList.Location.X + lbCardList.Width + Padding, lbCardData.Location.Y);
+            //Set the reset of the data objects to the same X point as the the Card Data LB
+            rtxtCardtext.Location = new Point(lbCardData.Location.X, rtxtCardtext.Location.Y);
+            lbldata.Location = new Point(lbCardData.Location.X, lbldata.Location.Y);
+            lblCardText.Location = new Point(lbCardData.Location.X, lblCardText.Location.Y);
+
+            //Make the search box the same size as the Card data list
+            textBox1.Width = lbCardList.Width;
+
+            //Set the Picture box objects to the right of the Data objects. The picture box already has whitespace padding on each side
+            pictureBox1.Location = new Point(lbCardData.Location.X + lbCardData.Width, pictureBox1.Location.Y);
+            numericUpDown1.Location = new Point(pictureBox1.Location.X + pictureBox1.Width - numericUpDown1.Width - Padding, numericUpDown1.Location.Y);
+            label1.Location = new Point(numericUpDown1.Location.X - label1.Width - 2, numericUpDown1.Location.Y);
         }
     }
 }

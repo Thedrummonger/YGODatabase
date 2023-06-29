@@ -91,6 +91,7 @@
             // lbCardList
             // 
             this.lbCardList.FormattingEnabled = true;
+            this.lbCardList.IntegralHeight = false;
             this.lbCardList.ItemHeight = 15;
             this.lbCardList.Location = new System.Drawing.Point(12, 56);
             this.lbCardList.Name = "lbCardList";
@@ -110,16 +111,16 @@
             // 
             // rtxtCardtext
             // 
-            this.rtxtCardtext.Location = new System.Drawing.Point(517, 243);
+            this.rtxtCardtext.Location = new System.Drawing.Point(517, 255);
             this.rtxtCardtext.Name = "rtxtCardtext";
-            this.rtxtCardtext.Size = new System.Drawing.Size(131, 192);
+            this.rtxtCardtext.Size = new System.Drawing.Size(131, 180);
             this.rtxtCardtext.TabIndex = 4;
             this.rtxtCardtext.Text = "";
             // 
             // lblCardText
             // 
             this.lblCardText.AutoSize = true;
-            this.lblCardText.Location = new System.Drawing.Point(517, 228);
+            this.lblCardText.Location = new System.Drawing.Point(517, 239);
             this.lblCardText.Name = "lblCardText";
             this.lblCardText.Size = new System.Drawing.Size(56, 15);
             this.lblCardText.TabIndex = 5;
@@ -137,10 +138,11 @@
             // lbCardData
             // 
             this.lbCardData.FormattingEnabled = true;
+            this.lbCardData.IntegralHeight = false;
             this.lbCardData.ItemHeight = 15;
             this.lbCardData.Location = new System.Drawing.Point(517, 56);
             this.lbCardData.Name = "lbCardData";
-            this.lbCardData.Size = new System.Drawing.Size(131, 169);
+            this.lbCardData.Size = new System.Drawing.Size(131, 180);
             this.lbCardData.TabIndex = 8;
             // 
             // label1
@@ -165,7 +167,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(660, 450);
+            this.ClientSize = new System.Drawing.Size(660, 447);
             this.Controls.Add(this.numericUpDown1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.lbCardData);
@@ -178,10 +180,13 @@
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
+            this.MinimumSize = new System.Drawing.Size(676, 486);
             this.Name = "MainInterface";
             this.Text = "YGO Database";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainInterface_FormClosing);
+            this.Load += new System.EventHandler(this.MainInterface_Load);
             this.Shown += new System.EventHandler(this.Form1_Shown);
+            this.ResizeEnd += new System.EventHandler(this.MainInterface_ResizeEnd);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
