@@ -81,6 +81,7 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.gbCurrentCollection = new System.Windows.Forms.GroupBox();
             this.chkInvDescending = new System.Windows.Forms.CheckBox();
+            this.compareYDKsToInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gbSelectedCard.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
@@ -470,7 +471,8 @@
             this.newToolStripMenuItem,
             this.deleteToolStripMenuItem,
             this.renameToolStripMenuItem,
-            this.importYDKAsCollectionToolStripMenuItem});
+            this.importYDKAsCollectionToolStripMenuItem,
+            this.compareYDKsToInventoryToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
@@ -593,6 +595,13 @@
             this.chkInvDescending.UseVisualStyleBackColor = true;
             this.chkInvDescending.CheckedChanged += new System.EventHandler(this.InventorySearchUpdated);
             // 
+            // compareYDKsToInventoryToolStripMenuItem
+            // 
+            this.compareYDKsToInventoryToolStripMenuItem.Name = "compareYDKsToInventoryToolStripMenuItem";
+            this.compareYDKsToInventoryToolStripMenuItem.Size = new System.Drawing.Size(233, 22);
+            this.compareYDKsToInventoryToolStripMenuItem.Text = "Compare YDKs to Inventory";
+            this.compareYDKsToInventoryToolStripMenuItem.Click += new System.EventHandler(this.compareYDKsToInventoryToolStripMenuItem_Click);
+            // 
             // InventoryManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -687,5 +696,6 @@
         private ToolStripMenuItem settingsToolStripMenuItem;
         private ToolStripMenuItem defaultConditionToolStripMenuItem;
         private ToolStripComboBox DefaultConditionSelectComboBox;
+        private ToolStripMenuItem compareYDKsToInventoryToolStripMenuItem;
     }
 }

@@ -776,5 +776,33 @@ namespace YGODatabase
             }
             return SelectedCondition;
         }
+
+        private void compareYDKsToInventoryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog folderBrowserDialog= new FolderBrowserDialog();
+            var Result = folderBrowserDialog.ShowDialog();
+            if (Result != DialogResult.OK || !Directory.Exists(folderBrowserDialog.SelectedPath)) { return; }
+            foreach(var file in Directory.GetFiles(folderBrowserDialog.SelectedPath))
+            {
+                if (Path.GetExtension(file).ToLower() != ".ydk") { continue; }
+                var Content = File.ReadAllLines(file);
+                Dictionary<int, int> Cards = new Dictionary<int, int>();
+                foreach(var Line in Content)
+                {
+                    if (!int.TryParse(Line.Trim(), out int CardIndex) || !YGODataManagement.IDLookup.ContainsKey(CardIndex)) { continue; }
+                    var Card = YGODataManagement.MasterDataBase.data[YGODataManagement.IDLookup[CardIndex].Item1];
+                    if (!Cards.ContainsKey(Card.id)) { Cards.Add(Card.id, 0);}
+                    Cards[Card.id]++;
+                }
+                int TotalNeeded = 0;
+                foreach(var card in Cards)
+                {
+                    var CardsInCollection = Collections[0].data.Where(x => x.Value.cardID == card.Key).Select(x => x.Value);
+                    int Needed = card.Value - CardsInCollection.Count();
+                    TotalNeeded += Needed;
+                }
+                Debug.WriteLine($"{Path.GetFileName(file)}: {TotalNeeded}");
+            }
+        }
     }
 }
