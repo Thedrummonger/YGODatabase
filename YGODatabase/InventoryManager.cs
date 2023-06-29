@@ -135,12 +135,13 @@ namespace YGODatabase
             }
             Debug.WriteLine($"Adding to collection {SelectedCard.Card.name} | {BestSetMatch.set_name} | {BestSetMatch.set_rarity}");
 
-            Collections[CurrentCollectionInd].data.Add(UUID, new InventoryDatabaseEntry ()
+            Collections[CurrentCollectionInd].data.Add(UUID, new InventoryDatabaseEntry()
             {
                 cardID = SelectedCard.Card.id,
                 set_code = BestSetMatch.set_code,
                 set_rarity = BestSetMatch.set_rarity,
                 Category = CurrentCollectionInd == 0 ? Categories.None : SelectedCategory,
+                Condition = SafeGetDefaultCondition(),
                 DateAdded = DateAndTime.Now,
                 LastUpdated= DateAndTime.Now
             });
@@ -306,6 +307,13 @@ namespace YGODatabase
             cmbFilterBy.SelectedIndex = _DatabaseForm.Settings.InventorySearchBy >= cmbFilterBy.Items.Count ? 0 : _DatabaseForm.Settings.InventorySearchBy;
             chkShowRarity.Checked = _DatabaseForm.Settings.InventorySearchShowRarity;
             chkShowSet.Checked = _DatabaseForm.Settings.InventorySearchShowSet;
+            chkInvDescending.Checked = _DatabaseForm.Settings.InventoryShowCollectionDescending;
+            DefaultConditionSelectComboBox.Items.Clear();
+            foreach (var i in BulkData.Conditions.Keys) 
+            { 
+                DefaultConditionSelectComboBox.Items.Add(i);
+                if (_DatabaseForm.Settings.DefaultCondition == i) { DefaultConditionSelectComboBox.SelectedItem = i; }
+            }
 
             UpdateCollectionsList();
             comboBox1.SelectedIndex = 0;
@@ -320,6 +328,8 @@ namespace YGODatabase
             _DatabaseForm.Settings.InventorySearchShowSet = chkShowSet.Checked;
             _DatabaseForm.Settings.InventoryShowCollectionOrderBy = cmbOrderBy.SelectedIndex;
             _DatabaseForm.Settings.InventorySearchBy = cmbFilterBy.SelectedIndex;
+            _DatabaseForm.Settings.DefaultCondition = SafeGetDefaultCondition();
+            _DatabaseForm.Settings.InventoryShowCollectionDescending = chkInvDescending.Checked;
         }
         private void CaptureKeyPress(object sender, KeyEventArgs e)
         {
@@ -383,6 +393,15 @@ namespace YGODatabase
                     ShowContextMenu(sender, focusedItem);
                 }
             }
+        }
+        private void InventoryManager_ResizeEnd(object sender, EventArgs e)
+        {
+            Debug.WriteLine("Form Positions");
+            Debug.WriteLine(this.Size.Width);
+            Debug.WriteLine(this.Size.Height);
+            Debug.WriteLine("List View Positions");
+            Debug.WriteLine(listView1.Size.Width);
+            Debug.WriteLine(listView1.Size.Height);
         }
 
         #endregion FormFunctions
@@ -623,6 +642,7 @@ namespace YGODatabase
                     set_code = DefaultCard.set_code,
                     set_rarity = DefaultCard.set_rarity,
                     Category = card.Item2,
+                    Condition = SafeGetDefaultCondition(),
                     ImageIndex = card.Item3,
                     DateAdded = DateAndTime.Now,
                     LastUpdated= DateAndTime.Now
@@ -700,16 +720,14 @@ namespace YGODatabase
             foreach(var card in Collections[CurrentCollectionInd].data)
             {
                 if (card.Value.Category == Categories.MaybeDeck) { continue; }
+                DuplicateCardContainer TempNewInvObjectContainer = new();
+                TempNewInvObjectContainer.InvData = card.Value.Clone();
+                TempNewInvObjectContainer.InvData.Category = Categories.MainDeck;
+                TempNewInvObjectContainer.InvData.DateAdded = DateTime.Now;
+                TempNewInvObjectContainer.InvData.LastUpdated = DateTime.Now;
+
                 Guid UUID = Guid.NewGuid();
-                Collections[0].data.Add(UUID, new DataModel.InventoryDatabaseEntry()
-                {
-                    cardID = card.Value.cardID,
-                    set_code = card.Value.set_code,
-                    set_rarity = card.Value.set_rarity,
-                    Category = Categories.MainDeck,
-                    DateAdded = DateAndTime.Now,
-                    LastUpdated= DateAndTime.Now
-                });
+                Collections[0].data.Add(UUID, TempNewInvObjectContainer.InvData);
             }
             SaveCollection(Collections[0]);
         }
@@ -747,5 +765,21 @@ namespace YGODatabase
             }
         }
 
+        private void DefaultConditionSelectComboBox_TextChanged(object sender, EventArgs e)
+        {
+            Debug.WriteLine(DefaultConditionSelectComboBox.Text);
+        }
+
+        private string SafeGetDefaultCondition()
+        {
+            string SelectedCondition = DefaultConditionSelectComboBox.SelectedItem.ToString();
+            bool ConditionValid = !string.IsNullOrWhiteSpace(SelectedCondition) && BulkData.Conditions.ContainsKey(SelectedCondition);
+            if (!ConditionValid)
+            {
+                DefaultConditionSelectComboBox.SelectedIndex = DefaultConditionSelectComboBox.Items.IndexOf(_DatabaseForm.Settings.DefaultCondition);
+                return _DatabaseForm.Settings.DefaultCondition;
+            }
+            return SelectedCondition;
+        }
     }
 }

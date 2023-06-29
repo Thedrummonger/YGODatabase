@@ -172,6 +172,8 @@ namespace YGODatabase
             public bool InventorySearchShowSet = true;
             public bool InventorySearchShowRarity = true;
             public int InventoryShowCollectionOrderBy = 0;
+            public bool InventoryShowCollectionDescending = false;
+            public string DefaultCondition = "Moderately Played";
         }
     }
 }

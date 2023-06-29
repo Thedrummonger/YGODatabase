@@ -75,8 +75,12 @@
             this.addCollectionToInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.isPaperCollectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.popoutDisplayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.gbCurrentCollection = new System.Windows.Forms.GroupBox();
             this.chkInvDescending = new System.Windows.Forms.CheckBox();
+            this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.defaultConditionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.DefaultConditionSelectComboBox = new System.Windows.Forms.ToolStripComboBox();
             this.gbSelectedCard.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
@@ -451,7 +455,9 @@
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.editToolStripMenuItem,
-            this.popoutDisplayToolStripMenuItem});
+            this.settingsToolStripMenuItem,
+            this.popoutDisplayToolStripMenuItem,
+            this.toolStripMenuItem1});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(598, 24);
@@ -535,6 +541,11 @@
             this.popoutDisplayToolStripMenuItem.Text = "Popout Display";
             this.popoutDisplayToolStripMenuItem.Click += new System.EventHandler(this.popoutDisplayToolStripMenuItem_Click);
             // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(12, 20);
+            // 
             // gbCurrentCollection
             // 
             this.gbCurrentCollection.Controls.Add(this.chkInvDescending);
@@ -560,6 +571,28 @@
             this.chkInvDescending.UseVisualStyleBackColor = true;
             this.chkInvDescending.CheckedChanged += new System.EventHandler(this.InventorySearchUpdated);
             // 
+            // settingsToolStripMenuItem
+            // 
+            this.settingsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.defaultConditionToolStripMenuItem});
+            this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            this.settingsToolStripMenuItem.Text = "Settings";
+            // 
+            // defaultConditionToolStripMenuItem
+            // 
+            this.defaultConditionToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.DefaultConditionSelectComboBox});
+            this.defaultConditionToolStripMenuItem.Name = "defaultConditionToolStripMenuItem";
+            this.defaultConditionToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.defaultConditionToolStripMenuItem.Text = "Default Condition";
+            // 
+            // DefaultConditionSelectComboBox
+            // 
+            this.DefaultConditionSelectComboBox.Name = "DefaultConditionSelectComboBox";
+            this.DefaultConditionSelectComboBox.Size = new System.Drawing.Size(121, 23);
+            this.DefaultConditionSelectComboBox.TextChanged += new System.EventHandler(this.DefaultConditionSelectComboBox_TextChanged);
+            // 
             // InventoryManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -580,6 +613,7 @@
             this.Text = "InventoryManager";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.InventoryManager_FormClosing);
             this.Load += new System.EventHandler(this.InventoryManager_Load);
+            this.ResizeEnd += new System.EventHandler(this.InventoryManager_ResizeEnd);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.CaptureKeyPress);
             this.gbSelectedCard.ResumeLayout(false);
             this.gbSelectedCard.PerformLayout();
@@ -648,5 +682,9 @@
         private ToolStripMenuItem popoutDisplayToolStripMenuItem;
         private Label label6;
         private NumericUpDown numericUpDown2;
+        private ToolStripMenuItem toolStripMenuItem1;
+        private ToolStripMenuItem settingsToolStripMenuItem;
+        private ToolStripMenuItem defaultConditionToolStripMenuItem;
+        private ToolStripComboBox DefaultConditionSelectComboBox;
     }
 }
