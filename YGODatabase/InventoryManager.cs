@@ -396,12 +396,7 @@ namespace YGODatabase
         }
         private void InventoryManager_ResizeEnd(object sender, EventArgs e)
         {
-            Debug.WriteLine("Form Positions");
-            Debug.WriteLine(this.Size.Width);
-            Debug.WriteLine(this.Size.Height);
-            Debug.WriteLine("List View Positions");
-            Debug.WriteLine(listView1.Size.Width);
-            Debug.WriteLine(listView1.Size.Height);
+            Utility.ResizeLowerListBox(listView1, this);
         }
 
         #endregion FormFunctions

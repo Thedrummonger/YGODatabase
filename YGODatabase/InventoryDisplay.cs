@@ -234,5 +234,10 @@ namespace YGODatabase
             listBox1.Items.Add("Card Market: " + CurrentCard.card_prices.First().cardmarket_price);
             listBox1.Items.Add("Cool Stuff Inc: " + CurrentCard.card_prices.First().coolstuffinc_price);
         }
+
+        private void InventoryDisplay_ResizeEnd(object sender, EventArgs e)
+        {
+            Utility.ResizeLowerListBox(listView1, this);
+        }
     }
 }

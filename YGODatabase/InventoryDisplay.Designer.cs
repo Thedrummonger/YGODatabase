@@ -207,8 +207,10 @@
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.listView1);
+            this.MinimumSize = new System.Drawing.Size(614, 656);
             this.Name = "InventoryDisplay";
             this.Text = "InventoryDisplay";
+            this.ResizeEnd += new System.EventHandler(this.InventoryDisplay_ResizeEnd);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();

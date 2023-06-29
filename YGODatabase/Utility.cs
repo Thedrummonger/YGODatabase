@@ -249,5 +249,14 @@ namespace YGODatabase
             Container.Entries = CollectionSearchUtils.GetIdenticalCardsFromCollection(SelectedCardCollection, Container.InvData).ToList();
             return Container;
         }
+
+        public static void ResizeLowerListBox(dynamic listBox, dynamic Form)
+        {
+            int PaddingSpace = 40;
+            int TitleBarHeight = 10;
+            int ListViewHeight = Form.Height - TitleBarHeight;
+            listBox.Width = Form.Width - PaddingSpace;
+            listBox.Height = ListViewHeight - listBox.Location.Y - PaddingSpace;
+        }
     }
 }
