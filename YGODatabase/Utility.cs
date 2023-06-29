@@ -263,5 +263,76 @@ namespace YGODatabase
             int ListViewHeight = Form.Height - TitleBarHeight;
             listBox.Height = ListViewHeight - listBox.Location.Y - PaddingSpace;
         }
+
+        internal static DomainData GetDomains(YGOCardOBJ cardOBJ)
+        {
+            DomainData domainData = new DomainData();
+            domainData.NameDomains = cardOBJ.name.Split(' ').Where(x => char.IsUpper(x.Trim()[0])).ToList();
+            domainData.AdditionalNameDomains = new List<string>();
+            domainData.AttributeDomain = cardOBJ.attribute;
+            domainData.AdditionalAttributeDomains = new List<string>();
+            domainData.MonsterType = new List<string> { cardOBJ.race };
+
+            int ParentheseLevel = 0;
+            string CurrentData = string.Empty;
+            string SnippetData = string.Empty;
+            string QuoteSnippet = string.Empty;
+            bool ThisCardIsAlso = false;
+            bool InQuote = false;
+            foreach (var letter in cardOBJ.desc)
+            {
+                if (letter == '(') { ParentheseLevel++; }
+                if (letter == ')') { ParentheseLevel--; ThisCardIsAlso = false; SnippetData = string.Empty; }
+                if (letter == '"') 
+                { 
+                    InQuote = !InQuote; 
+                    if (!InQuote)
+                    {
+                        domainData.AdditionalNameDomains.AddRange(QuoteSnippet.Trim('"').Split(' ').Where(x => char.IsUpper(x.Trim()[0])).ToList());
+                        QuoteSnippet = string.Empty;
+                    }
+                }
+                if (InQuote)
+                {
+                    QuoteSnippet += letter;
+                }
+
+                CurrentData += letter;
+                if (CurrentData.EndsWith("card is also"))
+                {
+                    ThisCardIsAlso = true;
+                    SnippetData = string.Empty;
+                    continue;
+                }
+
+                if (ThisCardIsAlso)
+                {
+                    SnippetData += letter;
+                    if (CurrentData.EndsWith("-Attribute"))
+                    {
+                        ThisCardIsAlso = false;
+                        foreach(var i in string.Concat(SnippetData.Split('-')[0].Where(c => (c >= 'A' && c <= 'Z') || c == ',')).Split(','))
+                        {
+                            domainData.AdditionalAttributeDomains.Add(i.Trim());
+                        }
+                        SnippetData = string.Empty;
+                    }
+                    else if (CurrentData.EndsWith("still a"))
+                    {
+                        ThisCardIsAlso = false;
+                        SnippetData = string.Empty;
+                    }
+                    else if (CurrentData.EndsWith("\" card"))
+                    {
+                        ThisCardIsAlso = false;
+                        domainData.AdditionalNameDomains.Add(SnippetData.Split('"')[1]);
+                        SnippetData = string.Empty;
+                    }
+                }
+            }
+            domainData.AdditionalNameDomains = domainData.AdditionalNameDomains.Distinct().ToList();
+            domainData.AdditionalAttributeDomains = domainData.AdditionalAttributeDomains.Distinct().ToList();
+            return domainData;
+        }
     }
 }

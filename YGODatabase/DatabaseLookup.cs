@@ -79,6 +79,10 @@ namespace YGODatabase
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             UpdateCardData();
+
+            if (lbCardList.SelectedIndex < 0 || lbCardList.SelectedItem is not YGOCardOBJ cardOBJ || !cardOBJ.isMonster()) { return; }
+            var Domains = Utility.GetDomains(cardOBJ);
+            Debug.WriteLine(JsonConvert.SerializeObject(Domains, Formatting.Indented));
         }
 
         private void UpdateCardData()

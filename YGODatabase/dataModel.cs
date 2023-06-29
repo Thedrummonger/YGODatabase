@@ -175,5 +175,14 @@ namespace YGODatabase
             public bool InventoryShowCollectionDescending = false;
             public string DefaultCondition = "Moderately Played";
         }
+
+        public class DomainData
+        {
+            public List<string> NameDomains { get; set; } = new List<string>();
+            public List<string> AdditionalNameDomains { get; set; } = new List<string>();
+            public string AttributeDomain { get; set; } = string.Empty;
+            public List<string> AdditionalAttributeDomains { get; set; } = new List<string>();
+            public List<string> MonsterType { get; set; } = new List<string>();
+        }
     }
 }
