@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,40 +12,39 @@ namespace YGODatabase
 {
     internal class SmartCardSetSelector
     {
-        public static YGOSetData? GetBestSetPrinting(YGOCardOBJ Card, List<CardCollection> Collections, int CurrentCollection, string? SetCode = null, string? SetRarity = null)
+        public static YGOSetData GetBestSetPrinting(InventoryDatabaseEntry template, List<CardCollection> Collections, CardCollection CurrentCollection, out int ImageIndex)
         {
-            IEnumerable<YGOSetData> ValidPrintings = Card.card_sets;
-
-            if (SetCode is not null)
+            ImageIndex = -1;
+            CardMatchFilters filters = new();
+            filters.SetAll(false);
+            filters.Set(_FilterSet: template.set_code is not null, _FilterRarity: template.set_rarity is not null);
+            var AllSets = template.CardData().card_sets.OrderBy(x => x.GetRarityIndex());
+            template.set_code ??= AllSets.First().set_code;
+            template.set_rarity ??= AllSets.First().set_rarity;
+            var CardsInInventory = CollectionSearchUtils.GetIdenticalCardsFromCollection(Collections[0], template, filters);
+            foreach(var i in CardsInInventory)
             {
-                ValidPrintings = ValidPrintings.Where(x => x.set_code == SetCode);
-            }
-            if (SetRarity is not null)
-            {
-                ValidPrintings = ValidPrintings.Where(x => x.set_rarity == SetRarity);
-            }
-
-            List<YGOSetData> AvailableValidPrintings = new List<YGOSetData>();
-
-            string FileterSetCode = SetCode??Card.card_sets.First().set_code;
-            string FileterSetRarity = SetRarity??Card.card_sets.First().set_rarity;
-
-            if (CurrentCollection > 0) //Is a deck and not inventory
-            {
-                foreach(var i in ValidPrintings)
+                var InventoryEntry = Collections[0].data[i];
+                var SpecificCardInInevntory = CollectionSearchUtils.GetIdenticalCardsFromCollection(Collections[0], InventoryEntry, new CardMatchFilters().SetAll(true));
+                var AmountInDecks = CollectionSearchUtils.GetAmountOfCardInNonInventoryCollections(Collections, InventoryEntry, Array.Empty<int>(), new CardMatchFilters().SetAll(true), true);
+                if (SpecificCardInInevntory.Count() > AmountInDecks)
                 {
-                    InventoryDatabaseEntry Target = new InventoryDatabaseEntry() { cardID = Card.id, set_code = FileterSetCode, set_rarity = FileterSetRarity };
-                    CardMatchFilters filters = new CardMatchFilters().SetAll(false).Set(_FilterSet: SetCode is not null, _FilterRarity: SetRarity is not null);
-                    int AmountAvailable = CollectionSearchUtils.GetAmountOfCardAvailable(Target, Collections, Array.Empty<int>(), filters, true);
-                    if (AmountAvailable > 0) { AvailableValidPrintings.Add(i); }
+                    ImageIndex = InventoryEntry.ImageIndex;
+                    return InventoryEntry.SetData();
                 }
             }
-            if (AvailableValidPrintings.Any()) { ValidPrintings = AvailableValidPrintings; }
-
-            ValidPrintings = ValidPrintings.OrderBy(x => x.GetRarityIndex());
-
-            return ValidPrintings.FirstOrDefault();
+            foreach (var i in CardsInInventory)
+            {
+                var InventoryEntry = Collections[0].data[i];
+                var SpecificCardInInevntory = CollectionSearchUtils.GetIdenticalCardsFromCollection(Collections[0], InventoryEntry, new CardMatchFilters().SetAll(true));
+                var AmountInThisDecks = CollectionSearchUtils.GetIdenticalCardsFromCollection(CurrentCollection, InventoryEntry, new CardMatchFilters().SetAll(true)).Count();
+                if (SpecificCardInInevntory.Count() > AmountInThisDecks)
+                {
+                    ImageIndex = InventoryEntry.ImageIndex;
+                    return InventoryEntry.SetData();
+                }
+            }
+            return Utility.GetExactCard(template.cardID, template.set_code, template.set_rarity);
         }
-
     }
 }

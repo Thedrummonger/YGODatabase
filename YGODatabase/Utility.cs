@@ -139,11 +139,6 @@ namespace YGODatabase
                     CommonSets.Add(SetName);
                     Debug.WriteLine($"All cards were printed in set {SetName}");
                 }
-                else
-                {
-                    Debug.WriteLine($"Not all cards were printed in set {SetName}");
-                    Debug.WriteLine($"Missing: {JsonConvert.SerializeObject(CardsNotInThisSet.Select(x => x.name).Count())}");
-                }
             }
             return CommonSets.ToArray();
         }

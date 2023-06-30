@@ -126,7 +126,9 @@ namespace YGODatabase
 
             string? ForceSet = SelectedCard.FilteringSet ? SelectedCard.Set.set_code : null;
             string? ForceRarity = SelectedCard.FilteringRarity ? SelectedCard.Set.set_rarity : null;
-            var BestSetMatch = SmartCardSetSelector.GetBestSetPrinting(SelectedCard.Card, Collections, CurrentCollectionInd, ForceSet, ForceRarity);
+
+            InventoryDatabaseEntry Template = new InventoryDatabaseEntry { cardID = SelectedCard.Card.id, set_code = ForceSet, set_rarity = ForceRarity };
+            var BestSetMatch = SmartCardSetSelector.GetBestSetPrinting(Template, Collections, Collections[CurrentCollectionInd], out int ImageIndex);
 
             if (BestSetMatch == null) 
             {
@@ -142,6 +144,7 @@ namespace YGODatabase
                 set_rarity = BestSetMatch.set_rarity,
                 Category = CurrentCollectionInd == 0 ? Categories.None : SelectedCategory,
                 Condition = SafeGetDefaultCondition(),
+                ImageIndex = ImageIndex < 0 ? 0 : ImageIndex,
                 DateAdded = DateAndTime.Now,
                 LastUpdated= DateAndTime.Now
             });
@@ -613,6 +616,7 @@ namespace YGODatabase
                 if (!int.TryParse(line.Trim(), out int CardIndex)) { Debug.WriteLine($"Line Invalid {line}"); continue; }
                 var card = Utility.GetCardByID(CardIndex, out int ArtID);
                 if (card == null) { Debug.WriteLine($"{CardIndex} not valid"); continue; }
+                if (card.card_sets is null) { Debug.WriteLine($"{card.name} Has not been released in any sets, skipping"); continue; }
                 Cards.Add(new(card, CurrentCategory, ArtID));
             }
 
@@ -629,7 +633,10 @@ namespace YGODatabase
                     setOverride = CommonSetData.set_code;
                     RarityOverride = CommonSetData.set_rarity;
                 }
-                var DefaultCard = SmartCardSetSelector.GetBestSetPrinting(card.Item1, Collections, CurrentCollectionInd, setOverride, RarityOverride);
+
+                InventoryDatabaseEntry Template = new InventoryDatabaseEntry { cardID = card.Item1.id, set_code = setOverride, set_rarity = RarityOverride };
+
+                var DefaultCard = SmartCardSetSelector.GetBestSetPrinting(Template, Collections, Collection, out int ImageIndex);
                 Guid UUID = Guid.NewGuid();
                 Collection.data.Add(UUID, new InventoryDatabaseEntry()
                 {
@@ -638,7 +645,7 @@ namespace YGODatabase
                     set_rarity = DefaultCard.set_rarity,
                     Category = card.Item2,
                     Condition = SafeGetDefaultCondition(),
-                    ImageIndex = card.Item3,
+                    ImageIndex = ImageIndex < 0 ? card.Item3 : ImageIndex,
                     DateAdded = DateAndTime.Now,
                     LastUpdated= DateAndTime.Now
                 });
@@ -782,7 +789,8 @@ namespace YGODatabase
             FolderBrowserDialog folderBrowserDialog= new FolderBrowserDialog();
             var Result = folderBrowserDialog.ShowDialog();
             if (Result != DialogResult.OK || !Directory.Exists(folderBrowserDialog.SelectedPath)) { return; }
-            foreach(var file in Directory.GetFiles(folderBrowserDialog.SelectedPath))
+            List<Tuple<string, int, int, double>> data = new List<Tuple<string, int, int, double>>();
+            foreach (var file in Directory.GetFiles(folderBrowserDialog.SelectedPath))
             {
                 if (Path.GetExtension(file).ToLower() != ".ydk") { continue; }
                 var Content = File.ReadAllLines(file);
@@ -795,14 +803,19 @@ namespace YGODatabase
                     Cards[Card.id]++;
                 }
                 int TotalNeeded = 0;
-                foreach(var card in Cards)
+                int TotalInDeck = Cards.Values.Sum();
+                foreach (var card in Cards)
                 {
                     var CardsInCollection = Collections[0].data.Where(x => x.Value.cardID == card.Key).Select(x => x.Value);
                     int Needed = card.Value - CardsInCollection.Count();
+                    if (Needed < 0) { Needed = 0; }
                     TotalNeeded += Needed;
                 }
-                Debug.WriteLine($"{Path.GetFileName(file)}: {TotalNeeded}");
+                int TotalObtained = TotalInDeck - TotalNeeded;
+                double Percentage = Math.Round((double)TotalObtained / (double)TotalInDeck,2);
+                data.Add(new(Path.GetFileName(file), TotalObtained, TotalInDeck, Percentage));
             }
+            Debug.WriteLine($"{JsonConvert.SerializeObject(data.OrderBy(x => x.Item4), Formatting.Indented)}");
         }
     }
 }
