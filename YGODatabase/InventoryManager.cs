@@ -15,8 +15,8 @@ namespace YGODatabase
         public List<CardCollection> Collections = new List<CardCollection>();
         public int CurrentCollectionInd;
 
-        public Dictionary<Guid, List<Collection>> UndoLists = new Dictionary<Guid, List<Collection>>();
-        public Dictionary<Guid, List<Collection>> RedoLists = new Dictionary<Guid, List<Collection>>();
+        public List<string> UndoLists = new List<string>();
+        public List<string> RedoLists = new List<string>();
 
         public Dictionary<Guid, string> DeckPathDictionary = new Dictionary<Guid, string>();
 
@@ -116,6 +116,8 @@ namespace YGODatabase
             txtSearch.SelectAll();
             txtSearch.Focus();
 
+            SaveState();
+
             Categories SelectedCategory = Categories.MainDeck;
             if (cmbAddTo.SelectedItem is ComboBoxItem addToSelection)
             {
@@ -210,6 +212,8 @@ namespace YGODatabase
         {
             if (SelectedCardUpdating) { return; }
 
+            SaveState();
+
             string Rarity = (string)cmbSelctedCardRarity.SelectedItem;
             string Set = (string)cmbSelectedCardSet.SelectedItem;
             string Condition = (string)cmbSelectedCardCondition.SelectedItem;
@@ -263,6 +267,8 @@ namespace YGODatabase
             List<Guid> SelectedCards = selectedCard.Entries;
             List<Guid> RemovedCards = new List<Guid>();
 
+            SaveState();
+
             for (var i = (int)numericUpDown1.Value - 1; i >= 0; i--)
             {
                 Collections[CurrentCollectionInd].data.Remove(SelectedCards[i]);
@@ -279,6 +285,8 @@ namespace YGODatabase
 
         private void btnAddOneSelected_Click(object sender, EventArgs e)
         {
+            SaveState();
+
             Guid UUID = Guid.NewGuid();
 
             var CurrentCard = selectedCard.InvData;
@@ -593,6 +601,8 @@ namespace YGODatabase
             }
             if (Confirm != DialogResult.OK) { return; }
 
+            SaveState();
+
             var UUID = Collections[comboBox1.SelectedIndex].UUID;
 
             Collections.Remove(Collections[comboBox1.SelectedIndex]);
@@ -606,6 +616,7 @@ namespace YGODatabase
         }
         private void AddYDKToCollection(CardCollection Collection, string[] YDKContent)
         {
+            SaveState();
             List<Tuple<YGOCardOBJ, Categories, int>> Cards = new();
             Categories CurrentCategory = Categories.MainDeck;
             foreach (var line in YDKContent)
@@ -671,13 +682,11 @@ namespace YGODatabase
 
         public void SaveData()
         {
-            
             foreach (var i in Collections)
             {
                 if (i.UUID == null || i.UUID == Guid.Empty) { continue; }
                 SaveCollection(i);
             }
-
         }
 
         public void SaveCollection(CardCollection Collection)
@@ -693,6 +702,11 @@ namespace YGODatabase
                 DeckPathDictionary[Collection.UUID] = Utility.CreateUniqueFilename(Collection.Name, YGODataManagement.GetDeckDirectoryPath());
             }
             File.WriteAllText(DeckPathDictionary[Collection.UUID], JsonConvert.SerializeObject(Collection, Formatting.Indented));
+        }
+
+        private void SaveState()
+        {
+            UndoLists.Add(fastJSON.JSON.ToJSON(Collections));
         }
 
         private void chkPaperCollection_CheckedChanged(object sender, EventArgs e)
@@ -719,7 +733,9 @@ namespace YGODatabase
             var DialogResult = MessageBox.Show(Instructions, "Import Collection to Inventory", MessageBoxButtons.YesNo);
             if (DialogResult != DialogResult.Yes) { return; }
 
-            foreach(var card in Collections[CurrentCollectionInd].data)
+            SaveState();
+
+            foreach (var card in Collections[CurrentCollectionInd].data)
             {
                 if (card.Value.Category == Categories.MaybeDeck) { continue; }
                 DuplicateCardContainer TempNewInvObjectContainer = new();
@@ -741,7 +757,8 @@ namespace YGODatabase
             string CurrentName = Collection.Name;
             string input = Interaction.InputBox("Enter New Collection Name", "Rename Collection", CurrentName, 0, 0);
             if (!string.IsNullOrWhiteSpace(input)) 
-            { 
+            {
+                SaveState();
                 Collection.Name = input;
                 SaveCollection(Collections[CurrentCollectionInd]);
             }
