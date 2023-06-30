@@ -98,6 +98,9 @@
             this.lbCardList.Size = new System.Drawing.Size(218, 379);
             this.lbCardList.TabIndex = 2;
             this.lbCardList.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
+            this.lbCardList.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lbCardList_MouseDown);
+            this.lbCardList.MouseMove += new System.Windows.Forms.MouseEventHandler(this.lbCardList_MouseMove);
+            this.lbCardList.MouseUp += new System.Windows.Forms.MouseEventHandler(this.lbCardList_MouseUp);
             // 
             // pictureBox1
             // 

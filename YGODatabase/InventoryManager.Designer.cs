@@ -70,6 +70,7 @@
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importYDKAsCollectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.compareYDKsToInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importYDKContentToCurrentInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addCollectionToInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -81,7 +82,6 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.gbCurrentCollection = new System.Windows.Forms.GroupBox();
             this.chkInvDescending = new System.Windows.Forms.CheckBox();
-            this.compareYDKsToInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gbSelectedCard.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
@@ -505,6 +505,13 @@
             this.importYDKAsCollectionToolStripMenuItem.Text = "Import YDK as New Collection";
             this.importYDKAsCollectionToolStripMenuItem.Click += new System.EventHandler(this.BTNImportCollection_Click);
             // 
+            // compareYDKsToInventoryToolStripMenuItem
+            // 
+            this.compareYDKsToInventoryToolStripMenuItem.Name = "compareYDKsToInventoryToolStripMenuItem";
+            this.compareYDKsToInventoryToolStripMenuItem.Size = new System.Drawing.Size(233, 22);
+            this.compareYDKsToInventoryToolStripMenuItem.Text = "Compare YDKs to Inventory";
+            this.compareYDKsToInventoryToolStripMenuItem.Click += new System.EventHandler(this.compareYDKsToInventoryToolStripMenuItem_Click);
+            // 
             // editToolStripMenuItem
             // 
             this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -595,13 +602,6 @@
             this.chkInvDescending.UseVisualStyleBackColor = true;
             this.chkInvDescending.CheckedChanged += new System.EventHandler(this.InventorySearchUpdated);
             // 
-            // compareYDKsToInventoryToolStripMenuItem
-            // 
-            this.compareYDKsToInventoryToolStripMenuItem.Name = "compareYDKsToInventoryToolStripMenuItem";
-            this.compareYDKsToInventoryToolStripMenuItem.Size = new System.Drawing.Size(233, 22);
-            this.compareYDKsToInventoryToolStripMenuItem.Text = "Compare YDKs to Inventory";
-            this.compareYDKsToInventoryToolStripMenuItem.Click += new System.EventHandler(this.compareYDKsToInventoryToolStripMenuItem_Click);
-            // 
             // InventoryManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -656,7 +656,6 @@
         private ComboBox cmbSelectedCardSet;
         private ComboBox cmbSelctedCardRarity;
         private Label lblSelectedCard;
-        private ListView listView1;
         private ColumnHeader Count;
         private ColumnHeader CardName;
         private ColumnHeader Set;
@@ -697,5 +696,6 @@
         private ToolStripMenuItem defaultConditionToolStripMenuItem;
         private ToolStripComboBox DefaultConditionSelectComboBox;
         private ToolStripMenuItem compareYDKsToInventoryToolStripMenuItem;
+        public ListView listView1;
     }
 }

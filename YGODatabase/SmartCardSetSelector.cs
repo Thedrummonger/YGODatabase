@@ -19,8 +19,8 @@ namespace YGODatabase
             filters.SetAll(false);
             filters.Set(_FilterSet: template.set_code is not null, _FilterRarity: template.set_rarity is not null);
             var AllSets = template.CardData().card_sets.OrderBy(x => x.GetRarityIndex());
-            template.set_code ??= AllSets.First().set_code;
             template.set_rarity ??= AllSets.First().set_rarity;
+            template.set_code ??= AllSets.Where(x => x.set_rarity == template.set_rarity).First().set_code;
             var CardsInInventory = CollectionSearchUtils.GetIdenticalCardsFromCollection(Collections[0], template, filters);
             foreach(var i in CardsInInventory)
             {

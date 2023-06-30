@@ -107,58 +107,21 @@ namespace YGODatabase
         }
         private void lbSearchResults_DoubleClick(object sender, EventArgs e)
         {
-            AddSelectedCard();
+            AddSelectedSearchResult();
         }
-        private void AddSelectedCard()
+        private void AddSelectedSearchResult()
         {
             if (lbSearchResults.SelectedIndex < 0) { return; }
             if (lbSearchResults.SelectedItem is not CardSearchResult SelectedCard) { return; }
             txtSearch.SelectAll();
             txtSearch.Focus();
 
-            SaveState();
-
-            Categories SelectedCategory = Categories.MainDeck;
-            if (cmbAddTo.SelectedItem is ComboBoxItem addToSelection)
-            {
-                SelectedCategory = (Categories)addToSelection.tag;
-            }
-
-            Guid UUID = Guid.NewGuid();
-
             string? ForceSet = SelectedCard.FilteringSet ? SelectedCard.Set.set_code : null;
             string? ForceRarity = SelectedCard.FilteringRarity ? SelectedCard.Set.set_rarity : null;
 
-            InventoryDatabaseEntry Template = new InventoryDatabaseEntry { cardID = SelectedCard.Card.id, set_code = ForceSet, set_rarity = ForceRarity };
-            var BestSetMatch = SmartCardSetSelector.GetBestSetPrinting(Template, Collections, Collections[CurrentCollectionInd], out int ImageIndex);
+            YGOSetData NewSetData = new YGOSetData() { set_code = ForceSet, set_rarity = ForceRarity };
 
-            if (BestSetMatch == null) 
-            {
-                MessageBox.Show($"ERROR: selected card was invalid. This is a bug.\n\n{SelectedCard.Card.name} | {ForceSet??"Any Set"} | {ForceSet??"Any Rarity"}" );
-                return;
-            }
-            Debug.WriteLine($"Adding to collection {SelectedCard.Card.name} | {BestSetMatch.set_name} | {BestSetMatch.set_rarity}");
-
-            Collections[CurrentCollectionInd].data.Add(UUID, new InventoryDatabaseEntry()
-            {
-                cardID = SelectedCard.Card.id,
-                set_code = BestSetMatch.set_code,
-                set_rarity = BestSetMatch.set_rarity,
-                Category = CurrentCollectionInd == 0 ? Categories.None : SelectedCategory,
-                Condition = SafeGetDefaultCondition(),
-                ImageIndex = ImageIndex < 0 ? 0 : ImageIndex,
-                DateAdded = DateAndTime.Now,
-                LastUpdated= DateAndTime.Now
-            });
-
-            SaveCollection(Collections[CurrentCollectionInd]);
-
-            selectedCard = Utility.CreateSelectedCardEntry(Collections[CurrentCollectionInd], UUID);
-            PrintSelectedCard("Last Added Card");
-
-            PrintInventory();
-            UpdatePopoutForms(false);
-
+            AddCardToCollection(SelectedCard.Card, Collections[CurrentCollectionInd], NewSetData);
         }
 
         #endregion Search Functions
@@ -334,6 +297,10 @@ namespace YGODatabase
         {
             e.Cancel = true;
             this.Hide();
+            SaveFormDataOnClose();
+        }
+        public void SaveFormDataOnClose()
+        {
             SaveData();
             _DatabaseForm.Settings.InventorySearchShowRarity = chkShowRarity.Checked;
             _DatabaseForm.Settings.InventorySearchShowSet = chkShowSet.Checked;
@@ -367,7 +334,7 @@ namespace YGODatabase
         {
             if (e.KeyData == Keys.Tab || e.KeyData == Keys.Enter)
             {
-                AddSelectedCard();
+                AddSelectedSearchResult();
                 e.IsInputKey = true;
             }
         }
@@ -833,6 +800,53 @@ namespace YGODatabase
                 data.Add(new(Path.GetFileName(file), TotalObtained, TotalInDeck, Percentage));
             }
             Debug.WriteLine($"{JsonConvert.SerializeObject(data.OrderBy(x => x.Item4), Formatting.Indented)}");
+        }
+
+        public void AddCardToCollection(YGOCardOBJ Card, CardCollection collection, YGOSetData Set = null)
+        {
+
+            SaveState();
+
+            Set ??= new YGOSetData() { set_code = null, set_rarity = null };
+
+            Categories SelectedCategory = Categories.MainDeck;
+            if (cmbAddTo.SelectedItem is ComboBoxItem addToSelection)
+            {
+                SelectedCategory = (Categories)addToSelection.tag;
+            }
+
+            Guid UUID = Guid.NewGuid();
+
+            InventoryDatabaseEntry Template = new InventoryDatabaseEntry { cardID = Card.id, set_code = Set.set_code, set_rarity = Set.set_rarity };
+            var BestSetMatch = SmartCardSetSelector.GetBestSetPrinting(Template, Collections, Collections[CurrentCollectionInd], out int ImageIndex);
+
+            if (BestSetMatch == null)
+            {
+                MessageBox.Show($"ERROR: selected card was invalid. This is a bug.\n\n{Card.name} | {Set.set_code??"Any Set"} | {Set.set_rarity??"Any Rarity"}");
+                return;
+            }
+            Debug.WriteLine($"Adding to collection {Card.name} | {BestSetMatch.set_name} | {BestSetMatch.set_rarity}");
+
+            collection.data.Add(UUID, new InventoryDatabaseEntry()
+            {
+                cardID = Card.id,
+                set_code = BestSetMatch.set_code,
+                set_rarity = BestSetMatch.set_rarity,
+                Category = collection.UUID == Guid.Empty ? Categories.None : SelectedCategory,
+                Condition = SafeGetDefaultCondition(),
+                ImageIndex = ImageIndex < 0 ? 0 : ImageIndex,
+                DateAdded = DateAndTime.Now,
+                LastUpdated= DateAndTime.Now
+            });
+
+            SaveCollection(collection);
+
+            selectedCard = Utility.CreateSelectedCardEntry(collection, UUID);
+            PrintSelectedCard("Last Added Card");
+
+            PrintInventory();
+            UpdatePopoutForms(false);
+            UpdatepictureBox(selectedCard.CardData(), selectedCard.InvData.ImageIndex);
         }
     }
 }

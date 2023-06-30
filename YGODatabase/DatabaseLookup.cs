@@ -1,9 +1,5 @@
 using Newtonsoft.Json;
 using System.Diagnostics;
-using System.Drawing.Imaging;
-using System.Net;
-using System.Security.Policy;
-using System.Windows.Forms;
 using static YGODatabase.DataModel;
 
 namespace YGODatabase
@@ -130,6 +126,7 @@ namespace YGODatabase
 
         private void MainInterface_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (inventoryManager.Visible) { inventoryManager.SaveFormDataOnClose(); }
             File.WriteAllText(YGODataManagement.GetSettingPath(), JsonConvert.SerializeObject(Settings, Formatting.Indented));
         }
 
@@ -194,5 +191,48 @@ namespace YGODatabase
             numericUpDown1.Location = new Point(pictureBox1.Location.X + pictureBox1.Width - numericUpDown1.Width - Padding, numericUpDown1.Location.Y);
             label1.Location = new Point(numericUpDown1.Location.X - label1.Width - 2, numericUpDown1.Location.Y);
         }
+
+        bool MouseDown = false;
+        int MouseDownOnIndex = -1;
+        int ListTopIndex = -1;
+        private void lbCardList_MouseDown(object sender, MouseEventArgs e)
+        {
+            MouseDown = true;
+            MouseDownOnIndex = lbCardList.SelectedIndex;
+            ListTopIndex = lbCardList.TopIndex;
+        }
+
+        private void lbCardList_MouseUp(object sender, MouseEventArgs e)
+        {
+            Cursor.Current = Cursors.Default;
+            MouseDown = false;
+
+            var control = Utility.FindControlAtCursor(inventoryManager);
+
+            if (control == inventoryManager.listView1)
+            {
+                if (lbCardList.SelectedIndex < 0 || lbCardList.SelectedItem is not YGOCardOBJ CurrentCard) { return; }
+                if (CurrentCard.card_sets is null)
+                {
+                    MessageBox.Show($"{CurrentCard.name} was not printed in any TCG sets!", "Failed to add card", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+                var CurrentCollection = inventoryManager.Collections[inventoryManager.CurrentCollectionInd];
+                inventoryManager.AddCardToCollection(CurrentCard, CurrentCollection, null);
+
+            }
+
+        }
+
+        private void lbCardList_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (MouseDown) 
+            {
+                lbCardList.SelectedIndex = MouseDownOnIndex;
+                lbCardList.TopIndex = ListTopIndex;
+                if (Cursor.Current != Cursors.Hand) { Cursor.Current = Cursors.Hand; }
+            }
+        }
+
     }
 }
