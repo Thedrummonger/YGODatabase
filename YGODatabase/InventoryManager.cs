@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System.Data;
 using System.Diagnostics;
+using System.Text;
 using static YGODatabase.DataModel;
 
 namespace YGODatabase
@@ -690,7 +691,7 @@ namespace YGODatabase
 
         private void addCollectionToInventoryToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (CurrentCollectionInd == 0 || Collections[CurrentCollectionInd].UUID == Guid.Empty) { return; }
+            if (Collections[CurrentCollectionInd].IsInventory()) { return; }
 
             string Instructions = "This will add a copy of each card in this collection to your main inventory, would you like to continue?";
 
@@ -719,7 +720,7 @@ namespace YGODatabase
 
         private void renameToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (CurrentCollectionInd == 0 || Collections[CurrentCollectionInd].UUID == Guid.Empty) { return; }
+            if (Collections[CurrentCollectionInd].IsInventory()) { return; }
             var Collection = Collections[CurrentCollectionInd];
             string CurrentName = Collection.Name;
             string input = Interaction.InputBox("Enter New Collection Name", "Rename Collection", CurrentName, 0, 0);
@@ -832,7 +833,7 @@ namespace YGODatabase
                 cardID = Card.id,
                 set_code = BestSetMatch.set_code,
                 set_rarity = BestSetMatch.set_rarity,
-                Category = collection.UUID == Guid.Empty ? Categories.None : SelectedCategory,
+                Category = collection.IsInventory() ? Categories.None : SelectedCategory,
                 Condition = SafeGetDefaultCondition(),
                 ImageIndex = ImageIndex < 0 ? 0 : ImageIndex,
                 DateAdded = DateAndTime.Now,
@@ -847,6 +848,69 @@ namespace YGODatabase
             PrintInventory();
             UpdatePopoutForms(false);
             UpdatepictureBox(selectedCard.CardData(), selectedCard.InvData.ImageIndex);
+        }
+
+        private void exportCollectionToCSVToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var csv = new StringBuilder();
+            var collection = Collections[CurrentCollectionInd];
+            List<string> Headers = new List<string>()
+            {
+                "#",
+                "D",
+                "Card Name",
+                "Set Name",
+                "Rarity",
+                "Condition"
+            };
+            if (!collection.IsInventory()) { Headers.Insert(2, "I"); Headers.Add("Min Needed"); Headers.Add("Max Needed"); }
+
+            ListView TempLV = new ListView();
+            TextBox ThrowawayTXT = new TextBox();
+
+            InventoryDisplay.PrintInventoryData(TempLV, ThrowawayTXT, Collections, CurrentCollectionInd, "", 0, false);
+
+            csv.AppendLine(string.Join(',', Headers));
+            foreach(ListViewItem item in TempLV.Items)
+            {
+                List<string> row = new List<string>();
+                foreach (ListViewItem.ListViewSubItem i in item.SubItems)
+                {
+                    string text = i.Text;
+                    if (text.Contains(',')) { text = $"\"{text}\""; }
+                    row.Add(text);
+                }
+                if (!collection.IsInventory())
+                {
+                    bool IsHeader = string.IsNullOrWhiteSpace(row[1]);
+                    if (IsHeader) { row.Add(string.Empty); }
+                    else
+                    {
+                        int AmountInCollection = int.Parse(row[0]);
+                        int AmountInOther = int.Parse(row[1]);
+                        int AmountInInventory = int.Parse(row[2]);
+                        int AmountNeeded = AmountInCollection - AmountInInventory;
+                        if (AmountNeeded < 0) { AmountNeeded = 0; }
+                        int AmountNeededForNoOver = AmountInCollection + AmountInOther - AmountInInventory;
+                        if (AmountNeededForNoOver < 0) { AmountNeededForNoOver = 0; }
+                        row.Add(AmountNeeded.ToString());
+                        row.Add(AmountNeededForNoOver.ToString());
+                    }
+                }
+                csv.AppendLine(string.Join(',', row));
+            }
+            Debug.WriteLine(csv.ToString());
+
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+
+            saveFileDialog1.FileName = collection.Name;
+            saveFileDialog1.Filter = "csv files (*.csv)|*.csv";
+            saveFileDialog1.RestoreDirectory = true;
+
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                File.WriteAllText(saveFileDialog1.FileName, csv.ToString());
+            }
         }
     }
 }

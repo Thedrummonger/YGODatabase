@@ -82,6 +82,7 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.gbCurrentCollection = new System.Windows.Forms.GroupBox();
             this.chkInvDescending = new System.Windows.Forms.CheckBox();
+            this.exportCollectionToCSVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gbSelectedCard.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
@@ -471,6 +472,7 @@
             this.newToolStripMenuItem,
             this.deleteToolStripMenuItem,
             this.renameToolStripMenuItem,
+            this.exportCollectionToCSVToolStripMenuItem,
             this.importYDKAsCollectionToolStripMenuItem,
             this.compareYDKsToInventoryToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
@@ -602,6 +604,13 @@
             this.chkInvDescending.UseVisualStyleBackColor = true;
             this.chkInvDescending.CheckedChanged += new System.EventHandler(this.InventorySearchUpdated);
             // 
+            // exportCollectionToCSVToolStripMenuItem
+            // 
+            this.exportCollectionToCSVToolStripMenuItem.Name = "exportCollectionToCSVToolStripMenuItem";
+            this.exportCollectionToCSVToolStripMenuItem.Size = new System.Drawing.Size(233, 22);
+            this.exportCollectionToCSVToolStripMenuItem.Text = "Export Collection to CSV";
+            this.exportCollectionToCSVToolStripMenuItem.Click += new System.EventHandler(this.exportCollectionToCSVToolStripMenuItem_Click);
+            // 
             // InventoryManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -697,5 +706,6 @@
         private ToolStripComboBox DefaultConditionSelectComboBox;
         private ToolStripMenuItem compareYDKsToInventoryToolStripMenuItem;
         public ListView listView1;
+        private ToolStripMenuItem exportCollectionToCSVToolStripMenuItem;
     }
 }

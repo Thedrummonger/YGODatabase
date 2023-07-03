@@ -31,6 +31,10 @@ namespace YGODatabase
             public Guid UUID { get; set; }
             public Dictionary<Guid, InventoryDatabaseEntry> data { get; set; }
             public DateTime LastEdited { get; set; }
+            public bool IsInventory()
+            {
+                return UUID == Guid.Empty;
+            }
         }
         public class YGOCardOBJ
         {
