@@ -69,6 +69,7 @@
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportCollectionToCSVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importYDKAsCollectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.compareYDKsToInventoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -82,7 +83,6 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.gbCurrentCollection = new System.Windows.Forms.GroupBox();
             this.chkInvDescending = new System.Windows.Forms.CheckBox();
-            this.exportCollectionToCSVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gbSelectedCard.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
@@ -316,6 +316,7 @@
             this.listView1.TabIndex = 9;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
+            this.listView1.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listView1_ColumnClick);
             this.listView1.SelectedIndexChanged += new System.EventHandler(this.HighlightCard);
             this.listView1.DoubleClick += new System.EventHandler(this.listView1_DoubleClick);
             this.listView1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseClick);
@@ -500,6 +501,13 @@
             this.renameToolStripMenuItem.Text = "Rename Current Collection";
             this.renameToolStripMenuItem.Click += new System.EventHandler(this.renameToolStripMenuItem_Click);
             // 
+            // exportCollectionToCSVToolStripMenuItem
+            // 
+            this.exportCollectionToCSVToolStripMenuItem.Name = "exportCollectionToCSVToolStripMenuItem";
+            this.exportCollectionToCSVToolStripMenuItem.Size = new System.Drawing.Size(233, 22);
+            this.exportCollectionToCSVToolStripMenuItem.Text = "Export Collection to CSV";
+            this.exportCollectionToCSVToolStripMenuItem.Click += new System.EventHandler(this.exportCollectionToCSVToolStripMenuItem_Click);
+            // 
             // importYDKAsCollectionToolStripMenuItem
             // 
             this.importYDKAsCollectionToolStripMenuItem.Name = "importYDKAsCollectionToolStripMenuItem";
@@ -603,13 +611,6 @@
             this.chkInvDescending.Text = "Descending";
             this.chkInvDescending.UseVisualStyleBackColor = true;
             this.chkInvDescending.CheckedChanged += new System.EventHandler(this.InventorySearchUpdated);
-            // 
-            // exportCollectionToCSVToolStripMenuItem
-            // 
-            this.exportCollectionToCSVToolStripMenuItem.Name = "exportCollectionToCSVToolStripMenuItem";
-            this.exportCollectionToCSVToolStripMenuItem.Size = new System.Drawing.Size(233, 22);
-            this.exportCollectionToCSVToolStripMenuItem.Text = "Export Collection to CSV";
-            this.exportCollectionToCSVToolStripMenuItem.Click += new System.EventHandler(this.exportCollectionToCSVToolStripMenuItem_Click);
             // 
             // InventoryManager
             // 

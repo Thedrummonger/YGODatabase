@@ -8,21 +8,21 @@ namespace YGODatabase
     public partial class InventoryDisplay : Form
     {
         public InventoryManager _Parent;
-        public int CurrentCollectionInd;
+        public int CurrentDisplayCollectionInd;
         bool Initializing = false;
         public InventoryDisplay(InventoryManager Parent)
         {
             Initializing = true;
             InitializeComponent();
             _Parent = Parent;
-            CurrentCollectionInd = Parent.CurrentCollectionInd;
+            CurrentDisplayCollectionInd = Parent.CurrentCollectionInd;
             cmbOrderBy.SelectedIndex = 0;
             Initializing = false;
         }
         private void UpdateCollectionDetails(object sender, EventArgs e)
         {
             if (Initializing) { return; }
-            CurrentCollectionInd = comboBox1.SelectedIndex;
+            CurrentDisplayCollectionInd = comboBox1.SelectedIndex;
             UpdateData(false);
         }
         public void UpdateData(bool CollectionsChanged)
@@ -36,7 +36,7 @@ namespace YGODatabase
                 }
                 comboBox1.SelectedIndex = 0;
             }
-            PrintInventoryData(listView1, groupBox1, _Parent.Collections, CurrentCollectionInd, txtInventoryFilter.Text, cmbOrderBy.SelectedIndex, chkInvDescending.Checked);
+            PrintInventoryData(listView1, groupBox1, _Parent.Collections, CurrentDisplayCollectionInd, txtInventoryFilter.Text, cmbOrderBy.SelectedIndex, chkInvDescending.Checked);
         }
 
         public static void PrintInventoryData(System.Windows.Forms.ListView LVTarget, dynamic Display, List<CardCollection> Collections, int CurrentCollectionInd, string Filter, int OrderInd, bool OrderDescending)
@@ -248,6 +248,71 @@ namespace YGODatabase
         private void InventoryDisplay_ResizeEnd(object sender, EventArgs e)
         {
             Utility.ResizeLowerListBox(listView1, this);
+        }
+
+        public static void SortColumnByClick(int ColumnInd, CheckBox DecensingCheckBox, ComboBox OrderByCMB, List<CardCollection> Collections, int CurrentCollectionInd)
+        {
+            int MainInvOffset = Collections[CurrentCollectionInd].IsInventory() ? 0 : 1;
+            Dictionary<int, int> SortKeyInd = new Dictionary<int, int>()
+            {
+                { 0, 7 },                   //Sort By Count
+                { 2 + MainInvOffset, 0 },   //Sort By Name
+                { 3 + MainInvOffset, 1 },   //Sort by set
+                { 4 + MainInvOffset, 2 },   //Sort by rarity
+                { 5 + MainInvOffset, 3 },   //Sort by Condition
+            };
+            if (SortKeyInd.ContainsKey(ColumnInd))
+            {
+                if (OrderByCMB.SelectedIndex == SortKeyInd[ColumnInd])
+                {
+                    DecensingCheckBox.Checked = !DecensingCheckBox.Checked;
+                }
+                else
+                {
+                    OrderByCMB.SelectedIndex = SortKeyInd[ColumnInd];
+                }
+            }
+        }
+
+        private void listView1_ColumnClick(object sender, ColumnClickEventArgs e)
+        {
+            SortColumnByClick(e.Column, chkInvDescending, cmbOrderBy, _Parent.Collections, CurrentDisplayCollectionInd);
+        }
+
+        private void listView1_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                var focusedItem = listView1.FocusedItem;
+                if (focusedItem != null && focusedItem.Bounds.Contains(e.Location))
+                {
+                    ShowContextMenu(focusedItem);
+                }
+            }
+        }
+
+        private void ShowContextMenu(ListViewItem SelectedEntry)
+        {
+            if (SelectedEntry.Tag is null) { return; }
+
+            ContextMenuStrip contextMenu = new();
+            ToolStripItem RefreshContextItem = contextMenu.Items.Add("Refresh");
+            RefreshContextItem.Click += (sender, e) => { UpdateData(false); };
+
+            if (SelectedEntry.Tag is DuplicateCardContainer inventoryObject)
+            {
+                if (!_Parent.Collections[CurrentDisplayCollectionInd].IsInventory())
+                {
+                    ToolStripItem ShowAltPrintings = contextMenu.Items.Add("Show other available printings");
+                    ShowAltPrintings.Click += (sender, e) => { Utility.ShowOtherAvailablePrinting(inventoryObject, _Parent.Collections, CurrentDisplayCollectionInd); };
+                }
+                ToolStripItem ShowOtherdecks = contextMenu.Items.Add("Show other decks using card");
+                ShowOtherdecks.Click += (sender, e) => { Utility.ShowOtherDecksUsingCard(inventoryObject, _Parent.Collections, CurrentDisplayCollectionInd); };
+            }
+            if (contextMenu.Items.Count > 0)
+            {
+                contextMenu.Show(Cursor.Position);
+            }
         }
     }
 }

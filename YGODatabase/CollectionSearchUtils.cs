@@ -24,19 +24,9 @@ namespace YGODatabase
 
         public static int GetAmountOfCardInNonInventoryCollections(List<CardCollection> Collections, InventoryDatabaseEntry Target, HashSet<int> IgnoreCollection, CardMatchFilters? filters = null, bool PaperOnly = false)
         {
-            int CardsInOtherDecks = 0;
-            int CollectionIndex = -1;
-            foreach (var collection in Collections)
-            {
-                CollectionIndex++;
-                if (!collection.PaperCollection && PaperOnly) { continue; }
-                if (CollectionIndex == 0 || IgnoreCollection.Contains(CollectionIndex)) { continue; }
-                var OtherDeckCount = GetIdenticalCardsFromCollection(collection, Target, filters);
-                CardsInOtherDecks += OtherDeckCount.Count();
-            }
-            return CardsInOtherDecks;
+            return GetAmountOfCardInNonInventoryCollections(null, Collections,Target,IgnoreCollection,filters, PaperOnly);
         }
-        public static int GetAmountOfCardInNonInventoryCollections(Dictionary<int, Dictionary<string, int>> Cache, List<CardCollection> Collections, InventoryDatabaseEntry Target, HashSet<int> IgnoreCollection, CardMatchFilters? filters = null, bool PaperOnly = false)
+        public static int GetAmountOfCardInNonInventoryCollections(Dictionary<int, Dictionary<string, int>>? Cache, List<CardCollection> Collections, InventoryDatabaseEntry Target, HashSet<int> IgnoreCollection, CardMatchFilters? filters = null, bool PaperOnly = false)
         {
             int CardsInOtherDecks = 0;
             int CollectionIndex = -1;
@@ -44,13 +34,19 @@ namespace YGODatabase
             foreach (var collection in Collections)
             {
                 CollectionIndex++;
-                if ((!collection.PaperCollection && PaperOnly) || 
-                    CollectionIndex == 0 || 
-                    IgnoreCollection.Contains(CollectionIndex) || 
-                    !Cache.ContainsKey(CollectionIndex) || 
-                    !Cache[CollectionIndex].ContainsKey(TargetID)) 
-                { continue; }
-                CardsInOtherDecks += Cache[CollectionIndex][TargetID];
+                if (!collection.PaperCollection && PaperOnly) { continue; }
+                if (CollectionIndex == 0 || IgnoreCollection.Contains(CollectionIndex)) { continue; }
+
+                bool CardIDCached = Cache is not null && Cache.ContainsKey(CollectionIndex) && Cache[CollectionIndex].ContainsKey(TargetID);
+                if (CardIDCached)
+                {
+                    CardsInOtherDecks += Cache[CollectionIndex][TargetID];
+                }
+                else
+                {
+                    var OtherDeckCount = GetIdenticalCardsFromCollection(collection, Target, filters);
+                    CardsInOtherDecks += OtherDeckCount.Length;
+                }
             }
             return CardsInOtherDecks;
         }
