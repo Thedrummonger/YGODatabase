@@ -474,7 +474,7 @@ namespace YGODatabase
                 var IDString = Entry.CreateIDString();
                 var Card = Utility.GetCardByID(Entry.cardID);
                 var Set = Utility.GetExactCard(Card, Entry.set_code, Entry.set_rarity);
-                var OtherDecks = CollectionSearchUtils.GetAmountOfCardInNonInventoryCollections(Collections, inventoryContainer.InvData, new int[] {CurrentCollectionInd}, new CardMatchFilters(), true);
+                var OtherDecks = CollectionSearchUtils.GetAmountOfCardInNonInventoryCollections(Collections, inventoryContainer.InvData, new HashSet<int> {CurrentCollectionInd}, new CardMatchFilters(), true);
                 if (!AltPrintings.ContainsKey(IDString)) { AltPrintings[IDString] = new($"{Set.set_name} {Set.GetRarityCode()} ({Entry.Condition}) (Art{Entry.ImageIndex+1})", 0, OtherDecks); }
                 AltPrintings[IDString] = new(AltPrintings[IDString].Item1, AltPrintings[IDString].Item2 + 1, AltPrintings[IDString].Item3);
             }

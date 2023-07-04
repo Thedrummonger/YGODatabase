@@ -26,7 +26,7 @@ namespace YGODatabase
             {
                 var InventoryEntry = Collections[0].data[i];
                 var SpecificCardInInevntory = CollectionSearchUtils.GetIdenticalCardsFromCollection(Collections[0], InventoryEntry, new CardMatchFilters().SetAll(true));
-                var AmountInDecks = CollectionSearchUtils.GetAmountOfCardInNonInventoryCollections(Collections, InventoryEntry, Array.Empty<int>(), new CardMatchFilters().SetAll(true), true);
+                var AmountInDecks = CollectionSearchUtils.GetAmountOfCardInNonInventoryCollections(Collections, InventoryEntry, new HashSet<int>(), new CardMatchFilters().SetAll(true), true);
                 if (SpecificCardInInevntory.Count() > AmountInDecks)
                 {
                     ImageIndex = InventoryEntry.ImageIndex;

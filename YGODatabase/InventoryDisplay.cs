@@ -39,14 +39,14 @@ namespace YGODatabase
             PrintInventoryData(listView1, groupBox1, _Parent.Collections, CurrentCollectionInd, txtInventoryFilter.Text, cmbOrderBy.SelectedIndex, chkInvDescending.Checked);
         }
 
-        public static void PrintInventoryData(System.Windows.Forms.ListView LVTarget, dynamic Display, List<CardCollection> Collections, int CurrentCollectionInd, string Filter, int OrderInd, bool OrderDescending) 
+        public static void PrintInventoryData(System.Windows.Forms.ListView LVTarget, dynamic Display, List<CardCollection> Collections, int CurrentCollectionInd, string Filter, int OrderInd, bool OrderDescending)
         {
 
             int topItemIndex = 0;
             try { topItemIndex = LVTarget.TopItem?.Index??0; }
             catch (Exception ex) { }
 
-            bool MainInventory = CurrentCollectionInd < 1;
+            bool MainInventory = Collections[CurrentCollectionInd].IsInventory();
 
             Debug.WriteLine($"Printing {Collections[CurrentCollectionInd].Name}");
             Dictionary<string, DuplicateCardContainer> UniqueEntries = new Dictionary<string, DuplicateCardContainer>();
@@ -154,15 +154,22 @@ namespace YGODatabase
 
             Categories CurrentCategory = Categories.None;
 
+            var OtherDeckSearchFilter = new CardMatchFilters().SetAll(true).Set(_FilterCategory: false);
+
+            var CollectionIDCache = CollectionSearchUtils.CacheIdsInCollections(Collections, new HashSet<int> { CurrentCollectionInd }, OtherDeckSearchFilter);
+            
+            int PrintsDone = 0;
             foreach (var i in PrintList)
             {
                 bool SearchValid = SearchParser.CardMatchesFilter($"", i.CardData(), i.SetData(), Filter, true, true);
                 if (!SearchValid) { continue; }
 
-                var OtherDecks = CollectionSearchUtils.GetAmountOfCardInNonInventoryCollections(Collections, i.InvData, new int[] { CurrentCollectionInd }, new CardMatchFilters().SetAll(true), true);
+                var OtherDecks = CollectionSearchUtils.GetAmountOfCardInNonInventoryCollections(CollectionIDCache, Collections, i.InvData, new HashSet<int> { CurrentCollectionInd }, OtherDeckSearchFilter, true);
+
                 CollectionShownCount += i.CardCount();
                 int ImageInd = i.InvData.ImageIndex;
                 List<string> DisplayData = new List<string> { i.CardCount().ToString(), OtherDecks.ToString(), i.CardData().name + (ImageInd > 0 ? $" ({ImageInd +1 })" : ""), i.SetData().set_name, i.SetData().GetRarityCode(), BulkData.Conditions[i.InvData.Condition] };
+                
                 Color? BackColor = null;
                 if (!MainInventory)
                 {
@@ -184,7 +191,10 @@ namespace YGODatabase
                 LVTarget.Items.Add(Utility.CreateListViewItem(i, DisplayData.ToArray(), BackColor));
                 if (CategoryHeaderEdits.ContainsKey(CurrentCategory)) { CategoryHeaderEdits[CurrentCategory] = new(CategoryHeaderEdits[CurrentCategory].Item1, CategoryHeaderEdits[CurrentCategory].Item2+i.CardCount()); }
                 InvListPos++;
+                PrintsDone++;
             }
+
+            Debug.WriteLine($"Printed {PrintsDone} Cards");
 
             foreach (var item in CategoryHeaderEdits.Values)
             {

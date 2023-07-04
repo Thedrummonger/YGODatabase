@@ -35,6 +35,11 @@ namespace YGODatabase
             {
                 return UUID == Guid.Empty;
             }
+            public InventoryDatabaseEntry Clone()
+            {
+                var serialized = fastJSON.JSON.ToJSON(this);
+                return fastJSON.JSON.ToObject<InventoryDatabaseEntry>(serialized);
+            }
         }
         public class YGOCardOBJ
         {
@@ -125,8 +130,8 @@ namespace YGODatabase
             public YGOSetData SetData() { return Utility.GetExactCard(cardID, set_code, set_rarity); }
             public InventoryDatabaseEntry Clone()
             {
-                var serialized = JsonConvert.SerializeObject(this);
-                return JsonConvert.DeserializeObject<InventoryDatabaseEntry>(serialized);
+                var serialized = fastJSON.JSON.ToJSON(this);
+                return fastJSON.JSON.ToObject<InventoryDatabaseEntry>(serialized);
             }
         };
         public class DuplicateCardContainer //Contains all exact duplicates of a single card in a given collection
