@@ -417,31 +417,13 @@ namespace YGODatabase
         }
         private void ShowContextMenu(ListViewItem SelectedEntry)
         {
-            if (SelectedEntry.Tag is null) { return; }
-
-            ContextMenuStrip contextMenu = new();
-            ToolStripItem RefreshContextItem = contextMenu.Items.Add("Refresh");
-            RefreshContextItem.Click += (sender, e) => { PrintInventory(); };
-
-            if (SelectedEntry.Tag is DuplicateCardContainer inventoryObject)
+            InventoryDisplay.ShowListViewContextMenu(SelectedEntry, Collections, CurrentCollectionInd, PrintInventory, ContextMenuApplySelectedCard);
+            void ContextMenuApplySelectedCard(DuplicateCardContainer inventoryObject)
             {
-                ToolStripItem SelectCard = contextMenu.Items.Add("Select Card");
-                SelectCard.Click += (sender, e) => { selectedCard = inventoryObject; PrintSelectedCard("Selected Card", 1); };
-
-                if (!Collections[CurrentCollectionInd].IsInventory())
-                {
-                    ToolStripItem ShowAltPrintings = contextMenu.Items.Add("Show other available printings");
-                    ShowAltPrintings.Click += (sender, e) => { Utility.ShowOtherAvailablePrinting(inventoryObject, Collections, CurrentCollectionInd); };
-                }
-                ToolStripItem ShowOtherdecks = contextMenu.Items.Add("Show other decks using card");
-                ShowOtherdecks.Click += (sender, e) => { Utility.ShowOtherDecksUsingCard(inventoryObject, Collections, CurrentCollectionInd); };
-            }
-            if (contextMenu.Items.Count > 0)
-            {
-                contextMenu.Show(Cursor.Position);
+                selectedCard = inventoryObject;
+                PrintSelectedCard("Selected Card", 1);
             }
         }
-
 
         #endregion Inventory Display
 

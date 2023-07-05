@@ -38,6 +38,7 @@ namespace YGODatabase
             }
             PrintInventoryData(listView1, groupBox1, _Parent.Collections, CurrentDisplayCollectionInd, txtInventoryFilter.Text, cmbOrderBy.SelectedIndex, chkInvDescending.Checked);
         }
+        public void UpdateData() { UpdateData(false); }
 
         public static void PrintInventoryData(System.Windows.Forms.ListView LVTarget, dynamic Display, List<CardCollection> Collections, int CurrentCollectionInd, string Filter, int OrderInd, bool OrderDescending)
         {
@@ -286,28 +287,34 @@ namespace YGODatabase
                 var focusedItem = listView1.FocusedItem;
                 if (focusedItem != null && focusedItem.Bounds.Contains(e.Location))
                 {
-                    ShowContextMenu(focusedItem);
+                    ShowListViewContextMenu(focusedItem, _Parent.Collections, CurrentDisplayCollectionInd, UpdateData);
                 }
             }
         }
 
-        private void ShowContextMenu(ListViewItem SelectedEntry)
+        public static void ShowListViewContextMenu(ListViewItem SelectedEntry, List<CardCollection> Collections, int CurrentCollectionInd, Action RefreshAction, Action<DuplicateCardContainer> ApplySelectedCardAction = null)
         {
             if (SelectedEntry.Tag is null) { return; }
 
             ContextMenuStrip contextMenu = new();
             ToolStripItem RefreshContextItem = contextMenu.Items.Add("Refresh");
-            RefreshContextItem.Click += (sender, e) => { UpdateData(false); };
+            RefreshContextItem.Click += (sender, e) => { RefreshAction(); };
 
             if (SelectedEntry.Tag is DuplicateCardContainer inventoryObject)
             {
-                if (!_Parent.Collections[CurrentDisplayCollectionInd].IsInventory())
+                if (ApplySelectedCardAction is not null)
+                {
+                    ToolStripItem SelectCard = contextMenu.Items.Add("Select Card");
+                    SelectCard.Click += (sender, e) => { ApplySelectedCardAction(inventoryObject); };
+                }
+
+                if (!Collections[CurrentCollectionInd].IsInventory())
                 {
                     ToolStripItem ShowAltPrintings = contextMenu.Items.Add("Show other available printings");
-                    ShowAltPrintings.Click += (sender, e) => { Utility.ShowOtherAvailablePrinting(inventoryObject, _Parent.Collections, CurrentDisplayCollectionInd); };
+                    ShowAltPrintings.Click += (sender, e) => { Utility.ShowOtherAvailablePrinting(inventoryObject, Collections, CurrentCollectionInd); };
                 }
                 ToolStripItem ShowOtherdecks = contextMenu.Items.Add("Show other decks using card");
-                ShowOtherdecks.Click += (sender, e) => { Utility.ShowOtherDecksUsingCard(inventoryObject, _Parent.Collections, CurrentDisplayCollectionInd); };
+                ShowOtherdecks.Click += (sender, e) => { Utility.ShowOtherDecksUsingCard(inventoryObject, Collections, CurrentCollectionInd); };
             }
             if (contextMenu.Items.Count > 0)
             {
