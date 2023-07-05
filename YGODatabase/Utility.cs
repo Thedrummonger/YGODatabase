@@ -399,47 +399,5 @@ namespace YGODatabase
             if (Shareable.Any()) { Message += $"\n\nPrintings available for sharing with other decks\n{string.Join('\n', Shareable)}"; }
             MessageBox.Show(Message);
         }
-
-        public static void TimeCode(Stopwatch sw, string CodeAction, int state = 0)
-        {
-            if (state == 0)
-            {
-                Debug.WriteLine($"Timing Code {CodeAction}");
-                sw.Reset();
-                sw.Start();
-            }
-            else if (state > 0)
-            {
-                Debug.WriteLine($"{CodeAction} took {sw.Elapsed.TotalMilliseconds}");
-                sw.Reset();
-                sw.Start();
-                if (state > 1) { sw.Stop(); }
-            }
-        }
-        public static void TimeLoopCode(Stopwatch sw, Dictionary<string, List<double>> Data, string CodeAction, int state = 0, int PrintsDone = 0)
-        {
-            if (state == 0)
-            {
-                sw.Stop();
-                sw.Reset();
-                sw.Start();
-            }
-            else if (state == 1)
-            {
-                if (!Data.ContainsKey(CodeAction)) { Data[CodeAction] = new List<double>(); }
-                Data[CodeAction].Add(sw.Elapsed.TotalMilliseconds);
-                sw.Reset();
-                sw.Start();
-            }
-            else
-            {
-                sw.Reset();
-                sw.Stop();
-                foreach(var i in Data)
-                {
-                    Debug.WriteLine($"{i.Key} took an average of {i.Value.Average() * PrintsDone}");
-                }
-            }
-        }
     }
 }
