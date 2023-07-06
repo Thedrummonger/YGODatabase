@@ -68,11 +68,13 @@ namespace YGODatabase
         }
         private void PrintSearchResults()
         {
+            lbSearchResults.BeginUpdate();
             bool NameSearch = cmbFilterBy.SelectedIndex == 0 || cmbFilterBy.SelectedIndex == 2;
             bool CodeSearch = cmbFilterBy.SelectedIndex == 1 || cmbFilterBy.SelectedIndex == 2;
             if (string.IsNullOrWhiteSpace(txtSearch.Text))
             {
                 lbSearchResults.DataSource =  new List<string>() { "Search for card to add" };
+                lbSearchResults.EndUpdate();
                 return;
             }
 
@@ -107,6 +109,7 @@ namespace YGODatabase
             }
 
             lbSearchResults.DataSource = Formattedresults;
+            lbSearchResults.EndUpdate();
         }
         private void MoveSearchResultListBox(int pos)
         {

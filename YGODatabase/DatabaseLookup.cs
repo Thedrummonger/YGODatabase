@@ -57,14 +57,17 @@ namespace YGODatabase
 
         private void UpdateListBox()
         {
+            lbCardList.BeginUpdate();
             YGOCardOBJ[] DisplayData = YGODataManagement.MasterDataBase.data;
             if (string.IsNullOrWhiteSpace(textBox1.Text))
             {
                 lbCardList.DataSource = DisplayData;
+                lbCardList.EndUpdate();
                 return;
             }
             DisplayData = DisplayData.Where(x => SearchParser.CardMatchesFilter(x.ToString(), x, textBox1.Text.ToLower(), true, true)).ToArray();
             lbCardList.DataSource = DisplayData;
+            lbCardList.EndUpdate();
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)

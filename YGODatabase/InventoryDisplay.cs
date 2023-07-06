@@ -49,7 +49,6 @@ namespace YGODatabase
 
             bool MainInventory = Collections[CurrentCollectionInd].IsInventory();
 
-            Debug.WriteLine($"Printing {Collections[CurrentCollectionInd].Name}");
             Dictionary<string, DuplicateCardContainer> UniqueEntries = new Dictionary<string, DuplicateCardContainer>();
 
             foreach (var i in Collections[CurrentCollectionInd].data)
@@ -195,8 +194,6 @@ namespace YGODatabase
                 PrintsDone++;
             }
 
-            Debug.WriteLine($"Printed {PrintsDone} Cards");
-
             foreach (var item in CategoryHeaderEdits.Values)
             {
                 var OldHeader = LVTarget.Items[item.Item1];
@@ -204,10 +201,11 @@ namespace YGODatabase
                 OldHeader.BackColor = Color.LightGray;
                 LVTarget.Items[item.Item1] = OldHeader;
             }
-            LVTarget.EndUpdate();
 
             try { LVTarget.TopItem = LVTarget.Items[topItemIndex]; }
             catch (Exception ex) { }
+
+            LVTarget.EndUpdate();
 
             Display.Text = $"Current Collection: {CollectionShownCount}\\{CollectionCount}";
         }
