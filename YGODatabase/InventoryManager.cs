@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System.Data;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using static YGODatabase.DataModel;
@@ -76,7 +77,7 @@ namespace YGODatabase
             }
 
             HashSet<string> MatchedDisplayName = new HashSet<string>();
-            List<CardSearchResult> Formattedresults = new List<CardSearchResult>();
+            List<object> Formattedresults = new List<object>();
 
             foreach (var i in YGODataManagement.MasterDataBase.data)
             {
@@ -96,6 +97,13 @@ namespace YGODatabase
                         Formattedresults.Add(new CardSearchResult { DisplayName = DisplayName, Card = i, Set = j, FilteringRarity = chkShowRarity.Checked || CodeSearch, FilteringSet = chkShowSet.Checked || CodeSearch });
                     }
                 }
+            }
+            int ResultLimit = 5000;
+            int ResultCount = Formattedresults.Count;
+            if (ResultCount > ResultLimit)
+            {
+                Formattedresults = Formattedresults.Take(ResultLimit).ToList();
+                Formattedresults.Add($"{ResultCount - ResultLimit} Results not shown....");
             }
 
             lbSearchResults.DataSource = Formattedresults;
