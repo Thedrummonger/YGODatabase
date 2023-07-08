@@ -182,6 +182,8 @@ namespace YGODatabase
             foreach (var i in cmbSelectedCardCondition.Items) { if (i.ToString() == InventoryObject.Condition) { cmbSelectedCardCondition.SelectedItem = i; break; } }
             cmbCollectedCardCategory.DataSource = CategoryNames.Select(x => new ComboBoxItem { DisplayName = x.Value, tag = x.Key }).ToArray();
             foreach (ComboBoxItem i in cmbCollectedCardCategory.Items) { if ((Categories)i.tag == InventoryObject.Category) { cmbCollectedCardCategory.SelectedItem = i; break; } }
+            cmbSelectedCardSetCode.DataSource = Card.card_sets.Select(x => x.set_code).ToArray();
+            foreach (var i in cmbSelectedCardSetCode.Items) { if (i.ToString() == SetEntry.set_code) { cmbSelectedCardSetCode.SelectedItem = i; break; } }
 
             var IdenticalCards = selectedCard.Entries.Count;
             if (AmountToEdit > IdenticalCards) { AmountToEdit = IdenticalCards; }
@@ -197,14 +199,24 @@ namespace YGODatabase
 
             SaveState();
 
+            Guid[] SelectedCards = selectedCard.Entries.ToArray().Reverse().ToArray();
+            Guid[] CardsToEdit = SelectedCards.Take((int)numericUpDown1.Value).ToArray();
+
+            var ExampleCard = Collections[CurrentCollectionInd].data[CardsToEdit.First()];
+
             string Rarity = (string)cmbSelctedCardRarity.SelectedItem;
             string Set = (string)cmbSelectedCardSet.SelectedItem;
             string Condition = (string)cmbSelectedCardCondition.SelectedItem;
             int Image = (int)numericUpDown2.Value - 1;
-            Categories Category = (Categories)((ComboBoxItem)cmbCollectedCardCategory.SelectedItem).tag;
 
-            Guid[] SelectedCards = selectedCard.Entries.ToArray().Reverse().ToArray();
-            Guid[] CardsToEdit = SelectedCards.Take((int)numericUpDown1.Value).ToArray();
+            if (sender == cmbSelectedCardSetCode)
+            {
+                var Setdata = ExampleCard.CardData().card_sets.First(x => x.set_code == cmbSelectedCardSetCode.SelectedItem.ToString());
+                Rarity = Setdata.set_rarity;
+                Set = Setdata.set_name;
+            }
+
+            Categories Category = (Categories)((ComboBoxItem)cmbCollectedCardCategory.SelectedItem).tag;
 
             foreach(var i in CardsToEdit)
             {

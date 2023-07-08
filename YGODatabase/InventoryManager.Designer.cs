@@ -35,6 +35,7 @@
             this.cmbFilterBy = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.gbSelectedCard = new System.Windows.Forms.GroupBox();
+            this.cmbSelectedCardSetCode = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
             this.numericUpDown2 = new System.Windows.Forms.NumericUpDown();
             this.cmbCollectedCardCategory = new System.Windows.Forms.ComboBox();
@@ -95,7 +96,7 @@
             // 
             // txtSearch
             // 
-            this.txtSearch.Location = new System.Drawing.Point(6, 83);
+            this.txtSearch.Location = new System.Drawing.Point(6, 111);
             this.txtSearch.Name = "txtSearch";
             this.txtSearch.Size = new System.Drawing.Size(201, 23);
             this.txtSearch.TabIndex = 0;
@@ -107,9 +108,9 @@
             this.lbSearchResults.CausesValidation = false;
             this.lbSearchResults.FormattingEnabled = true;
             this.lbSearchResults.ItemHeight = 15;
-            this.lbSearchResults.Location = new System.Drawing.Point(12, 196);
+            this.lbSearchResults.Location = new System.Drawing.Point(12, 226);
             this.lbSearchResults.Name = "lbSearchResults";
-            this.lbSearchResults.Size = new System.Drawing.Size(384, 184);
+            this.lbSearchResults.Size = new System.Drawing.Size(384, 154);
             this.lbSearchResults.TabIndex = 1;
             this.lbSearchResults.SelectedIndexChanged += new System.EventHandler(this.HighlightCard);
             this.lbSearchResults.DoubleClick += new System.EventHandler(this.lbSearchResults_DoubleClick);
@@ -148,6 +149,7 @@
             // 
             // gbSelectedCard
             // 
+            this.gbSelectedCard.Controls.Add(this.cmbSelectedCardSetCode);
             this.gbSelectedCard.Controls.Add(this.label6);
             this.gbSelectedCard.Controls.Add(this.numericUpDown2);
             this.gbSelectedCard.Controls.Add(this.cmbCollectedCardCategory);
@@ -161,10 +163,19 @@
             this.gbSelectedCard.Controls.Add(this.cmbSelectedCardSet);
             this.gbSelectedCard.Location = new System.Drawing.Point(231, 27);
             this.gbSelectedCard.Name = "gbSelectedCard";
-            this.gbSelectedCard.Size = new System.Drawing.Size(166, 163);
+            this.gbSelectedCard.Size = new System.Drawing.Size(166, 196);
             this.gbSelectedCard.TabIndex = 6;
             this.gbSelectedCard.TabStop = false;
             this.gbSelectedCard.Text = "Last Card added";
+            // 
+            // cmbSelectedCardSetCode
+            // 
+            this.cmbSelectedCardSetCode.FormattingEnabled = true;
+            this.cmbSelectedCardSetCode.Location = new System.Drawing.Point(5, 162);
+            this.cmbSelectedCardSetCode.Name = "cmbSelectedCardSetCode";
+            this.cmbSelectedCardSetCode.Size = new System.Drawing.Size(153, 23);
+            this.cmbSelectedCardSetCode.TabIndex = 16;
+            this.cmbSelectedCardSetCode.SelectedIndexChanged += new System.EventHandler(this.SelectedCardValueEdited);
             // 
             // label6
             // 
@@ -279,7 +290,7 @@
             this.chkShowSet.Checked = true;
             this.chkShowSet.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkShowSet.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.chkShowSet.Location = new System.Drawing.Point(6, 41);
+            this.chkShowSet.Location = new System.Drawing.Point(6, 47);
             this.chkShowSet.Name = "chkShowSet";
             this.chkShowSet.Size = new System.Drawing.Size(75, 17);
             this.chkShowSet.TabIndex = 7;
@@ -293,7 +304,7 @@
             this.chkShowRarity.Checked = true;
             this.chkShowRarity.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkShowRarity.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.chkShowRarity.Location = new System.Drawing.Point(102, 41);
+            this.chkShowRarity.Location = new System.Drawing.Point(99, 47);
             this.chkShowRarity.Name = "chkShowRarity";
             this.chkShowRarity.Size = new System.Drawing.Size(88, 17);
             this.chkShowRarity.TabIndex = 8;
@@ -418,7 +429,7 @@
             this.BGSearchAdd.Controls.Add(this.txtSearch);
             this.BGSearchAdd.Location = new System.Drawing.Point(12, 78);
             this.BGSearchAdd.Name = "BGSearchAdd";
-            this.BGSearchAdd.Size = new System.Drawing.Size(213, 112);
+            this.BGSearchAdd.Size = new System.Drawing.Size(213, 145);
             this.BGSearchAdd.TabIndex = 15;
             this.BGSearchAdd.TabStop = false;
             this.BGSearchAdd.Text = "Card Search";
@@ -426,24 +437,24 @@
             // lblAddTo
             // 
             this.lblAddTo.AutoSize = true;
-            this.lblAddTo.Location = new System.Drawing.Point(104, 65);
+            this.lblAddTo.Location = new System.Drawing.Point(6, 73);
             this.lblAddTo.Name = "lblAddTo";
-            this.lblAddTo.Size = new System.Drawing.Size(44, 15);
+            this.lblAddTo.Size = new System.Drawing.Size(95, 15);
             this.lblAddTo.TabIndex = 15;
-            this.lblAddTo.Text = "Add To";
+            this.lblAddTo.Text = "Add To Category";
             // 
             // cmbAddTo
             // 
             this.cmbAddTo.FormattingEnabled = true;
-            this.cmbAddTo.Location = new System.Drawing.Point(148, 60);
+            this.cmbAddTo.Location = new System.Drawing.Point(107, 70);
             this.cmbAddTo.Name = "cmbAddTo";
-            this.cmbAddTo.Size = new System.Drawing.Size(59, 23);
+            this.cmbAddTo.Size = new System.Drawing.Size(100, 23);
             this.cmbAddTo.TabIndex = 14;
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(6, 65);
+            this.label4.Location = new System.Drawing.Point(6, 93);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(42, 15);
             this.label4.TabIndex = 9;
@@ -712,5 +723,6 @@
         private ToolStripMenuItem compareYDKsToInventoryToolStripMenuItem;
         public ListView listView1;
         private ToolStripMenuItem exportCollectionToCSVToolStripMenuItem;
+        private ComboBox cmbSelectedCardSetCode;
     }
 }
