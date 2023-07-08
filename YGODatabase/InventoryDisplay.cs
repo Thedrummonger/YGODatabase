@@ -319,5 +319,15 @@ namespace YGODatabase
                 contextMenu.Show(Cursor.Position);
             }
         }
+
+
+        private void listView1_ItemDrag(object sender, ItemDragEventArgs e)
+        {
+            if (e.Item is not ListViewItem LVI || LVI.Tag is not DuplicateCardContainer Data)
+            {
+                return;
+            }
+            _Parent.listView1.DoDragDrop(Data, DragDropEffects.Move);
+        }
     }
 }

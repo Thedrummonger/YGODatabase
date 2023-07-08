@@ -303,6 +303,7 @@
             // 
             // listView1
             // 
+            this.listView1.AllowDrop = true;
             this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.Count,
             this.CardName,
@@ -318,6 +319,8 @@
             this.listView1.View = System.Windows.Forms.View.Details;
             this.listView1.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listView1_ColumnClick);
             this.listView1.SelectedIndexChanged += new System.EventHandler(this.HighlightCard);
+            this.listView1.DragDrop += new System.Windows.Forms.DragEventHandler(this.listView1_DragDrop);
+            this.listView1.DragEnter += new System.Windows.Forms.DragEventHandler(this.listView1_DragEnter);
             this.listView1.DoubleClick += new System.EventHandler(this.listView1_DoubleClick);
             this.listView1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.listView1_MouseClick);
             // 

@@ -134,7 +134,7 @@ namespace YGODatabase
 
             YGOSetData NewSetData = new YGOSetData() { set_code = ForceSet, set_rarity = ForceRarity };
 
-            AddCardToCollection(SelectedCard.Card, Collections[CurrentCollectionInd], NewSetData);
+            AddCardToCollection(SelectedCard.Card, NewSetData);
         }
 
         #endregion Search Functions
@@ -261,27 +261,7 @@ namespace YGODatabase
 
         private void btnAddOneSelected_Click(object sender, EventArgs e)
         {
-            SaveState();
-
-            Guid UUID = Guid.NewGuid();
-
-            var CurrentCard = selectedCard.InvData;
-
-            //Only using the DuplicateCardContainer class for it's ability to clone and InventoryDatabaseEntry 
-            DuplicateCardContainer TempNewInvObjectContainer = new();
-            TempNewInvObjectContainer.InvData = CurrentCard.Clone();
-            TempNewInvObjectContainer.InvData.DateAdded = DateTime.Now;
-            TempNewInvObjectContainer.InvData.LastUpdated = DateTime.Now;
-
-            Collections[CurrentCollectionInd].data.Add(UUID, TempNewInvObjectContainer.InvData);
-
-            SaveCollection(Collections[CurrentCollectionInd]);
-
-            selectedCard = Utility.CreateSelectedCardEntry(Collections[CurrentCollectionInd], UUID);
-            PrintSelectedCard("Last Added Card", 1);
-
-            PrintInventory();
-            UpdatePopoutForms(false);
+            AddCopyOfCardToCollection(selectedCard.InvData);
         }
 
         #endregion Selected Item
@@ -753,7 +733,7 @@ namespace YGODatabase
             Debug.WriteLine($"{JsonConvert.SerializeObject(data.OrderBy(x => x.Item4), Formatting.Indented)}");
         }
 
-        public void AddCardToCollection(YGOCardOBJ Card, CardCollection collection, YGOSetData Set = null)
+        public void AddCardToCollection(YGOCardOBJ Card, YGOSetData Set = null)
         {
 
             SaveState();
@@ -778,26 +758,48 @@ namespace YGODatabase
             }
             Debug.WriteLine($"Adding to collection {Card.name} | {BestSetMatch.set_name} | {BestSetMatch.set_rarity}");
 
-            collection.data.Add(UUID, new InventoryDatabaseEntry()
+            Collections[CurrentCollectionInd].data.Add(UUID, new InventoryDatabaseEntry()
             {
                 cardID = Card.id,
                 set_code = BestSetMatch.set_code,
                 set_rarity = BestSetMatch.set_rarity,
-                Category = collection.IsInventory() ? Categories.None : SelectedCategory,
+                Category = Collections[CurrentCollectionInd].IsInventory() ? Categories.None : SelectedCategory,
                 Condition = SafeGetDefaultCondition(),
                 ImageIndex = ImageIndex < 0 ? 0 : ImageIndex,
                 DateAdded = DateAndTime.Now,
                 LastUpdated= DateAndTime.Now
             });
 
-            SaveCollection(collection);
+            SaveCollection(Collections[CurrentCollectionInd]);
 
-            selectedCard = Utility.CreateSelectedCardEntry(collection, UUID);
+            selectedCard = Utility.CreateSelectedCardEntry(Collections[CurrentCollectionInd], UUID);
             PrintSelectedCard("Last Added Card", 1);
 
             PrintInventory();
             UpdatePopoutForms(false);
             UpdatepictureBox(selectedCard.CardData(), selectedCard.InvData.ImageIndex);
+        }
+        public void AddCopyOfCardToCollection(InventoryDatabaseEntry Entry)
+        {
+            SaveState();
+
+            Guid UUID = Guid.NewGuid();
+
+            //Only using the DuplicateCardContainer class for it's ability to clone and InventoryDatabaseEntry 
+            DuplicateCardContainer TempNewInvObjectContainer = new();
+            TempNewInvObjectContainer.InvData = Entry.Clone();
+            TempNewInvObjectContainer.InvData.DateAdded = DateTime.Now;
+            TempNewInvObjectContainer.InvData.LastUpdated = DateTime.Now;
+
+            Collections[CurrentCollectionInd].data.Add(UUID, TempNewInvObjectContainer.InvData);
+
+            SaveCollection(Collections[CurrentCollectionInd]);
+
+            selectedCard = Utility.CreateSelectedCardEntry(Collections[CurrentCollectionInd], UUID);
+            PrintSelectedCard("Last Added Card", 1);
+
+            PrintInventory();
+            UpdatePopoutForms(false);
         }
 
         private void exportCollectionToCSVToolStripMenuItem_Click(object sender, EventArgs e)
@@ -866,6 +868,63 @@ namespace YGODatabase
         private void listView1_ColumnClick(object sender, ColumnClickEventArgs e)
         {
             InventoryDisplay.SortColumnByClick(e.Column, chkInvDescending, cmbOrderBy, Collections, CurrentCollectionInd);
+        }
+
+        private void listView1_DragEnter(object sender, DragEventArgs e)
+        {
+            if (DataTypeValid(e.Data, out _))
+            {
+                e.Effect = DragDropEffects.Move;
+            }
+        }
+
+        private void listView1_DragDrop(object sender, DragEventArgs e)
+        {
+            if (!DataTypeValid(e.Data, out object ParsedData)) { return; }
+            if (ParsedData is DuplicateCardContainer DCC)
+            {
+                AddCopyOfCardToCollection(DCC.InvData);
+            }
+            else if (ParsedData is InventoryDatabaseEntry IDE)
+            {
+                AddCopyOfCardToCollection(IDE);
+            }
+            else if (ParsedData is YGOCardOBJ YCO)
+            {
+                AddCardToCollection(YCO);
+            }
+        }
+
+        private bool DataTypeValid(IDataObject? Data, out object ParsedData)
+        {
+            ParsedData = null;
+            if (Data is null)
+            {
+                Debug.WriteLine($"No Data Passed");
+                return false;
+            }
+            else if (Data.GetDataPresent(typeof(DuplicateCardContainer)))
+            {
+                Debug.WriteLine($"Data Was DuplicateCardContainer");
+                ParsedData = Data.GetData(typeof(DuplicateCardContainer));
+                return true;
+            }
+            else if (Data.GetDataPresent(typeof(InventoryDatabaseEntry)))
+            {
+                Debug.WriteLine($"Data Was InventoryDatabaseEntry");
+                ParsedData = Data.GetData(typeof(InventoryDatabaseEntry));
+                return true;
+            }
+            else if (Data.GetDataPresent(typeof(YGOCardOBJ)))
+            {
+                Debug.WriteLine($"Data Was YGOCardOBJ");
+                ParsedData = Data.GetData(typeof(YGOCardOBJ));
+                YGOCardOBJ CardData = (YGOCardOBJ)ParsedData;
+                bool hasSets = CardData.card_sets is not null && CardData.card_sets.Any();
+                Debug.WriteLine($"Had Set Data? {hasSets}");
+                return hasSets;
+            }
+            return false;
         }
     }
 }

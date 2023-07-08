@@ -195,47 +195,29 @@ namespace YGODatabase
             label1.Location = new Point(numericUpDown1.Location.X - label1.Width - 2, numericUpDown1.Location.Y);
         }
 
-        bool MouseDown = false;
-        int MouseDownOnIndex = -1;
-        int ListTopIndex = -1;
+        bool Dragging = false;
+        bool LastClickWasItem = false;
         private void lbCardList_MouseDown(object sender, MouseEventArgs e)
         {
-            MouseDown = true;
-            MouseDownOnIndex = lbCardList.SelectedIndex;
-            ListTopIndex = lbCardList.TopIndex;
-        }
-
-        private void lbCardList_MouseUp(object sender, MouseEventArgs e)
-        {
-            Cursor.Current = Cursors.Default;
-            MouseDown = false;
-
-            var control = Utility.FindControlAtCursor(inventoryManager);
-
-            if (control == inventoryManager.listView1)
-            {
-                if (lbCardList.SelectedIndex < 0 || lbCardList.SelectedItem is not YGOCardOBJ CurrentCard) { return; }
-                if (CurrentCard.card_sets is null)
-                {
-                    MessageBox.Show($"{CurrentCard.name} was not printed in any TCG sets!", "Failed to add card", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-                var CurrentCollection = inventoryManager.Collections[inventoryManager.CurrentCollectionInd];
-                inventoryManager.AddCardToCollection(CurrentCard, CurrentCollection, null);
-
-            }
-
+            //Ensure the new card is visually updated on mouse down instead of mouse up so it updates before the drag drop freezes the form
+            int index = lbCardList.IndexFromPoint(e.Location);
+            if (index < 0 || index >= lbCardList.Items.Count) { LastClickWasItem = false; return; }
+            LastClickWasItem = true;
+            lbCardList.SetSelected(index, true);
         }
 
         private void lbCardList_MouseMove(object sender, MouseEventArgs e)
         {
-            if (MouseDown) 
+            if (e.Button == MouseButtons.Left && !Dragging && LastClickWasItem && lbCardList.SelectedItem is YGOCardOBJ Card)
             {
-                lbCardList.SelectedIndex = MouseDownOnIndex;
-                lbCardList.TopIndex = ListTopIndex;
-                if (Cursor.Current != Cursors.Hand) { Cursor.Current = Cursors.Hand; }
+                Dragging = true;
+                Debug.WriteLine($"Dragging {Card.name}");
+                inventoryManager.listView1.DoDragDrop(Card, DragDropEffects.Move);
+            }
+            else
+            {
+                Dragging = false;
             }
         }
-
     }
 }
