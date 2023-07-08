@@ -144,6 +144,13 @@ namespace YGODatabase
         bool SelectedCardUpdating = false;
         private bool PrintSelectedCard(string Source, int AmountToEdit)
         {
+            if (selectedCard is not null && selectedCard.Entries.Any(x => !Collections[CurrentCollectionInd].data.ContainsKey(x)))
+            {
+                Debug.WriteLine($"Error Selected Card contained missing Entries!");
+                selectedCard = null;
+
+            }
+
             SelectedCardUpdating = true;
 
             bool DisableControls = selectedCard == null;
@@ -250,7 +257,7 @@ namespace YGODatabase
                 Collections[CurrentCollectionInd].data.Remove(SelectedCards[i]);
                 RemovedCards.Add(SelectedCards[i]);
             }
-            var RemainingInventory = SelectedCards.Where(x => !RemovedCards.Contains(x)).ToList();
+            var RemainingInventory = SelectedCards.Where(x => Collections[CurrentCollectionInd].data.ContainsKey(x));
             selectedCard = RemainingInventory.Any() ? Utility.CreateSelectedCardEntry(Collections[CurrentCollectionInd], RemainingInventory.Last()) : null;
 
             SaveCollection(Collections[CurrentCollectionInd]);
@@ -925,6 +932,43 @@ namespace YGODatabase
                 return hasSets;
             }
             return false;
+        }
+
+        private void listView1_KeyUp(object sender, KeyEventArgs e)
+        {
+            bool ctrlMod = ModifierKeys.HasFlag(Keys.Control);
+            bool shiftMod = ModifierKeys.HasFlag(Keys.Shift);
+            Keys Key = e.KeyCode;
+            if (Key == Keys.Delete)
+            {
+                if (!shiftMod)
+                {
+                    string Warning = "";
+                    if (ctrlMod) { Warning += "Do you want to delete all copies of each selected card?"; }
+                    else { Warning += "Do you want to delete one copy of each selected card?\n(ctrl+del will delete all copies)"; }
+                    Warning += "\n\nHold Shift to skip this confirmation in the future.";
+                    var Confirm = MessageBox.Show($"{Warning}", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
+                    if (Confirm != DialogResult.Yes) { return; }
+                }
+                List<Guid> DeletedIDs = new List<Guid>();
+                foreach (var item in listView1.SelectedItems)
+                {
+                    if (item is not ListViewItem LVI || LVI.Tag is not DuplicateCardContainer CardContainer) { continue; }
+                    if (ctrlMod) { DeletedIDs.AddRange(CardContainer.Entries); }
+                    else { DeletedIDs.Add(CardContainer.Entries.Last()); }
+                }
+                foreach (var ID in DeletedIDs)
+                {
+                    Collections[CurrentCollectionInd].data.Remove(ID);
+                }
+                var RemainingInventory = selectedCard is null ? new List<Guid>() : selectedCard.Entries.Where(x => Collections[CurrentCollectionInd].data.ContainsKey(x));
+                selectedCard = RemainingInventory.Any() ? Utility.CreateSelectedCardEntry(Collections[CurrentCollectionInd], RemainingInventory.Last()) : null;
+
+                SaveCollection(Collections[CurrentCollectionInd]);
+                PrintSelectedCard(gbSelectedCard.Text, 1);
+                PrintInventory();
+                UpdatePopoutForms(false);
+            }
         }
     }
 }
