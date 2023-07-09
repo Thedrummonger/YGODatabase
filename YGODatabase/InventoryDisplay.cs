@@ -1,6 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
-using System.Data;
+﻿using System.Data;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
+using System.Web;
 using static YGODatabase.DataModel;
 
 namespace YGODatabase
@@ -285,12 +286,12 @@ namespace YGODatabase
                 var focusedItem = listView1.FocusedItem;
                 if (focusedItem != null && focusedItem.Bounds.Contains(e.Location))
                 {
-                    ShowListViewContextMenu(focusedItem, _Parent.Collections, CurrentDisplayCollectionInd, UpdateData);
+                    ShowListViewContextMenu(_Parent._DatabaseForm.Settings, focusedItem, _Parent.Collections, CurrentDisplayCollectionInd, UpdateData);
                 }
             }
         }
 
-        public static void ShowListViewContextMenu(ListViewItem SelectedEntry, List<CardCollection> Collections, int CurrentCollectionInd, Action RefreshAction, Action<DuplicateCardContainer> ApplySelectedCardAction = null)
+        public static void ShowListViewContextMenu(AppSettingsSettings Settings, ListViewItem SelectedEntry, List<CardCollection> Collections, int CurrentCollectionInd, Action RefreshAction, Action<DuplicateCardContainer> ApplySelectedCardAction = null)
         {
             if (SelectedEntry.Tag is null) { return; }
 
@@ -302,17 +303,32 @@ namespace YGODatabase
             {
                 if (ApplySelectedCardAction is not null)
                 {
-                    ToolStripItem SelectCard = contextMenu.Items.Add("Select Card");
-                    SelectCard.Click += (sender, e) => { ApplySelectedCardAction(inventoryObject); };
+                    ToolStripItem SelectCard = contextMenu.Items.Add("Select Card", null, (sender, e) => { ApplySelectedCardAction(inventoryObject); });
+                }
+
+                ToolStripItem CopyName = contextMenu.Items.Add($"Copy {inventoryObject.CardData().name} to clipboard", null, (sender, e) => { Clipboard.SetText(inventoryObject.CardData().name); });
+
+                if (Settings.LGSSearchURLS.Any())
+                {
+                    ToolStripItem SearchAtLGS = contextMenu.Items.Add("Search for card at:");
+                    foreach(var Query in Settings.LGSSearchURLS)
+                    {
+                        ToolStripItem LGSSearchAction = ((ToolStripMenuItem)SearchAtLGS).DropDownItems.Add(Query.Key, null, (sender, e) =>
+                        {
+                            Regex rx = new(@"<(.*?)>");
+                            string CardName = HttpUtility.UrlEncodeUnicode(inventoryObject.CardData().name);
+                            string WebURL = Query.Value;
+                            foreach (Match m in rx.Matches(Query.Value).Cast<Match>()) { WebURL = WebURL.Replace(m.Groups[0].Value, CardName); }
+                            Process.Start(new ProcessStartInfo(WebURL) { UseShellExecute = true });
+                        });
+                    }
                 }
 
                 if (!Collections[CurrentCollectionInd].IsInventory())
                 {
-                    ToolStripItem ShowAltPrintings = contextMenu.Items.Add("Show other available printings");
-                    ShowAltPrintings.Click += (sender, e) => { Utility.ShowOtherAvailablePrinting(inventoryObject, Collections, CurrentCollectionInd); };
+                    ToolStripItem ShowAltPrintings = contextMenu.Items.Add("Show other available printings", null, (sender, e) => { Utility.ShowOtherAvailablePrinting(inventoryObject, Collections, CurrentCollectionInd); });
                 }
-                ToolStripItem ShowOtherdecks = contextMenu.Items.Add("Show other decks using card");
-                ShowOtherdecks.Click += (sender, e) => { Utility.ShowOtherDecksUsingCard(inventoryObject, Collections, CurrentCollectionInd); };
+                ToolStripItem ShowOtherdecks = contextMenu.Items.Add("Show other decks using card", null, (sender, e) => { Utility.ShowOtherDecksUsingCard(inventoryObject, Collections, CurrentCollectionInd); });
             }
             if (contextMenu.Items.Count > 0)
             {

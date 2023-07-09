@@ -18,6 +18,7 @@ namespace YGODatabase
                 try { Settings = JsonConvert.DeserializeObject<AppSettingsSettings>(File.ReadAllText(YGODataManagement.GetSettingPath())); }
                 catch { Settings = new AppSettingsSettings(); }
             }
+            Settings.LGSSearchURLS ??= new Dictionary<string, string> { { "TCG Player", "https://www.tcgplayer.com/search/yugioh/product?Language=English&productLineName=yugioh&q=<CARDNAME>" } };
             inventoryManager = new InventoryManager(this);
         }
 
@@ -217,6 +218,14 @@ namespace YGODatabase
             else
             {
                 Dragging = false;
+            }
+        }
+
+        private void editCardWebSearchURLSToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (File.Exists(YGODataManagement.GetSettingPath()))
+            {
+                Process.Start(new ProcessStartInfo(YGODataManagement.GetSettingPath()) { UseShellExecute = true });
             }
         }
     }

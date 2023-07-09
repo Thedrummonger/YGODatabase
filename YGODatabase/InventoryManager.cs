@@ -11,7 +11,7 @@ namespace YGODatabase
 {
     public partial class InventoryManager : Form
     {
-        MainInterface _DatabaseForm;
+        public MainInterface _DatabaseForm;
 
         private DuplicateCardContainer? selectedCard = null;
 
@@ -413,7 +413,7 @@ namespace YGODatabase
         }
         private void ShowContextMenu(ListViewItem SelectedEntry)
         {
-            InventoryDisplay.ShowListViewContextMenu(SelectedEntry, Collections, CurrentCollectionInd, PrintInventory, ContextMenuApplySelectedCard);
+            InventoryDisplay.ShowListViewContextMenu(_DatabaseForm.Settings, SelectedEntry, Collections, CurrentCollectionInd, PrintInventory, ContextMenuApplySelectedCard);
             void ContextMenuApplySelectedCard(DuplicateCardContainer inventoryObject)
             {
                 selectedCard = inventoryObject;

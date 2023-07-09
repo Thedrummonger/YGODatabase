@@ -42,6 +42,7 @@
             this.lbCardData = new System.Windows.Forms.ListBox();
             this.label1 = new System.Windows.Forms.Label();
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+            this.editCardWebSearchURLSToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
@@ -61,7 +62,8 @@
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.inventoryManagerToolStripMenuItem,
-            this.updateDatabaseToolStripMenuItem});
+            this.updateDatabaseToolStripMenuItem,
+            this.editCardWebSearchURLSToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
@@ -69,14 +71,14 @@
             // inventoryManagerToolStripMenuItem
             // 
             this.inventoryManagerToolStripMenuItem.Name = "inventoryManagerToolStripMenuItem";
-            this.inventoryManagerToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
+            this.inventoryManagerToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
             this.inventoryManagerToolStripMenuItem.Text = "Inventory Manager";
             this.inventoryManagerToolStripMenuItem.Click += new System.EventHandler(this.inventoryManagerToolStripMenuItem_Click);
             // 
             // updateDatabaseToolStripMenuItem
             // 
             this.updateDatabaseToolStripMenuItem.Name = "updateDatabaseToolStripMenuItem";
-            this.updateDatabaseToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
+            this.updateDatabaseToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
             this.updateDatabaseToolStripMenuItem.Text = "Update Database";
             this.updateDatabaseToolStripMenuItem.Click += new System.EventHandler(this.updateDatabaseToolStripMenuItem_Click);
             // 
@@ -165,6 +167,13 @@
             this.numericUpDown1.TabIndex = 10;
             this.numericUpDown1.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
             // 
+            // editCardWebSearchURLSToolStripMenuItem
+            // 
+            this.editCardWebSearchURLSToolStripMenuItem.Name = "editCardWebSearchURLSToolStripMenuItem";
+            this.editCardWebSearchURLSToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
+            this.editCardWebSearchURLSToolStripMenuItem.Text = "Edit Card Web Search URLS";
+            this.editCardWebSearchURLSToolStripMenuItem.Click += new System.EventHandler(this.editCardWebSearchURLSToolStripMenuItem_Click);
+            // 
             // MainInterface
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -213,5 +222,6 @@
         private ToolStripMenuItem updateDatabaseToolStripMenuItem;
         private Label label1;
         private NumericUpDown numericUpDown1;
+        private ToolStripMenuItem editCardWebSearchURLSToolStripMenuItem;
     }
 }

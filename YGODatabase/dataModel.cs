@@ -183,6 +183,7 @@ namespace YGODatabase
             public int InventoryShowCollectionOrderBy = 0;
             public bool InventoryShowCollectionDescending = false;
             public string DefaultCondition = "Moderately Played";
+            public Dictionary<string, string> LGSSearchURLS = null;
         }
 
         public class DomainData
