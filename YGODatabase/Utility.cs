@@ -102,14 +102,10 @@ namespace YGODatabase
             return null;
         }
 
-        public static List<string> GetAllSetsContainingCard(this YGOCardOBJ card)
+        public static string[] GetAllSetsContainingCard(this YGOCardOBJ card)
         {
-            List<string> sets = new List<string>();
-            foreach(var i in card.card_sets??Array.Empty<YGOSetData>())
-            {
-                if (!sets.Contains(i.set_name)) { sets.Add(i.set_name);}
-            }
-            return sets;
+            if (card.card_sets is null || !card.card_sets.Any()) { return Array.Empty<string>(); }
+            return card.card_sets.Select(x => x.set_name).Distinct().ToArray();
         }
         public static List<string> GetAllRaritiesInSet(this YGOCardOBJ card, string Setname)
         {
