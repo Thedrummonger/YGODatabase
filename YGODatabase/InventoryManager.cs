@@ -152,10 +152,7 @@ namespace YGODatabase
             }
 
             SelectedCardUpdating = true;
-            cmbCollectedCardCategory.BeginUpdate();
-            cmbSelectedCardCondition.BeginUpdate();
-            cmbSelctedCardRarity.BeginUpdate();
-            cmbSelectedCardSet.BeginUpdate();
+            foreach (var Control in gbSelectedCard.Controls) { if (Control is ComboBox CMB) { CMB.BeginUpdate(); } }
 
             bool DisableControls = selectedCard == null;
             gbSelectedCard.Enabled = !DisableControls;
@@ -165,16 +162,8 @@ namespace YGODatabase
                 lblSelectedCard.Text = "N/A";
                 Utility.ManageNUD(numericUpDown1, 0, 0, 0);
                 Utility.ManageNUD(numericUpDown2, 0, 0, 0);
-                cmbSelctedCardRarity.DataSource = null;
-                cmbSelectedCardSet.DataSource = null;
-                cmbSelectedCardCondition.DataSource = null;
-                cmbCollectedCardCategory.DataSource = null;
-                cmbSelectedCardSetCode.DataSource = null;
+                foreach(var Control in gbSelectedCard.Controls) { if (Control is ComboBox CMB) { CMB.DataSource = null; CMB.EndUpdate(); } }
                 SelectedCardUpdating = false;
-                cmbCollectedCardCategory.EndUpdate();
-                cmbSelectedCardCondition.EndUpdate();
-                cmbSelctedCardRarity.EndUpdate();
-                cmbSelectedCardSet.EndUpdate();
                 return true;
             }
             var InventoryObject = selectedCard.InvData;
@@ -200,10 +189,7 @@ namespace YGODatabase
             Utility.ManageNUD(numericUpDown1, 1, IdenticalCards, AmountToEdit);
             Utility.ManageNUD(numericUpDown2, 1, Card.card_images.Length, InventoryObject.ImageIndex + 1);
 
-            cmbCollectedCardCategory.EndUpdate();
-            cmbSelectedCardCondition.EndUpdate();
-            cmbSelctedCardRarity.EndUpdate();
-            cmbSelectedCardSet.EndUpdate();
+            foreach (var Control in gbSelectedCard.Controls) { if (Control is ComboBox CMB) { CMB.EndUpdate(); } }
             SelectedCardUpdating = false;
             return true;
         }
