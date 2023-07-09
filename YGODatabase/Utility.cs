@@ -44,7 +44,11 @@ namespace YGODatabase
         }
         public static int GetRarityIndex(this YGOSetData setData)
         {
-            int Index = BulkData.Rarities.IndexOf(setData.set_rarity);
+            return GetRarityIndex(setData.set_rarity);
+        }
+        public static int GetRarityIndex(string set_rarity)
+        {
+            int Index = BulkData.Rarities.IndexOf(set_rarity);
             return Index < 0 ? BulkData.Rarities.Count : Index;
         }
         public static string GetLowestAveragePrice(this YGOCardOBJ card)

@@ -152,6 +152,10 @@ namespace YGODatabase
             }
 
             SelectedCardUpdating = true;
+            cmbCollectedCardCategory.BeginUpdate();
+            cmbSelectedCardCondition.BeginUpdate();
+            cmbSelctedCardRarity.BeginUpdate();
+            cmbSelectedCardSet.BeginUpdate();
 
             bool DisableControls = selectedCard == null;
             gbSelectedCard.Enabled = !DisableControls;
@@ -164,12 +168,18 @@ namespace YGODatabase
                 cmbSelctedCardRarity.DataSource = null;
                 cmbSelectedCardSet.DataSource = null;
                 cmbSelectedCardCondition.DataSource = null;
+                cmbCollectedCardCategory.DataSource = null;
+                cmbSelectedCardSetCode.DataSource = null;
                 SelectedCardUpdating = false;
+                cmbCollectedCardCategory.EndUpdate();
+                cmbSelectedCardCondition.EndUpdate();
+                cmbSelctedCardRarity.EndUpdate();
+                cmbSelectedCardSet.EndUpdate();
                 return true;
             }
             var InventoryObject = selectedCard.InvData;
-            var Card = Utility.GetCardByID(InventoryObject.cardID);
-            var SetEntry = Utility.GetExactCard(Card, InventoryObject.set_code, InventoryObject.set_rarity);
+            var Card = InventoryObject.CardData();
+            var SetEntry = InventoryObject.SetData();
 
             gbSelectedCard.Text = Source;
             lblSelectedCard.Text = $"{Card.name}";
@@ -182,14 +192,18 @@ namespace YGODatabase
             foreach (var i in cmbSelectedCardCondition.Items) { if (i.ToString() == InventoryObject.Condition) { cmbSelectedCardCondition.SelectedItem = i; break; } }
             cmbCollectedCardCategory.DataSource = CategoryNames.Select(x => new ComboBoxItem { DisplayName = x.Value, tag = x.Key }).ToArray();
             foreach (ComboBoxItem i in cmbCollectedCardCategory.Items) { if ((Categories)i.tag == InventoryObject.Category) { cmbCollectedCardCategory.SelectedItem = i; break; } }
-            cmbSelectedCardSetCode.DataSource = Card.card_sets.Select(x => x.set_code).ToArray();
-            foreach (var i in cmbSelectedCardSetCode.Items) { if (i.ToString() == SetEntry.set_code) { cmbSelectedCardSetCode.SelectedItem = i; break; } }
+            cmbSelectedCardSetCode.DataSource = Card.card_sets.Select(x => new ComboBoxItem { DisplayName = (Card.card_sets.Where(y => y.set_code == x.set_code).Count() > 1) ? $"{x.set_code} {x.GetRarityCode()}" : x.set_code, tag = x }).OrderBy(x => x.DisplayName).ToArray();
+            foreach (ComboBoxItem i in cmbSelectedCardSetCode.Items) { if (((YGOSetData)i.tag).set_code == SetEntry.set_code && ((YGOSetData)i.tag).set_rarity == SetEntry.set_rarity) { cmbSelectedCardSetCode.SelectedItem = i; break; } }
 
             var IdenticalCards = selectedCard.Entries.Count;
             if (AmountToEdit > IdenticalCards) { AmountToEdit = IdenticalCards; }
             Utility.ManageNUD(numericUpDown1, 1, IdenticalCards, AmountToEdit);
             Utility.ManageNUD(numericUpDown2, 1, Card.card_images.Length, InventoryObject.ImageIndex + 1);
 
+            cmbCollectedCardCategory.EndUpdate();
+            cmbSelectedCardCondition.EndUpdate();
+            cmbSelctedCardRarity.EndUpdate();
+            cmbSelectedCardSet.EndUpdate();
             SelectedCardUpdating = false;
             return true;
         }
@@ -204,16 +218,16 @@ namespace YGODatabase
             Guid[] SelectedCards = selectedCard.Entries.ToArray().Reverse().ToArray();
             Guid[] CardsToEdit = SelectedCards.Take((int)numericUpDown1.Value).ToArray();
 
-            var SetCodeData = selectedCard.InvData.CardData().card_sets.First(x => x.set_code == cmbSelectedCardSetCode.SelectedItem.ToString());
-            string NewSet = UseSetCode ? SetCodeData.set_name : (string)cmbSelectedCardSet.SelectedItem;
-            string NewRarity = UseSetCode ? SetCodeData.set_rarity : (string)cmbSelctedCardRarity.SelectedItem;
+            YGOSetData SetCodeTag = (YGOSetData)((ComboBoxItem)cmbSelectedCardSetCode.SelectedItem).tag;
+            string NewSet = UseSetCode ? SetCodeTag.set_name : (string)cmbSelectedCardSet.SelectedItem;
+            string NewRarity = UseSetCode ? SetCodeTag.set_rarity : (string)cmbSelctedCardRarity.SelectedItem;
             string NewCondition = (string)cmbSelectedCardCondition.SelectedItem;
             Categories Category = (Categories)((ComboBoxItem)cmbCollectedCardCategory.SelectedItem).tag;
             int NewImageIndex = (int)numericUpDown2.Value - 1;
 
             //Validate that the selected rarity is available in the selected set
             var ValidRaritiesForNewSet = selectedCard.CardData().GetAllRaritiesInSet(NewSet);
-            if (!ValidRaritiesForNewSet.Contains(NewRarity)) { NewRarity = ValidRaritiesForNewSet.First(); }
+            if (!ValidRaritiesForNewSet.Contains(NewRarity)) { NewRarity = ValidRaritiesForNewSet.OrderBy(x => Utility.GetRarityIndex(x)).First(); }
 
             foreach(var i in CardsToEdit)
             {

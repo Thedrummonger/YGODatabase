@@ -175,6 +175,7 @@
             this.cmbSelectedCardSetCode.Name = "cmbSelectedCardSetCode";
             this.cmbSelectedCardSetCode.Size = new System.Drawing.Size(153, 23);
             this.cmbSelectedCardSetCode.TabIndex = 16;
+            this.cmbSelectedCardSetCode.DropDown += new System.EventHandler(this.ComboBox_DropDown);
             this.cmbSelectedCardSetCode.SelectedIndexChanged += new System.EventHandler(this.SelectedCardValueEdited);
             // 
             // label6
