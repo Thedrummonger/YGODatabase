@@ -199,28 +199,25 @@ namespace YGODatabase
 
             SaveState();
 
+            bool UseSetCode = sender == cmbSelectedCardSetCode;
+
             Guid[] SelectedCards = selectedCard.Entries.ToArray().Reverse().ToArray();
             Guid[] CardsToEdit = SelectedCards.Take((int)numericUpDown1.Value).ToArray();
 
-            var ExampleCard = Collections[CurrentCollectionInd].data[CardsToEdit.First()];
-
-            string Rarity = (string)cmbSelctedCardRarity.SelectedItem;
-            string Set = (string)cmbSelectedCardSet.SelectedItem;
-            string Condition = (string)cmbSelectedCardCondition.SelectedItem;
-            int Image = (int)numericUpDown2.Value - 1;
-
-            if (sender == cmbSelectedCardSetCode)
-            {
-                var Setdata = ExampleCard.CardData().card_sets.First(x => x.set_code == cmbSelectedCardSetCode.SelectedItem.ToString());
-                Rarity = Setdata.set_rarity;
-                Set = Setdata.set_name;
-            }
-
+            var SetCodeData = selectedCard.InvData.CardData().card_sets.First(x => x.set_code == cmbSelectedCardSetCode.SelectedItem.ToString());
+            string NewSet = UseSetCode ? SetCodeData.set_name : (string)cmbSelectedCardSet.SelectedItem;
+            string NewRarity = UseSetCode ? SetCodeData.set_rarity : (string)cmbSelctedCardRarity.SelectedItem;
+            string NewCondition = (string)cmbSelectedCardCondition.SelectedItem;
             Categories Category = (Categories)((ComboBoxItem)cmbCollectedCardCategory.SelectedItem).tag;
+            int NewImageIndex = (int)numericUpDown2.Value - 1;
+
+            //Validate that the selected rarity is available in the selected set
+            var ValidRaritiesForNewSet = selectedCard.CardData().GetAllRaritiesInSet(NewSet);
+            if (!ValidRaritiesForNewSet.Contains(NewRarity)) { NewRarity = ValidRaritiesForNewSet.First(); }
 
             foreach(var i in CardsToEdit)
             {
-                EditCard(i, Rarity, Set, Condition, sender == cmbSelectedCardSet, Category, Image);
+                EditCard(i, NewRarity, NewSet, NewCondition, Category, NewImageIndex);
             }
 
             selectedCard = Utility.CreateSelectedCardEntry(Collections[CurrentCollectionInd], CardsToEdit.First());
@@ -233,21 +230,10 @@ namespace YGODatabase
             UpdatepictureBox(selectedCard.CardData(), selectedCard.InvData.ImageIndex);
         }
 
-        private void EditCard(Guid UUID, string NewRarity, string NewSetName, string NewCondition, bool EditingSet, Categories NewCategory, int ImageIndex)
+        private void EditCard(Guid UUID, string NewRarity, string NewSetName, string NewCondition, Categories NewCategory, int ImageIndex)
         {
             var InventoryObject = Collections[CurrentCollectionInd].data[UUID];
-            var Card = Utility.GetCardByID(InventoryObject.cardID);
-            var OldSetEntry = Card.card_sets.First(x => x.set_code == InventoryObject.set_code && x.set_rarity == InventoryObject.set_rarity);
-
-            if (EditingSet)
-            {
-                var ValidRaritiesForNewSet = Card.GetAllRaritiesInSet(NewSetName);
-                if (!ValidRaritiesForNewSet.Contains(OldSetEntry.set_rarity))
-                {
-                    NewRarity = ValidRaritiesForNewSet.First();
-                }
-            }
-            var NewSetEntry = Card.card_sets.First(x => x.set_name == NewSetName && x.set_rarity == NewRarity);
+            var NewSetEntry = InventoryObject.CardData().card_sets.First(x => x.set_name == NewSetName && x.set_rarity == NewRarity);
 
             InventoryObject.LastUpdated = DateTime.Now;
             InventoryObject.set_rarity = NewSetEntry.set_rarity;
