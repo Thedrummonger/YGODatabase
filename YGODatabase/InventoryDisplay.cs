@@ -155,7 +155,7 @@ namespace YGODatabase
 
             Categories CurrentCategory = Categories.None;
 
-            var OtherDeckSearchFilter = new CardMatchFilters().SetAll(true).Set(_FilterCategory: false);
+            var OtherDeckSearchFilter = new CardMatchFilters().CreateIdenticalCardFindFilter();
 
             var CollectionIDCache = CollectionSearchUtils.CacheIdsInCollections(Collections, new HashSet<int> { CurrentCollectionInd }, OtherDeckSearchFilter);
             
@@ -182,7 +182,7 @@ namespace YGODatabase
                         CategoryHeaderEdits[CurrentCategory] = new(InvListPos, 0);
                         InvListPos++;
                     }
-                    var InInventory = CollectionSearchUtils.GetIdenticalCardsFromCollection(Collections[0], i.InvData, new CardMatchFilters().SetAll(true).Set(_FilterCategory: false));
+                    var InInventory = CollectionSearchUtils.GetIdenticalCardsFromCollection(Collections[0], i.InvData, new CardMatchFilters().CreateIdenticalCardFindFilter());
                     var InInventorySimilar = CollectionSearchUtils.GetIdenticalCardsFromCollection(Collections[0], i.InvData, new CardMatchFilters().SetAll(false));
                     DisplayData.Insert(2, InInventory.Count().ToString());
                     if (i.CardCount() > InInventorySimilar.Count()) { BackColor = Color.LightCoral; }                //No cards available including other printings

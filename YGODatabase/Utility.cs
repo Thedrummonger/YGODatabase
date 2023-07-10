@@ -357,7 +357,7 @@ namespace YGODatabase
             Dictionary<Guid, Tuple<string, int, int>> DeckCounts = new Dictionary<Guid, Tuple<string, int, int>>();
             foreach (var i in Collections.Where(x => x.UUID != Guid.Empty && x.UUID != Collections[CurrentCollectionInd].UUID))
             {
-                var AmountinDeck = CollectionSearchUtils.GetIdenticalCardsFromCollection(i, inventoryObject.InvData, new CardMatchFilters().SetAll(true).Set(_FilterCategory: false));
+                var AmountinDeck = CollectionSearchUtils.GetIdenticalCardsFromCollection(i, inventoryObject.InvData, new CardMatchFilters().CreateIdenticalCardFindFilter());
                 var SimilarAmountinDeck = CollectionSearchUtils.GetIdenticalCardsFromCollection(i, inventoryObject.InvData, new CardMatchFilters().SetAll(false));
                 DeckCounts[i.UUID] = new(i.Name, AmountinDeck.Count(), SimilarAmountinDeck.Count());
             }
@@ -378,7 +378,7 @@ namespace YGODatabase
 
         public static void ShowOtherAvailablePrinting(DuplicateCardContainer inventoryContainer, List<CardCollection> Collections, int CurrentCollectionInd)
         {
-            var FuzzyFilter = new CardMatchFilters().CreateFuzzyCardFindFilter();
+            var FuzzyFilter = new CardMatchFilters().SetAll(false);
             var ExactFilter = new CardMatchFilters().CreateIdenticalCardFindFilter();
             string TargetCardID = inventoryContainer.InvData.CreateIDString(ExactFilter);
             var OtherPrintings = CollectionSearchUtils.GetIdenticalCardsFromCollection(Collections[0], inventoryContainer.InvData, FuzzyFilter);
