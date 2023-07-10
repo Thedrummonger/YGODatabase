@@ -114,6 +114,14 @@ namespace YGODatabase
                 FilterArt = _FilterArt??FilterArt;
                 return this;
             }
+            public CardMatchFilters CreateFuzzyCardFindFilter()
+            {
+                return SetAll(false).Set(_FilterCategory: false);
+            }
+            public CardMatchFilters CreateIdenticalCardFindFilter()
+            {
+                return SetAll(true).Set(_FilterCategory: false);
+            }
 
         }
         public class InventoryDatabaseEntry
