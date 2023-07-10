@@ -413,7 +413,7 @@ namespace YGODatabase
         }
         private void ShowContextMenu(ListViewItem SelectedEntry)
         {
-            InventoryDisplay.ShowListViewContextMenu(_DatabaseForm.Settings, SelectedEntry, Collections, CurrentCollectionInd, PrintInventory, ContextMenuApplySelectedCard);
+            InventoryDisplay.ShowListViewContextMenu(SelectedEntry, PrintInventory, Collections, CurrentCollectionInd, ContextMenuApplySelectedCard, _DatabaseForm.Settings);
             void ContextMenuApplySelectedCard(DuplicateCardContainer inventoryObject)
             {
                 selectedCard = inventoryObject;

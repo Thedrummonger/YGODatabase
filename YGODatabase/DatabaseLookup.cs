@@ -228,5 +228,17 @@ namespace YGODatabase
                 Process.Start(new ProcessStartInfo(YGODataManagement.GetSettingPath()) { UseShellExecute = true });
             }
         }
+
+        private void lbCardList_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                var focusedItem = lbCardList.SelectedItem;
+                if (focusedItem != null)
+                {
+                    InventoryDisplay.ShowListViewContextMenu(focusedItem, UpdateListBox, null, null, null, Settings);
+                }
+            }
+        }
     }
 }

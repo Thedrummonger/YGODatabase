@@ -33,6 +33,7 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.inventoryManagerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.updateDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editCardWebSearchURLSToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.lbCardList = new System.Windows.Forms.ListBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
@@ -42,7 +43,6 @@
             this.lbCardData = new System.Windows.Forms.ListBox();
             this.label1 = new System.Windows.Forms.Label();
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            this.editCardWebSearchURLSToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
@@ -82,6 +82,13 @@
             this.updateDatabaseToolStripMenuItem.Text = "Update Database";
             this.updateDatabaseToolStripMenuItem.Click += new System.EventHandler(this.updateDatabaseToolStripMenuItem_Click);
             // 
+            // editCardWebSearchURLSToolStripMenuItem
+            // 
+            this.editCardWebSearchURLSToolStripMenuItem.Name = "editCardWebSearchURLSToolStripMenuItem";
+            this.editCardWebSearchURLSToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
+            this.editCardWebSearchURLSToolStripMenuItem.Text = "Edit Card Web Search URLS";
+            this.editCardWebSearchURLSToolStripMenuItem.Click += new System.EventHandler(this.editCardWebSearchURLSToolStripMenuItem_Click);
+            // 
             // textBox1
             // 
             this.textBox1.Location = new System.Drawing.Point(12, 27);
@@ -102,6 +109,7 @@
             this.lbCardList.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
             this.lbCardList.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lbCardList_MouseDown);
             this.lbCardList.MouseMove += new System.Windows.Forms.MouseEventHandler(this.lbCardList_MouseMove);
+            this.lbCardList.MouseUp += new System.Windows.Forms.MouseEventHandler(this.lbCardList_MouseUp);
             // 
             // pictureBox1
             // 
@@ -166,13 +174,6 @@
             this.numericUpDown1.Size = new System.Drawing.Size(35, 23);
             this.numericUpDown1.TabIndex = 10;
             this.numericUpDown1.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
-            // 
-            // editCardWebSearchURLSToolStripMenuItem
-            // 
-            this.editCardWebSearchURLSToolStripMenuItem.Name = "editCardWebSearchURLSToolStripMenuItem";
-            this.editCardWebSearchURLSToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
-            this.editCardWebSearchURLSToolStripMenuItem.Text = "Edit Card Web Search URLS";
-            this.editCardWebSearchURLSToolStripMenuItem.Click += new System.EventHandler(this.editCardWebSearchURLSToolStripMenuItem_Click);
             // 
             // MainInterface
             // 

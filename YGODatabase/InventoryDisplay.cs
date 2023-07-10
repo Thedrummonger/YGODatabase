@@ -286,53 +286,92 @@ namespace YGODatabase
                 var focusedItem = listView1.FocusedItem;
                 if (focusedItem != null && focusedItem.Bounds.Contains(e.Location))
                 {
-                    ShowListViewContextMenu(_Parent._DatabaseForm.Settings, focusedItem, _Parent.Collections, CurrentDisplayCollectionInd, UpdateData);
+                    ShowListViewContextMenu(focusedItem, UpdateData, _Parent.Collections, CurrentDisplayCollectionInd, null, _Parent._DatabaseForm.Settings);
                 }
             }
         }
 
-        public static void ShowListViewContextMenu(AppSettingsSettings Settings, ListViewItem SelectedEntry, List<CardCollection> Collections, int CurrentCollectionInd, Action RefreshAction, Action<DuplicateCardContainer> ApplySelectedCardAction = null)
+        public static void ShowListViewContextMenu(object SelectedEntry, Action RefreshAction, List<CardCollection> Collections = null, int? CurrentCollectionInd = null, Action<DuplicateCardContainer> ApplySelectedCardAction = null, AppSettingsSettings Settings = null)
         {
-            if (SelectedEntry.Tag is null) { return; }
+            if (SelectedEntry is null) { return; }
+
+            DuplicateCardContainer DupeCardContainer = null;
+            InventoryDatabaseEntry invObJ = null;
+            YGOCardOBJ CardData = null;
+            YGOSetData SetData = null;
+
+            GetDataFromObject(SelectedEntry);
 
             ContextMenuStrip contextMenu = new();
             ToolStripItem RefreshContextItem = contextMenu.Items.Add("Refresh");
             RefreshContextItem.Click += (sender, e) => { RefreshAction(); };
 
-            if (SelectedEntry.Tag is DuplicateCardContainer inventoryObject)
+            if (ApplySelectedCardAction is not null && DupeCardContainer is not null)
             {
-                if (ApplySelectedCardAction is not null)
-                {
-                    ToolStripItem SelectCard = contextMenu.Items.Add("Select Card", null, (sender, e) => { ApplySelectedCardAction(inventoryObject); });
-                }
-
-                ToolStripItem CopyName = contextMenu.Items.Add($"Copy {inventoryObject.CardData().name} to clipboard", null, (sender, e) => { Clipboard.SetText(inventoryObject.CardData().name); });
-
-                if (Settings.LGSSearchURLS.Any())
-                {
-                    ToolStripItem SearchAtLGS = contextMenu.Items.Add("Search for card at:");
-                    foreach(var Query in Settings.LGSSearchURLS)
-                    {
-                        ToolStripItem LGSSearchAction = ((ToolStripMenuItem)SearchAtLGS).DropDownItems.Add(Query.Key, null, (sender, e) =>
-                        {
-                            Regex rx = new(@"<(.*?)>");
-                            string CardName = HttpUtility.UrlEncodeUnicode(inventoryObject.CardData().name);
-                            string WebURL = Query.Value;
-                            foreach (Match m in rx.Matches(Query.Value).Cast<Match>()) { WebURL = WebURL.Replace(m.Groups[0].Value, CardName); }
-                            Process.Start(new ProcessStartInfo(WebURL) { UseShellExecute = true });
-                        });
-                    }
-                }
-
-                if (!Collections[CurrentCollectionInd].IsInventory())
-                {
-                    ToolStripItem ShowAltPrintings = contextMenu.Items.Add("Show other available printings", null, (sender, e) => { Utility.ShowOtherAvailablePrinting(inventoryObject, Collections, CurrentCollectionInd); });
-                }
-                ToolStripItem ShowOtherdecks = contextMenu.Items.Add("Show other decks using card", null, (sender, e) => { Utility.ShowOtherDecksUsingCard(inventoryObject, Collections, CurrentCollectionInd); });
+                ToolStripItem SelectCard = contextMenu.Items.Add("Select Card", null, (sender, e) => { ApplySelectedCardAction(DupeCardContainer); });
             }
+            if (CardData is not null)
+            {
+                ToolStripItem CopyName = contextMenu.Items.Add($"Copy {CardData.name} to clipboard", null, (sender, e) => { Clipboard.SetText(CardData.name); });
+            }
+
+            if (Settings is not null && Settings.LGSSearchURLS.Any() && CardData is not null)
+            {
+                ToolStripItem SearchAtLGS = contextMenu.Items.Add("Search for card at:");
+                foreach (var Query in Settings.LGSSearchURLS)
+                {
+                    ToolStripItem LGSSearchAction = ((ToolStripMenuItem)SearchAtLGS).DropDownItems.Add(Query.Key, null, (sender, e) =>
+                    {
+                        Regex rx = new(@"<(.*?)>");
+                        string CardName = HttpUtility.UrlEncodeUnicode(CardData.name);
+                        string WebURL = Query.Value;
+                        foreach (Match m in rx.Matches(Query.Value).Cast<Match>()) { WebURL = WebURL.Replace(m.Groups[0].Value, CardName); }
+                        Process.Start(new ProcessStartInfo(WebURL) { UseShellExecute = true });
+                    });
+                }
+            }
+
+            if (Collections is not null && CurrentCollectionInd is not null && DupeCardContainer is not null)
+            {
+                if (!Collections[(int)CurrentCollectionInd].IsInventory())
+                {
+                    ToolStripItem ShowAltPrintings = contextMenu.Items.Add("Show other available printings", null, (sender, e) => { Utility.ShowOtherAvailablePrinting(DupeCardContainer, Collections, (int)CurrentCollectionInd); });
+                }
+                ToolStripItem ShowOtherdecks = contextMenu.Items.Add("Show other decks using card", null, (sender, e) => { Utility.ShowOtherDecksUsingCard(DupeCardContainer, Collections, (int)CurrentCollectionInd); });
+            }
+
             if (contextMenu.Items.Count > 0)
             {
                 contextMenu.Show(Cursor.Position);
+            }
+
+            void GetDataFromObject(object Entry)
+            {
+                if (Entry is ListViewItem LVI && LVI.Tag is not null)
+                {
+                    GetDataFromObject(LVI.Tag);
+                }
+                else if (Entry is ComboBoxItem CBI && CBI.tag is not null)
+                {
+                    GetDataFromObject(CBI.tag);
+                }
+                else if (Entry is DuplicateCardContainer DCC)
+                {
+                    DupeCardContainer = DCC;
+                    invObJ = DupeCardContainer.InvData;
+                    CardData = DupeCardContainer.CardData();
+                    SetData = DupeCardContainer.SetData();
+                }
+                else if (Entry is InventoryDatabaseEntry IDE)
+                {
+                    invObJ = IDE;
+                    CardData = IDE.CardData();
+                    SetData = IDE.SetData();
+                }
+                else if (Entry is YGOCardOBJ YCO)
+                {
+                    CardData = YCO;
+                }
             }
         }
 
