@@ -177,8 +177,8 @@ namespace YGODatabase
             foreach (var i in cmbSelectedCardSet.Items) { if (i.ToString() == SetEntry.set_name) { cmbSelectedCardSet.SelectedItem = i; break; } }
             cmbSelctedCardRarity.DataSource = Card.GetAllRaritiesInSet(SetEntry.set_name);
             foreach (var i in cmbSelctedCardRarity.Items) { if (i.ToString() == SetEntry.set_rarity) { cmbSelctedCardRarity.SelectedItem = i; break; } }
-            cmbSelectedCardCondition.DataSource = BulkData.Conditions.Keys.ToArray();
-            foreach (var i in cmbSelectedCardCondition.Items) { if (i.ToString() == InventoryObject.Condition) { cmbSelectedCardCondition.SelectedItem = i; break; } }
+            cmbSelectedCardCondition.DataSource = BulkData.Conditions.Select(x => new ComboBoxItem { DisplayName = x.Value, tag = x.Key }).ToArray();
+            foreach (ComboBoxItem i in cmbSelectedCardCondition.Items) { if (i.tag.ToString() == InventoryObject.Condition) { cmbSelectedCardCondition.SelectedItem = i; break; } }
             cmbCollectedCardCategory.DataSource = CategoryNames.Select(x => new ComboBoxItem { DisplayName = x.Value, tag = x.Key }).ToArray();
             foreach (ComboBoxItem i in cmbCollectedCardCategory.Items) { if ((Categories)i.tag == InventoryObject.Category) { cmbCollectedCardCategory.SelectedItem = i; break; } }
             cmbSelectedCardSetCode.DataSource = Card.card_sets.Select(x => new ComboBoxItem { DisplayName = (Card.card_sets.Where(y => y.set_code == x.set_code).Count() > 1) ? $"{x.set_code} {x.GetRarityCode()}" : x.set_code, tag = x }).OrderBy(x => x.DisplayName).ToArray();
@@ -207,7 +207,7 @@ namespace YGODatabase
             YGOSetData SetCodeTag = (YGOSetData)((ComboBoxItem)cmbSelectedCardSetCode.SelectedItem).tag;
             string NewSet = UseSetCode ? SetCodeTag.set_name : (string)cmbSelectedCardSet.SelectedItem;
             string NewRarity = UseSetCode ? SetCodeTag.set_rarity : (string)cmbSelctedCardRarity.SelectedItem;
-            string NewCondition = (string)cmbSelectedCardCondition.SelectedItem;
+            string NewCondition = ((ComboBoxItem)cmbSelectedCardCondition.SelectedItem).tag.ToString();
             Categories Category = (Categories)((ComboBoxItem)cmbCollectedCardCategory.SelectedItem).tag;
             int NewImageIndex = (int)numericUpDown2.Value - 1;
 

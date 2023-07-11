@@ -171,9 +171,9 @@
             // cmbSelectedCardSetCode
             // 
             this.cmbSelectedCardSetCode.FormattingEnabled = true;
-            this.cmbSelectedCardSetCode.Location = new System.Drawing.Point(5, 162);
+            this.cmbSelectedCardSetCode.Location = new System.Drawing.Point(5, 163);
             this.cmbSelectedCardSetCode.Name = "cmbSelectedCardSetCode";
-            this.cmbSelectedCardSetCode.Size = new System.Drawing.Size(153, 23);
+            this.cmbSelectedCardSetCode.Size = new System.Drawing.Size(88, 23);
             this.cmbSelectedCardSetCode.TabIndex = 16;
             this.cmbSelectedCardSetCode.DropDown += new System.EventHandler(this.ComboBox_DropDown);
             this.cmbSelectedCardSetCode.SelectedIndexChanged += new System.EventHandler(this.SelectedCardValueEdited);
@@ -199,7 +199,7 @@
             // cmbCollectedCardCategory
             // 
             this.cmbCollectedCardCategory.FormattingEnabled = true;
-            this.cmbCollectedCardCategory.Location = new System.Drawing.Point(99, 105);
+            this.cmbCollectedCardCategory.Location = new System.Drawing.Point(101, 134);
             this.cmbCollectedCardCategory.Name = "cmbCollectedCardCategory";
             this.cmbCollectedCardCategory.Size = new System.Drawing.Size(59, 23);
             this.cmbCollectedCardCategory.TabIndex = 13;
@@ -248,7 +248,7 @@
             // cmbSelectedCardCondition
             // 
             this.cmbSelectedCardCondition.FormattingEnabled = true;
-            this.cmbSelectedCardCondition.Location = new System.Drawing.Point(99, 134);
+            this.cmbSelectedCardCondition.Location = new System.Drawing.Point(101, 163);
             this.cmbSelectedCardCondition.Name = "cmbSelectedCardCondition";
             this.cmbSelectedCardCondition.Size = new System.Drawing.Size(59, 23);
             this.cmbSelectedCardCondition.TabIndex = 3;
@@ -280,7 +280,7 @@
             this.cmbSelectedCardSet.FormattingEnabled = true;
             this.cmbSelectedCardSet.Location = new System.Drawing.Point(6, 105);
             this.cmbSelectedCardSet.Name = "cmbSelectedCardSet";
-            this.cmbSelectedCardSet.Size = new System.Drawing.Size(87, 23);
+            this.cmbSelectedCardSet.Size = new System.Drawing.Size(154, 23);
             this.cmbSelectedCardSet.TabIndex = 2;
             this.cmbSelectedCardSet.DropDown += new System.EventHandler(this.ComboBox_DropDown);
             this.cmbSelectedCardSet.SelectedIndexChanged += new System.EventHandler(this.SelectedCardValueEdited);
